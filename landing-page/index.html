@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tennis Coach AI — AI-Powered Stroke Analysis</title>
+<meta name="description" content="Film your tennis strokes. Get instant AI coaching with skeleton overlay, grades, and personalized drills. Download free on the App Store.">
+<meta property="og:title" content="Tennis Coach AI — Your AI Tennis Coach">
+<meta property="og:description" content="Film your strokes. Get instant AI coaching feedback with body mechanics analysis.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://tenniscoachai.com">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0A0A0F;
+  --surface: #141419;
+  --surface-alt: #1C1C24;
+  --accent: #C8FF00;
+  --accent-dim: rgba(200,255,0,0.08);
+  --accent-glow: rgba(200,255,0,0.25);
+  --text: #F0F0F5;
+  --text-dim: #8E8E9A;
+  --text-muted: #5A5A66;
+  --court-green: #1B4332;
+  --radius: 16px;
+  --radius-sm: 10px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', -apple-system, sans-serif;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+.mono { font-family: 'Space Mono', monospace; }
+
+/* Grain overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Hero */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem 1.5rem;
+  position: relative;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -20%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  border: 1px solid var(--accent);
+  border-radius: 100px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 2rem;
+  animation: fadeUp 0.6s ease both;
+}
+
+.badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+h1 {
+  font-size: clamp(2.5rem, 7vw, 5rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  max-width: 800px;
+  animation: fadeUp 0.6s 0.1s ease both;
+}
+
+h1 .accent { color: var(--accent); }
+
+.hero-sub {
+  font-size: clamp(1rem, 2.5vw, 1.25rem);
+  color: var(--text-dim);
+  max-width: 520px;
+  margin: 1.5rem auto 2.5rem;
+  line-height: 1.6;
+  animation: fadeUp 0.6s 0.2s ease both;
+}
+
+.cta-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  animation: fadeUp 0.6s 0.3s ease both;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 28px;
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: none;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px var(--accent-glow);
+}
+
+.btn-secondary {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--surface-alt);
+}
+
+.btn-secondary:hover {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.btn svg { width: 20px; height: 20px; }
+
+/* How it works */
+.section {
+  padding: 6rem 1.5rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.section-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 1rem;
+}
+
+.section-title {
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 3rem;
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+}
+
+.step {
+  background: var(--surface);
+  border: 1px solid var(--surface-alt);
+  border-radius: var(--radius);
+  padding: 2rem;
+  transition: all 0.3s ease;
+}
+
+.step:hover {
+  border-color: var(--accent);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+}
+
+.step-num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-bottom: 1.25rem;
+}
+
+.step h3 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.step p {
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+
+/* Features */
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.feature {
+  background: var(--surface);
+  border: 1px solid var(--surface-alt);
+  border-radius: var(--radius);
+  padding: 2rem;
+  display: flex;
+  gap: 1rem;
+  transition: all 0.3s ease;
+}
+
+.feature:hover {
+  border-color: var(--accent);
+}
+
+.feature-icon {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--accent-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+.feature h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+}
+
+.feature p {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+/* Pricing */
+.pricing-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.price-card {
+  background: var(--surface);
+  border: 1px solid var(--surface-alt);
+  border-radius: var(--radius);
+  padding: 2.5rem 2rem;
+  text-align: center;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.price-card.popular {
+  border-color: var(--accent);
+  box-shadow: 0 0 40px var(--accent-dim);
+}
+
+.popular-badge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--accent);
+  color: var(--bg);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 4px 16px;
+  border-radius: 100px;
+}
+
+.price-card h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.price {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.price span {
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--text-dim);
+}
+
+.price-features {
+  list-style: none;
+  margin: 1.5rem 0;
+  text-align: left;
+}
+
+.price-features li {
+  padding: 0.5rem 0;
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.price-features li::before {
+  content: '✓';
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* Email capture */
+.email-section {
+  text-align: center;
+  padding: 5rem 1.5rem;
+  background: linear-gradient(180deg, transparent, var(--accent-dim), transparent);
+}
+
+.email-section h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+}
+
+.email-section p {
+  color: var(--text-dim);
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+}
+
+.email-form {
+  display: flex;
+  gap: 0.75rem;
+  max-width: 440px;
+  margin: 0 auto;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.email-form input {
+  flex: 1;
+  min-width: 200px;
+  padding: 14px 18px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--surface-alt);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.95rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.email-form input:focus {
+  border-color: var(--accent);
+}
+
+.email-form input::placeholder {
+  color: var(--text-muted);
+}
+
+/* Footer */
+footer {
+  padding: 3rem 1.5rem;
+  text-align: center;
+  border-top: 1px solid var(--surface-alt);
+}
+
+footer p {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+footer a {
+  color: var(--text-dim);
+  text-decoration: none;
+  margin: 0 0.75rem;
+  transition: color 0.2s;
+}
+
+footer a:hover { color: var(--accent); }
+
+.footer-links {
+  margin-bottom: 1rem;
+}
+
+/* Animations */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeUp 0.6s ease forwards;
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .hero { padding: 4rem 1rem 3rem; }
+  .section { padding: 4rem 1rem; }
+  .cta-row { flex-direction: column; align-items: center; }
+  .btn { width: 100%; max-width: 300px; justify-content: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="badge">Now on the App Store</div>
+  <h1>Your strokes,<br><span class="accent">analyzed by AI</span></h1>
+  <p class="hero-sub">Film your tennis game. Get instant coaching with skeleton overlay, letter grades, and personalized drills for every stroke.</p>
+  <div class="cta-row">
+    <a href="#" class="btn btn-primary">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+      Download Free
+    </a>
+    <a href="#how" class="btn btn-secondary">See How It Works</a>
+  </div>
+</section>
+
+<!-- How It Works -->
+<section class="section" id="how">
+  <p class="section-label mono">How It Works</p>
+  <h2 class="section-title">Three steps to better tennis</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <h3>Film Your Game</h3>
+      <p>Set your phone courtside. Hit record. Play naturally — forehands, backhands, serves, volleys. Up to 30 minutes per session.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <h3>AI Analyzes Every Stroke</h3>
+      <p>Apple Vision tracks your body. GPT-4o evaluates your mechanics. You get a full coaching breakdown in under 30 seconds.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <h3>Improve With Precision</h3>
+      <p>See your grades, coaching cues, and practice drills. Track progress over time. Know exactly what to work on next.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<section class="section">
+  <p class="section-label mono">Features</p>
+  <h2 class="section-title">Everything a private coach sees — and more</h2>
+  <div class="features">
+    <div class="feature">
+      <div class="feature-icon">🦴</div>
+      <div>
+        <h3>Skeleton Overlay</h3>
+        <p>Full-body wireframe rendered on top of your video so you see exactly how your body moves during each stroke.</p>
+      </div>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">🎯</div>
+      <div>
+        <h3>Letter Grades</h3>
+        <p>Every stroke graded A through F with detailed rationale explaining why — backswing, contact point, follow-through, stance.</p>
+      </div>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">🧠</div>
+      <div>
+        <h3>AI Coaching Cues</h3>
+        <p>Specific, actionable feedback for each mechanic. Not generic tips — coaching tailored to what the AI actually saw in your stroke.</p>
+      </div>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">📈</div>
+      <div>
+        <h3>Progress Tracking</h3>
+        <p>Circular gauges, line charts, and stroke breakdowns show your improvement session over session. See the trajectory.</p>
+      </div>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">🏋️</div>
+      <div>
+        <h3>Practice Drills</h3>
+        <p>Personalized drills for your weakest mechanics. Work on what matters, not what's easy.</p>
+      </div>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">⚡</div>
+      <div>
+        <h3>Auto Slow-Mo</h3>
+        <p>Video automatically slows to 0.25x during detected strokes so you can study your form frame by frame.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Pricing -->
+<section class="section">
+  <p class="section-label mono">Pricing</p>
+  <h2 class="section-title">Start free. Upgrade when you're hooked.</h2>
+  <div class="pricing-row">
+    <div class="price-card">
+      <h3>Free</h3>
+      <div class="price">$0</div>
+      <ul class="price-features">
+        <li>3 AI stroke analyses</li>
+        <li>Full skeleton overlay</li>
+        <li>Coaching feedback & grades</li>
+        <li>All stroke types</li>
+      </ul>
+      <a href="#" class="btn btn-secondary" style="width:100%;justify-content:center;">Download Free</a>
+    </div>
+    <div class="price-card popular">
+      <div class="popular-badge">Best Value</div>
+      <h3>Annual</h3>
+      <div class="price">$49.99<span>/year</span></div>
+      <ul class="price-features">
+        <li>Unlimited analyses</li>
+        <li>Progress tracking</li>
+        <li>Practice drills</li>
+        <li>Priority processing</li>
+        <li>Save 40% vs monthly</li>
+      </ul>
+      <a href="#" class="btn btn-primary" style="width:100%;justify-content:center;">Get Started</a>
+    </div>
+  </div>
+</section>
+
+<!-- Email Capture -->
+<section class="email-section">
+  <h2>Get tennis tips powered by AI</h2>
+  <p>Weekly insights on technique, strategy, and how to practice smarter.</p>
+  <form class="email-form" action="#" method="POST">
+    <input type="email" placeholder="you@email.com" required>
+    <button type="submit" class="btn btn-primary">Subscribe</button>
+  </form>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-links">
+    <a href="/privacy">Privacy Policy</a>
+    <a href="/terms">Terms of Service</a>
+    <a href="mailto:support@tenniscoachai.com">Support</a>
+    <a href="https://instagram.com/tenniscoachai" target="_blank">Instagram</a>
+    <a href="https://tiktok.com/@tenniscoachai" target="_blank">TikTok</a>
+    <a href="https://x.com/tenniscoachai" target="_blank">X</a>
+  </div>
+  <p>&copy; 2026 Tennis Coach AI. All rights reserved.</p>
+</footer>
+
+</body>
+</html>

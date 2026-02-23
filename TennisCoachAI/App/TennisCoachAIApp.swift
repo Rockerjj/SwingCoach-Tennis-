@@ -1,0 +1,37 @@
+import SwiftUI
+import SwiftData
+
+@main
+struct TennisCoachAIApp: App {
+    @StateObject private var authService = AuthService()
+    @StateObject private var subscriptionService = SubscriptionService()
+    private let analytics = AnalyticsService.shared
+
+    var sharedModelContainer: ModelContainer = {
+        let schema = Schema([
+            SessionModel.self,
+            StrokeAnalysisModel.self,
+            ProgressSnapshotModel.self,
+            UserProfileModel.self,
+        ])
+        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+        do {
+            return try ModelContainer(for: schema, configurations: [config])
+        } catch {
+            fatalError("Could not create ModelContainer: \(error)")
+        }
+    }()
+
+    var body: some Scene {
+        WindowGroup {
+            RootView()
+                .environmentObject(authService)
+                .environmentObject(subscriptionService)
+                .modelContainer(sharedModelContainer)
+                .preferredColorScheme(.light)
+                .onAppear {
+                    analytics.trackEvent(.appOpened)
+                }
+        }
+    }
+}

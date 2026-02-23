@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=768">
+<title>TennisCoachAI — Grand Slam (Refined)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  /* Grand Slam — Refined with Clay Tones */
+  --bg: #FAF8F5;
+  --surface-1: #FFFFFF;
+  --surface-2: #F3EFE8;
+  --surface-3: #EBE6DC;
+  --surface-elevated: #FFFFFF;
+
+  /* Wimbledon green — authority, trust */
+  --accent: #2D5F45;
+  /* Championship gold — achievement, warmth */
+  --accent-gold: #BFA14A;
+  /* Roland Garros clay — energy, approachability */
+  --accent-clay: #C4876B;
+  /* Calming accent muted backgrounds */
+  --accent-muted: rgba(45,95,69,0.06);
+  --gold-muted: rgba(191,161,74,0.08);
+  --clay-muted: rgba(196,135,107,0.07);
+
+  /* Text */
+  --text-1: #1F2421;
+  --text-2: #5A6058;
+  --text-3: #8E9189;
+  --text-on-accent: #FAF8F5;
+
+  /* Score gradient — calming, muted, satisfying */
+  --score-excellent: #5E8E6B;   /* Sage green — mastery */
+  --score-good: #7EA882;        /* Soft green — solid */
+  --score-fair: #BFA14A;        /* Warm gold — developing */
+  --score-needs-work: #C4876B;  /* Clay salmon — attention needed */
+  --score-poor: #B07272;        /* Dusty rose — significant work */
+  --score-empty: #E6E2DA;       /* Warm neutral — unfilled */
+
+  /* Overlay colors for video */
+  --skeleton: rgba(255,255,255,0.92);
+  --skeleton-correct: #5E8E6B;
+  --skeleton-warn: #C4876B;
+  --angle: #BFA14A;
+  --trajectory: #2D5F45;
+
+  /* Typography */
+  --font-display: 'Fraunces', serif;
+  --font-body: 'Outfit', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+body {
+  background: #ECEAE5;
+  font-family: var(--font-body);
+  color: var(--text-1);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 16px;
+}
+
+/* Title Bar */
+.title-bar {
+  text-align: center;
+  margin-bottom: 28px;
+}
+.title-bar h1 {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  color: #2D5F45;
+  letter-spacing: -0.02em;
+}
+.title-bar p {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: #8E9189;
+  margin-top: 4px;
+}
+
+/* Color Palette Preview */
+.palette-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 28px;
+  padding: 12px 20px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+}
+.palette-swatch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.palette-dot {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 2px solid rgba(0,0,0,0.06);
+}
+.palette-name {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: #8E9189;
+  letter-spacing: 0.02em;
+}
+
+/* Phone Frame */
+.phone {
+  width: 393px;
+  min-height: 852px;
+  background: var(--bg);
+  border-radius: 48px;
+  overflow: hidden;
+  box-shadow: 0 0 0 4px #d4d0c8, 0 24px 64px rgba(0,0,0,0.12);
+  position: relative;
+}
+
+.phone-notch {
+  width: 126px; height: 34px;
+  background: #1F2421;
+  border-radius: 0 0 18px 18px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 10;
+}
+
+.status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 28px 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-3);
+}
+
+/* Video Area */
+.video-area {
+  position: relative;
+  width: 100%;
+  height: 280px;
+  background: linear-gradient(145deg, #1a2e1f 0%, #0f1c14 60%, #1a1510 100%);
+  overflow: hidden;
+}
+.video-area::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,0.015) 39px, rgba(255,255,255,0.015) 40px),
+    repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(255,255,255,0.015) 39px, rgba(255,255,255,0.015) 40px);
+}
+
+.court-lines {
+  position: absolute;
+  inset: 0;
+  opacity: 0.12;
+}
+.court-lines::before {
+  content: '';
+  position: absolute;
+  left: 50%; top: 18%;
+  width: 1px; height: 64%;
+  background: #fff;
+}
+.court-lines::after {
+  content: '';
+  position: absolute;
+  left: 18%; top: 50%;
+  width: 64%; height: 1px;
+  background: #fff;
+}
+
+/* Skeleton */
+.skeleton-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+.skel-bone {
+  stroke: var(--skeleton);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 5px rgba(255,255,255,0.4));
+}
+.skel-bone.warn {
+  stroke: var(--skeleton-warn);
+  filter: drop-shadow(0 0 6px rgba(196,135,107,0.5));
+}
+.skel-bone.correct {
+  stroke: var(--skeleton-correct);
+  filter: drop-shadow(0 0 5px rgba(94,142,107,0.4));
+}
+
+.skel-joint {
+  fill: var(--skeleton-correct);
+  filter: drop-shadow(0 0 3px rgba(94,142,107,0.4));
+}
+.skel-joint.warn {
+  fill: var(--skeleton-warn);
+  filter: drop-shadow(0 0 4px rgba(196,135,107,0.5));
+}
+
+.angle-label {
+  position: absolute;
+  background: rgba(31,36,33,0.82);
+  backdrop-filter: blur(6px);
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--angle);
+  white-space: nowrap;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.trajectory-path {
+  stroke: var(--trajectory);
+  stroke-width: 2;
+  stroke-linecap: round;
+  fill: none;
+  stroke-dasharray: 6 4;
+  filter: drop-shadow(0 0 3px rgba(45,95,69,0.4));
+  animation: dashFlow 1.8s linear infinite;
+}
+@keyframes dashFlow { to { stroke-dashoffset: -20; } }
+
+.overlay-toggle {
+  position: absolute;
+  top: 12px; right: 12px;
+  display: flex; align-items: center; gap: 5px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  background: var(--accent);
+  color: var(--text-on-accent);
+  transition: all 0.2s;
+  letter-spacing: 0.02em;
+}
+.overlay-toggle:hover { transform: scale(1.03); }
+.overlay-toggle svg { width: 14px; height: 14px; }
+
+/* Stroke Timeline */
+.stroke-timeline {
+  background: var(--surface-1);
+  padding: 14px 16px;
+  border-top: 1px solid var(--surface-3);
+}
+.section-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 10px;
+  font-family: var(--font-body);
+}
+.stroke-markers {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.stroke-marker {
+  flex-shrink: 0;
+  width: 50px; height: 50px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--surface-2);
+  color: var(--text-2);
+  border: 1.5px solid transparent;
+}
+.stroke-marker:hover { border-color: var(--surface-3); }
+.stroke-marker.active {
+  background: var(--accent);
+  color: var(--text-on-accent);
+  border-color: var(--accent);
+}
+.stroke-marker .icon { font-size: 15px; opacity: 0.8; }
+.stroke-marker .grade { font-size: 12px; }
+
+/* Grade colors — in the markers */
+.grade-excellent { color: var(--score-excellent); }
+.grade-good { color: var(--score-good); }
+.grade-fair { color: var(--score-fair); }
+.grade-needs-work { color: var(--score-needs-work); }
+
+/* Session Summary */
+.session-summary {
+  padding: 20px 18px;
+  background: var(--surface-1);
+  border-top: 1px solid var(--surface-3);
+}
+.summary-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.session-grade-label {
+  font-size: 11px;
+  color: var(--text-3);
+  font-family: var(--font-body);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+.session-grade {
+  font-family: var(--font-display);
+  font-size: 52px;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.session-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-3);
+}
+.session-meta span { display: flex; align-items: center; gap: 5px; }
+
+.priority-banner {
+  margin-top: 16px;
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: var(--accent-muted);
+  border: 1px solid rgba(45,95,69,0.1);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-1);
+  line-height: 1.4;
+}
+.priority-icon {
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--accent);
+  color: var(--text-on-accent);
+  border-radius: 8px;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+/* Coaching Cards */
+.coaching-cards { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+
+.coaching-card {
+  background: var(--surface-1);
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--surface-3);
+  transition: all 0.2s;
+}
+.coaching-card:hover { border-color: #d4d0c8; }
+
+.card-header {
+  display: flex;
+  align-items: center;
+  padding: 14px 16px;
+  cursor: pointer;
+  gap: 12px;
+  transition: background 0.15s;
+}
+.card-header:hover { background: var(--surface-2); }
+
+.stroke-icon-box {
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 10px;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.icon-green { background: rgba(94,142,107,0.1); color: var(--score-excellent); }
+.icon-gold { background: var(--gold-muted); color: var(--accent-gold); }
+.icon-clay { background: var(--clay-muted); color: var(--accent-clay); }
+
+.stroke-name { flex: 1; }
+.stroke-name strong {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+.stroke-name small {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-3);
+}
+
+.card-grade {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.card-grade.grade-a { color: var(--score-excellent); }
+.card-grade.grade-b { color: var(--accent); }
+.card-grade.grade-c { color: var(--accent-gold); }
+
+.card-chevron {
+  color: var(--text-3);
+  font-size: 12px;
+  transition: transform 0.25s ease;
+}
+.coaching-card.open .card-chevron { transform: rotate(180deg); }
+
+/* Card Body */
+.card-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease;
+}
+.coaching-card.open .card-body { max-height: 700px; }
+
+.mechanic-row {
+  padding: 12px 16px;
+  border-top: 1px solid var(--surface-2);
+}
+.mechanic-row-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+.mechanic-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-2);
+}
+.mechanic-note {
+  font-size: 13px;
+  color: var(--text-3);
+  line-height: 1.55;
+}
+
+/* Score Bars — Refined multi-color */
+.score-bar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.score-bar .bar {
+  width: 7px; height: 16px;
+  border-radius: 3px;
+  background: var(--score-empty);
+  transition: all 0.3s ease;
+}
+/* Score tiers with the refined palette */
+.score-bar .bar.filled.excellent { background: var(--score-excellent); }
+.score-bar .bar.filled.good { background: var(--score-good); }
+.score-bar .bar.filled.fair { background: var(--score-fair); }
+.score-bar .bar.filled.needs-work { background: var(--score-needs-work); }
+.score-bar .bar.filled.poor { background: var(--score-poor); }
+
+.score-val {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  margin-left: 8px;
+  min-width: 18px;
+  text-align: right;
+}
+.score-val.excellent { color: var(--score-excellent); }
+.score-val.good { color: var(--score-good); }
+.score-val.fair { color: var(--score-fair); }
+.score-val.needs-work { color: var(--score-needs-work); }
+.score-val.poor { color: var(--score-poor); }
+
+/* Tactical Notes */
+.tactical-notes {
+  margin: 0 16px 16px;
+  padding: 16px;
+  background: var(--surface-1);
+  border-radius: 14px;
+  border: 1px solid var(--surface-3);
+}
+.tac-note {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: var(--text-2);
+  line-height: 1.55;
+}
+.tac-note:last-child { margin-bottom: 0; }
+.tac-bulb {
+  width: 24px; height: 24px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--gold-muted);
+  color: var(--accent-gold);
+  border-radius: 6px;
+  font-size: 12px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* Tab Bar */
+.tab-bar {
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 0 28px;
+  background: var(--surface-1);
+  border-top: 1px solid var(--surface-3);
+  position: sticky;
+  bottom: 0;
+}
+.tab-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-3);
+  cursor: pointer;
+  transition: color 0.2s;
+  letter-spacing: 0.02em;
+}
+.tab-item.active { color: var(--accent); }
+.tab-item svg { width: 22px; height: 22px; }
+
+/* Legend under phone */
+.legend {
+  margin-top: 28px;
+  text-align: center;
+}
+.legend h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 16px;
+  color: #5A6058;
+  margin-bottom: 12px;
+}
+.legend-row {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 12px;
+  color: #8E9189;
+}
+.legend-dot {
+  width: 14px; height: 14px;
+  border-radius: 4px;
+}
+</style>
+</head>
+<body>
+
+<div class="title-bar">
+  <h1>Grand Slam — Refined</h1>
+  <p>Wimbledon green + Roland Garros clay + Championship gold</p>
+</div>
+
+<!-- Palette Preview -->
+<div class="palette-bar">
+  <div class="palette-swatch">
+    <div class="palette-dot" style="background:#2D5F45"></div>
+    <span class="palette-name">Wimbledon</span>
+  </div>
+  <div class="palette-swatch">
+    <div class="palette-dot" style="background:#BFA14A"></div>
+    <span class="palette-name">Gold</span>
+  </div>
+  <div class="palette-swatch">
+    <div class="palette-dot" style="background:#C4876B"></div>
+    <span class="palette-name">Clay</span>
+  </div>
+  <div class="palette-swatch">
+    <div class="palette-dot" style="background:#5E8E6B"></div>
+    <span class="palette-name">Sage</span>
+  </div>
+  <div class="palette-swatch">
+    <div class="palette-dot" style="background:#7EA882"></div>
+    <span class="palette-name">Soft Green</span>
+  </div>
+  <div class="palette-swatch">
+    <div class="palette-dot" style="background:#B07272"></div>
+    <span class="palette-name">Dusty Rose</span>
+  </div>
+  <div class="palette-swatch">
+    <div class="palette-dot" style="background:#FAF8F5"></div>
+    <span class="palette-name">Cream</span>
+  </div>
+</div>
+
+<!-- Phone Frame -->
+<div class="phone">
+  <div class="phone-notch"></div>
+  <div class="status-bar">
+    <span>9:41</span>
+    <span>Feb 17, 2026 · 3:24 PM</span>
+  </div>
+
+  <!-- Video Player with Skeleton -->
+  <div class="video-area">
+    <div class="court-lines"></div>
+
+    <svg class="skeleton-svg" viewBox="0 0 393 280">
+      <!-- Torso — correct form -->
+      <line class="skel-bone correct" x1="175" y1="95" x2="218" y2="95"/>
+      <line class="skel-bone correct" x1="175" y1="95" x2="170" y2="160"/>
+      <line class="skel-bone correct" x1="218" y1="95" x2="223" y2="160"/>
+      <line class="skel-bone correct" x1="170" y1="160" x2="223" y2="160"/>
+      <!-- Head -->
+      <line class="skel-bone" x1="196" y1="75" x2="175" y2="95"/>
+      <line class="skel-bone" x1="196" y1="75" x2="218" y2="95"/>
+      <!-- Left arm -->
+      <line class="skel-bone" x1="175" y1="95" x2="150" y2="130"/>
+      <line class="skel-bone" x1="150" y1="130" x2="130" y2="112"/>
+      <!-- Right arm — needs attention (clay highlight) -->
+      <line class="skel-bone warn" x1="218" y1="95" x2="260" y2="115"/>
+      <line class="skel-bone warn" x1="260" y1="115" x2="300" y2="100"/>
+      <!-- Left leg -->
+      <line class="skel-bone correct" x1="170" y1="160" x2="155" y2="210"/>
+      <line class="skel-bone correct" x1="155" y1="210" x2="148" y2="258"/>
+      <!-- Right leg -->
+      <line class="skel-bone correct" x1="223" y1="160" x2="240" y2="212"/>
+      <line class="skel-bone correct" x1="240" y1="212" x2="245" y2="260"/>
+
+      <!-- Joints -->
+      <circle class="skel-joint" cx="196" cy="75" r="4"/>
+      <circle class="skel-joint" cx="175" cy="95" r="3.5"/>
+      <circle class="skel-joint" cx="218" cy="95" r="3.5"/>
+      <circle class="skel-joint" cx="150" cy="130" r="3"/>
+      <circle class="skel-joint" cx="130" cy="112" r="3"/>
+      <circle class="skel-joint warn" cx="260" cy="115" r="4.5"/>
+      <circle class="skel-joint warn" cx="300" cy="100" r="4.5"/>
+      <circle class="skel-joint" cx="170" cy="160" r="3"/>
+      <circle class="skel-joint" cx="223" cy="160" r="3"/>
+      <circle class="skel-joint" cx="155" cy="210" r="3"/>
+      <circle class="skel-joint" cx="148" cy="258" r="2.5"/>
+      <circle class="skel-joint" cx="240" cy="212" r="3"/>
+      <circle class="skel-joint" cx="245" cy="260" r="2.5"/>
+
+      <!-- Trajectory -->
+      <path class="trajectory-path" d="M300,100 Q322,68 342,78 Q358,88 362,52"/>
+    </svg>
+
+    <div class="angle-label" style="top:106px; left:268px;">142° <span style="opacity:0.45">(ideal: 155–170°)</span></div>
+
+    <button class="overlay-toggle">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      Overlay
+    </button>
+  </div>
+
+  <!-- Stroke Timeline -->
+  <div class="stroke-timeline">
+    <div class="section-label">Stroke Timeline</div>
+    <div class="stroke-markers">
+      <div class="stroke-marker active"><span class="icon">→</span><span class="grade">B+</span></div>
+      <div class="stroke-marker"><span class="icon">←</span><span class="grade grade-excellent">A-</span></div>
+      <div class="stroke-marker"><span class="icon">↑</span><span class="grade grade-good">B</span></div>
+      <div class="stroke-marker"><span class="icon">→</span><span class="grade grade-fair">C+</span></div>
+      <div class="stroke-marker"><span class="icon">←</span><span class="grade grade-excellent">B+</span></div>
+      <div class="stroke-marker"><span class="icon">⚡</span><span class="grade grade-excellent">A</span></div>
+      <div class="stroke-marker"><span class="icon">→</span><span class="grade grade-good">B-</span></div>
+      <div class="stroke-marker"><span class="icon">↑</span><span class="grade grade-fair">B</span></div>
+    </div>
+  </div>
+
+  <!-- Session Summary -->
+  <div class="session-summary">
+    <div class="summary-top">
+      <div>
+        <div class="session-grade-label">Session Grade</div>
+        <div class="session-grade">B+</div>
+      </div>
+      <div class="session-meta">
+        <span>⏱ 12m 34s</span>
+        <span>🎾 14 strokes</span>
+      </div>
+    </div>
+    <div class="priority-banner">
+      <div class="priority-icon">◎</div>
+      <span><strong>Top Priority:</strong> Follow-through extension on forehand — extend through the ball</span>
+    </div>
+  </div>
+
+  <!-- Coaching Cards -->
+  <div class="coaching-cards">
+
+    <!-- Forehand — B+ -->
+    <div class="coaching-card open">
+      <div class="card-header" onclick="this.parentElement.classList.toggle('open')">
+        <div class="stroke-icon-box icon-green">→</div>
+        <div class="stroke-name">
+          <strong>Forehand</strong>
+          <small>34.2s</small>
+        </div>
+        <div class="card-grade grade-b">B+</div>
+        <div class="card-chevron">▾</div>
+      </div>
+      <div class="card-body">
+        <div class="mechanic-row">
+          <div class="mechanic-row-top">
+            <span class="mechanic-name">Backswing</span>
+            <div class="score-bar" data-score="7"></div>
+          </div>
+          <div class="mechanic-note">Good shoulder turn. Racket drops slightly below ideal plane at the back of the swing.</div>
+        </div>
+        <div class="mechanic-row">
+          <div class="mechanic-row-top">
+            <span class="mechanic-name">Contact Point</span>
+            <div class="score-bar" data-score="9"></div>
+          </div>
+          <div class="mechanic-note">Excellent front-foot contact with proper weight transfer. Keep this up.</div>
+        </div>
+        <div class="mechanic-row">
+          <div class="mechanic-row-top">
+            <span class="mechanic-name">Follow-Through</span>
+            <div class="score-bar" data-score="5"></div>
+          </div>
+          <div class="mechanic-note">Cut short after contact — extend through the ball and let the racket finish over your shoulder.</div>
+        </div>
+        <div class="mechanic-row">
+          <div class="mechanic-row-top">
+            <span class="mechanic-name">Stance</span>
+            <div class="score-bar" data-score="7"></div>
+          </div>
+          <div class="mechanic-note">Open stance is fine for this shot. Recovery step back to center could be quicker.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Backhand — A- -->
+    <div class="coaching-card">
+      <div class="card-header" onclick="this.parentElement.classList.toggle('open')">
+        <div class="stroke-icon-box icon-green">←</div>
+        <div class="stroke-name">
+          <strong>Backhand</strong>
+          <small>41.7s</small>
+        </div>
+        <div class="card-grade grade-a">A-</div>
+        <div class="card-chevron">▾</div>
+      </div>
+      <div class="card-body">
+        <div class="mechanic-row">
+          <div class="mechanic-row-top">
+            <span class="mechanic-name">Backswing</span>
+            <div class="score-bar" data-score="8"></div>
+          </div>
+          <div class="mechanic-note">Strong unit turn with compact preparation. Textbook two-handed setup.</div>
+        </div>
+        <div class="mechanic-row">
+          <div class="mechanic-row-top">
+            <span class="mechanic-name">Contact Point</span>
+            <div class="score-bar" data-score="9"></div>
+          </div>
+          <div class="mechanic-note">Slightly in front of the body with full extension. Excellent racket face angle.</div>
+        </div>
+        <div class="mechanic-row">
+          <div class="mechanic-row-top">
+            <span class="mechanic-name">Follow-Through</span>
+            <div class="score-bar" data-score="8"></div>
+          </div>
+          <div class="mechanic-note">Full extension through the ball. Natural deceleration with proper finish.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Serve — B -->
+    <div class="coaching-card">
+      <div class="card-header" onclick="this.parentElement.classList.toggle('open')">
+        <div class="stroke-icon-box icon-gold">↑</div>
+        <div class="stroke-name">
+          <strong>Serve</strong>
+          <small>58.3s</small>
+        </div>
+        <div class="card-grade grade-b">B</div>
+        <div class="card-chevron">▾</div>
+      </div>
+      <div class="card-body">
+        <div class="mechanic-row">
+          <div class="mechanic-row-top">
+            <span class="mechanic-name">Toss</span>
+            <div class="score-bar" data-score="6"></div>
+          </div>
+          <div class="mechanic-note">Toss drifts slightly behind. Aim for 1 o'clock position, releasing at eye level.</div>
+        </div>
+        <div class="mechanic-row">
+          <div class="mechanic-row-top">
+            <span class="mechanic-name">Trophy Position</span>
+            <div class="score-bar" data-score="7"></div>
+          </div>
+          <div class="mechanic-note">Good arm bend at the top. Racket drop could go a bit deeper for more power.</div>
+        </div>
+        <div class="mechanic-row">
+          <div class="mechanic-row-top">
+            <span class="mechanic-name">Contact Point</span>
+            <div class="score-bar" data-score="7"></div>
+          </div>
+          <div class="mechanic-note">Good height at contact. Pronation could be more aggressive for added pace.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Volley — C+ -->
+    <div class="coaching-card">
+      <div class="card-header" onclick="this.parentElement.classList.toggle('open')">
+        <div class="stroke-icon-box icon-clay">⚡</div>
+        <div class="stroke-name">
+          <strong>Volley</strong>
+          <small>72.1s</small>
+        </div>
+        <div class="card-grade grade-c">C+</div>
+        <div class="card-chevron">▾</div>
+      </div>
+      <div class="card-body">
+        <div class="mechanic-row">
+          <div class="mechanic-row-top">
+            <span class="mechanic-name">Split Step</span>
+            <div class="score-bar" data-score="4"></div>
+          </div>
+          <div class="mechanic-note">Late split step — time it to land as your opponent makes contact with the ball.</div>
+        </div>
+        <div class="mechanic-row">
+          <div class="mechanic-row-top">
+            <span class="mechanic-name">Contact Point</span>
+            <div class="score-bar" data-score="6"></div>
+          </div>
+          <div class="mechanic-note">Contact is slightly too close to the body. Punch forward to meet the ball earlier.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Tactical Notes -->
+  <div class="tactical-notes">
+    <div class="section-label">Tactical Notes</div>
+    <div class="tac-note">
+      <div class="tac-bulb">💡</div>
+      <span>73% of forehands went crosscourt — add more down-the-line variety to keep opponents guessing.</span>
+    </div>
+    <div class="tac-note">
+      <div class="tac-bulb">💡</div>
+      <span>Recovery to center is 0.4s slower after wide shots. Focus on split-step timing after each stroke.</span>
+    </div>
+  </div>
+
+  <!-- Tab Bar -->
+  <div class="tab-bar">
+    <div class="tab-item">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      Record
+    </div>
+    <div class="tab-item active">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 7h8M8 12h8M8 17h4"/></svg>
+      Sessions
+    </div>
+    <div class="tab-item">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Progress
+    </div>
+    <div class="tab-item">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
+      Profile
+    </div>
+  </div>
+</div>
+
+<!-- Score Legend -->
+<div class="legend">
+  <h3>Score Color Palette</h3>
+  <div class="legend-row">
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#5E8E6B"></div>
+      Excellent (8–10)
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#7EA882"></div>
+      Good (7)
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#BFA14A"></div>
+      Developing (5–6)
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#C4876B"></div>
+      Needs Work (3–4)
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#B07272"></div>
+      Significant (1–2)
+    </div>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.score-bar').forEach(bar => {
+  const score = parseInt(bar.dataset.score);
+  let tier, color;
+  if (score >= 8)      { tier = 'excellent'; }
+  else if (score >= 7) { tier = 'good'; }
+  else if (score >= 5) { tier = 'fair'; }
+  else if (score >= 3) { tier = 'needs-work'; }
+  else                 { tier = 'poor'; }
+
+  let html = '';
+  for (let i = 1; i <= 10; i++) {
+    html += `<div class="bar ${i <= score ? 'filled ' + tier : ''}"></div>`;
+  }
+  html += `<span class="score-val ${tier}">${score}</span>`;
+  bar.innerHTML = html;
+});
+</script>
+</body>
+</html>

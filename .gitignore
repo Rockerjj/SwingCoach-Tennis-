@@ -1,0 +1,61 @@
+.DS_Store
+**/.DS_Store
+
+# Office temp files
+~$*
+
+# Logs
+*.log
+
+# Node
+node_modules/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Local env files (never commit secrets)
+.env
+.env.*
+backend/.env
+!.env.example
+!backend/.env.example
+
+# iOS / Xcode
+DerivedData/
+build/
+*.xcuserstate
+*.xccheckout
+*.xcscmblueprint
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+*.mobileprovision
+*.p12
+
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+xcuserdata/
+
+# Swift Package Manager
+.swiftpm/
+
+# CocoaPods / Carthage (only ignore if you don't commit dependencies)
+Pods/
+Carthage/Build/
+
+# JetBrains / VS Code
+.idea/
+.vscode/
+
+# Local backend artifacts
+backend/venv/
+
