@@ -7,8 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		00112233445566778899AABB /* VoiceFeedbackService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18293A4B5C6D7E8F90123456 /* VoiceFeedbackService.swift */; };
 		0D83380C0726F8FAC84A69EF /* CameraService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1178CA044CC0FB91A44C5E93 /* CameraService.swift */; };
 		107002CAB86804715313BF01 /* PoseEstimationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49267FDC45CED8A3D7D0A39C /* PoseEstimationService.swift */; };
+		112233445566778899AABBCC /* ZoneIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60718293A4B5C6D7E8F9012 /* ZoneIndicator.swift */; };
 		13E7AA8A66850D145A43ECFD /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = D81B2EF2791EB8E8CBBC9844 /* Supabase */; };
 		1822FE5E938565BF35FEA4DC /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F23CBB4790283E7255B97A81 /* OnboardingView.swift */; };
 		1A84D3164141882727CD9176 /* RecordViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4960F25598CE85C397FACA11 /* RecordViewModel.swift */; };
@@ -25,33 +27,52 @@
 		7EF0B8D994E9ACA72455B562 /* Color+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EA2B0FFE2D96B5BF4340F4F /* Color+Hex.swift */; };
 		86A3C62109D4AD57D454C6B9 /* TennisCoachAIApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E911C9327B35DD2F9E2E9B69 /* TennisCoachAIApp.swift */; };
 		8842870271265EF15B9C11FD /* SessionModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40D123A45A82627CF563636E /* SessionModel.swift */; };
+		8C2F4CFC2F4FECAA00E1AAC8 /* AnalyticsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C2F4CFB2F4FECAA00E1AAC8 /* AnalyticsService.swift */; };
+		8C2F4CFE2F4FED0E00E1AAC8 /* LiveSwingAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C2F4CFD2F4FED0E00E1AAC8 /* LiveSwingAnalyzer.swift */; };
+		8C2F4D002F4FED2E00E1AAC8 /* LiveFeedbackOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C2F4CFF2F4FED2E00E1AAC8 /* LiveFeedbackOverlayView.swift */; };
+		8C2F4D022F4FED9900E1AAC8 /* FeedbackPromptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C2F4D012F4FED9900E1AAC8 /* FeedbackPromptView.swift */; };
+		8C2F4D042F4FEDAF00E1AAC8 /* FeedbackService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C2F4D032F4FEDAF00E1AAC8 /* FeedbackService.swift */; };
+		8C2F4D062F4FEDBC00E1AAC8 /* ShareService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C2F4D052F4FEDBC00E1AAC8 /* ShareService.swift */; };
+		8C2F4D082F4FEDC100E1AAC8 /* StrokeDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C2F4D072F4FEDC000E1AAC8 /* StrokeDetector.swift */; };
+		8C2F4D0D2F4FEDC600E1AAC8 /* federer_forehand.json in Resources */ = {isa = PBXBuildFile; fileRef = 8C2F4D0A2F4FEDC300E1AAC8 /* federer_forehand.json */; };
+		8C2F4D0E2F4FEDC700E1AAC8 /* djokovic_backhand.json in Resources */ = {isa = PBXBuildFile; fileRef = 8C2F4D0B2F4FEDC400E1AAC8 /* djokovic_backhand.json */; };
+		8C2F4D0F2F4FEDC800E1AAC8 /* serena_serve.json in Resources */ = {isa = PBXBuildFile; fileRef = 8C2F4D0C2F4FEDC500E1AAC8 /* serena_serve.json */; };
 		A703F054BF1A1B9E13F930B7 /* StrokeAnalysisModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB6E0788D7BB3E1F1384331F /* StrokeAnalysisModel.swift */; };
+		AA11BB22CC33DD44EE55FF66 /* PhaseDetailCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F60718293A4B5C6D /* PhaseDetailCard.swift */; };
 		B0690A97E01152FF7F63CD5B /* RecordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 037050ED16830AFD0E9BD396 /* RecordView.swift */; };
 		B4D471051030F78EE44EEA04 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = C971C447C6E2BB48FA559599 /* Constants.swift */; };
+		BB22CC33DD44EE55FF667788 /* PhaseTimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D4E5F60718293A4B5C6D7E /* PhaseTimelineView.swift */; };
 		C0164107779604E6C1C6DE63 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DA478BC3CEF1162404A24B6 /* MainTabView.swift */; };
 		C152F00278B44D916D63D5FA /* AnalysisResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0438B83108E7D844E1DCCE03 /* AnalysisResponse.swift */; };
+		CC33DD44EE55FF66778899AA /* ProComparisonService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0718293A4B5C6D7E8F901234 /* ProComparisonService.swift */; };
 		D177A1B329E62FF5E25469B0 /* CourtVisionTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09AE3F4A857661269705940C /* CourtVisionTheme.swift */; };
+		DD44EE55FF66778899AABBCC /* ProComparisonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E5F60718293A4B5C6D7E8F /* ProComparisonView.swift */; };
 		E501EB99BCC78F0B9A64EBD4 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138C83AF4499BA5F99F11D20 /* RootView.swift */; };
 		EB8C507C2E3B4F2DFD4062BE /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D77EB9C27573ECE7231F7C2 /* SignInView.swift */; };
+		EE55FF66778899AABBCCDDEE /* SwingAnalysisReportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 293A4B5C6D7E8F9012345678 /* SwingAnalysisReportView.swift */; };
 		EF3E6D025C023539C8B423D9 /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36496465703C75EA385095CC /* DesignSystem.swift */; };
 		F4C6DADA264A2796241C520A /* SubscriptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29CD1C197EDC02AE4C9B2774 /* SubscriptionService.swift */; };
 		F845E4B3CB920EBC6E8F59E7 /* ProgressDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1A96001AEA3463B7B77FDB4 /* ProgressDashboardView.swift */; };
 		F9ADA580D283C5960F058D3B /* AnalysisResultsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8F095AC820FA1A2DDCC6926 /* AnalysisResultsView.swift */; };
 		F9BE1FD16D9EB42C09F5FFDD /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 115767D6C4C32B6F024D9EBD /* ProfileView.swift */; };
 		FA2BB4B97BA9817FFFC2EA44 /* AnalysisViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA9E57697215A1164E49B11C /* AnalysisViewModel.swift */; };
+		FF66778899AABBCCDDEE0011 /* SwingPathOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5F60718293A4B5C6D7E8F90 /* SwingPathOverlayView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		030895E85E0D5061DB3E627C /* PoseData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoseData.swift; sourceTree = "<group>"; };
 		037050ED16830AFD0E9BD396 /* RecordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordView.swift; sourceTree = "<group>"; };
 		0438B83108E7D844E1DCCE03 /* AnalysisResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisResponse.swift; sourceTree = "<group>"; };
+		0718293A4B5C6D7E8F901234 /* ProComparisonService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProComparisonService.swift; sourceTree = "<group>"; };
 		09AE3F4A857661269705940C /* CourtVisionTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourtVisionTheme.swift; sourceTree = "<group>"; };
 		0DA478BC3CEF1162404A24B6 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
 		115767D6C4C32B6F024D9EBD /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		1178CA044CC0FB91A44C5E93 /* CameraService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraService.swift; sourceTree = "<group>"; };
 		138C83AF4499BA5F99F11D20 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		18293A4B5C6D7E8F90123456 /* VoiceFeedbackService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceFeedbackService.swift; sourceTree = "<group>"; };
 		1F2237240D4AD0C7EB490E54 /* UserProfileModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileModel.swift; sourceTree = "<group>"; };
 		28294168206169D23C70C207 /* TennisCoachAI.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TennisCoachAI.entitlements; sourceTree = "<group>"; };
+		293A4B5C6D7E8F9012345678 /* SwingAnalysisReportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwingAnalysisReportView.swift; sourceTree = "<group>"; };
 		298D55EDFF8F0ADA49E289F1 /* SessionsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionsListView.swift; sourceTree = "<group>"; };
 		29CD1C197EDC02AE4C9B2774 /* SubscriptionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionService.swift; sourceTree = "<group>"; };
 		2D24ED7DD6614BA22323BAA2 /* GrandSlamTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GrandSlamTheme.swift; sourceTree = "<group>"; };
@@ -64,16 +85,31 @@
 		49267FDC45CED8A3D7D0A39C /* PoseEstimationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoseEstimationService.swift; sourceTree = "<group>"; };
 		4960F25598CE85C397FACA11 /* RecordViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordViewModel.swift; sourceTree = "<group>"; };
 		4EA2B0FFE2D96B5BF4340F4F /* Color+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Hex.swift"; sourceTree = "<group>"; };
+		8C2F4CFB2F4FECAA00E1AAC8 /* AnalyticsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsService.swift; sourceTree = "<group>"; };
+		8C2F4CFD2F4FED0E00E1AAC8 /* LiveSwingAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveSwingAnalyzer.swift; sourceTree = "<group>"; };
+		8C2F4CFF2F4FED2E00E1AAC8 /* LiveFeedbackOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveFeedbackOverlayView.swift; sourceTree = "<group>"; };
+		8C2F4D012F4FED9900E1AAC8 /* FeedbackPromptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackPromptView.swift; sourceTree = "<group>"; };
+		8C2F4D032F4FEDAF00E1AAC8 /* FeedbackService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackService.swift; sourceTree = "<group>"; };
+		8C2F4D052F4FEDBC00E1AAC8 /* ShareService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareService.swift; sourceTree = "<group>"; };
+		8C2F4D072F4FEDC000E1AAC8 /* StrokeDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StrokeDetector.swift; sourceTree = "<group>"; };
+		8C2F4D0A2F4FEDC300E1AAC8 /* federer_forehand.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = federer_forehand.json; sourceTree = "<group>"; };
+		8C2F4D0B2F4FEDC400E1AAC8 /* djokovic_backhand.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = djokovic_backhand.json; sourceTree = "<group>"; };
+		8C2F4D0C2F4FEDC500E1AAC8 /* serena_serve.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = serena_serve.json; sourceTree = "<group>"; };
 		A54536A30AE5C2A992D2ECF6 /* TennisCoachAI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TennisCoachAI.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AB6E0788D7BB3E1F1384331F /* StrokeAnalysisModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StrokeAnalysisModel.swift; sourceTree = "<group>"; };
+		B2C3D4E5F60718293A4B5C6D /* PhaseDetailCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhaseDetailCard.swift; sourceTree = "<group>"; };
+		C3D4E5F60718293A4B5C6D7E /* PhaseTimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhaseTimelineView.swift; sourceTree = "<group>"; };
 		C8F095AC820FA1A2DDCC6926 /* AnalysisResultsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisResultsView.swift; sourceTree = "<group>"; };
 		C971C447C6E2BB48FA559599 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		CA9E57697215A1164E49B11C /* AnalysisViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisViewModel.swift; sourceTree = "<group>"; };
+		D4E5F60718293A4B5C6D7E8F /* ProComparisonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProComparisonView.swift; sourceTree = "<group>"; };
 		D78441C16F3B16C11DD5BE2C /* ProgressSnapshotModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressSnapshotModel.swift; sourceTree = "<group>"; };
 		E1A96001AEA3463B7B77FDB4 /* ProgressDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressDashboardView.swift; sourceTree = "<group>"; };
+		E5F60718293A4B5C6D7E8F90 /* SwingPathOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwingPathOverlayView.swift; sourceTree = "<group>"; };
 		E911C9327B35DD2F9E2E9B69 /* TennisCoachAIApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennisCoachAIApp.swift; sourceTree = "<group>"; };
 		EDC9B24269FED5F6451B629C /* OverlayRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayRenderer.swift; sourceTree = "<group>"; };
 		F23CBB4790283E7255B97A81 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		F60718293A4B5C6D7E8F9012 /* ZoneIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoneIndicator.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -137,6 +173,7 @@
 		71C5E86E438B89022647A55B /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				A1B2C3D4E5F60718293A4B5C /* Components */,
 				EE8DA39001B4C250F21FF77D /* Onboarding */,
 				92E99291D2599B8506E87423 /* Profile */,
 				E611E073C4AC76332F528D8A /* Progress */,
@@ -149,6 +186,7 @@
 		74844FE71B40A042827AB45F /* Record */ = {
 			isa = PBXGroup;
 			children = (
+				8C2F4CFF2F4FED2E00E1AAC8 /* LiveFeedbackOverlayView.swift */,
 				037050ED16830AFD0E9BD396 /* RecordView.swift */,
 				2D77EB9C27573ECE7231F7C2 /* SignInView.swift */,
 			);
@@ -184,15 +222,35 @@
 			);
 			sourceTree = "<group>";
 		};
+		A1B2C3D4E5F60718293A4B5C /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				8C2F4D012F4FED9900E1AAC8 /* FeedbackPromptView.swift */,
+				B2C3D4E5F60718293A4B5C6D /* PhaseDetailCard.swift */,
+				C3D4E5F60718293A4B5C6D7E /* PhaseTimelineView.swift */,
+				D4E5F60718293A4B5C6D7E8F /* ProComparisonView.swift */,
+				E5F60718293A4B5C6D7E8F90 /* SwingPathOverlayView.swift */,
+				F60718293A4B5C6D7E8F9012 /* ZoneIndicator.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
 		BE9F55543E206B86494420CB /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				8C2F4D052F4FEDBC00E1AAC8 /* ShareService.swift */,
+				8C2F4D032F4FEDAF00E1AAC8 /* FeedbackService.swift */,
+				8C2F4CFD2F4FED0E00E1AAC8 /* LiveSwingAnalyzer.swift */,
+				8C2F4CFB2F4FECAA00E1AAC8 /* AnalyticsService.swift */,
 				2DB77BBF4168C24EA4D6733E /* AnalysisAPIService.swift */,
 				3E9B44BA5099D073295DC9A6 /* AuthService.swift */,
 				1178CA044CC0FB91A44C5E93 /* CameraService.swift */,
 				EDC9B24269FED5F6451B629C /* OverlayRenderer.swift */,
 				49267FDC45CED8A3D7D0A39C /* PoseEstimationService.swift */,
+				0718293A4B5C6D7E8F901234 /* ProComparisonService.swift */,
+				8C2F4D072F4FEDC000E1AAC8 /* StrokeDetector.swift */,
 				29CD1C197EDC02AE4C9B2774 /* SubscriptionService.swift */,
+				18293A4B5C6D7E8F90123456 /* VoiceFeedbackService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -200,9 +258,20 @@
 		D013649B1A02B2F2156A0401 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				8C2F4D092F4FEDC200E1AAC8 /* ProPoseData */,
 				28294168206169D23C70C207 /* TennisCoachAI.entitlements */,
 			);
 			path = Resources;
+			sourceTree = "<group>";
+		};
+		8C2F4D092F4FEDC200E1AAC8 /* ProPoseData */ = {
+			isa = PBXGroup;
+			children = (
+				8C2F4D0B2F4FEDC400E1AAC8 /* djokovic_backhand.json */,
+				8C2F4D0A2F4FEDC300E1AAC8 /* federer_forehand.json */,
+				8C2F4D0C2F4FEDC500E1AAC8 /* serena_serve.json */,
+			);
+			path = ProPoseData;
 			sourceTree = "<group>";
 		};
 		DCCC22A1D6A4C23062106D41 /* Products */ = {
@@ -243,6 +312,7 @@
 			children = (
 				C8F095AC820FA1A2DDCC6926 /* AnalysisResultsView.swift */,
 				298D55EDFF8F0ADA49E289F1 /* SessionsListView.swift */,
+				293A4B5C6D7E8F9012345678 /* SwingAnalysisReportView.swift */,
 			);
 			path = Sessions;
 			sourceTree = "<group>";
@@ -256,6 +326,7 @@
 			buildPhases = (
 				11B865545C1E5968743BF341 /* Sources */,
 				FE03102D942F55D36E8CA619 /* Frameworks */,
+				8C2F4D102F4FEDC900E1AAC8 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -306,6 +377,19 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		8C2F4D102F4FEDC900E1AAC8 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8C2F4D0D2F4FEDC600E1AAC8 /* federer_forehand.json in Resources */,
+				8C2F4D0E2F4FEDC700E1AAC8 /* djokovic_backhand.json in Resources */,
+				8C2F4D0F2F4FEDC800E1AAC8 /* serena_serve.json in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		11B865545C1E5968743BF341 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -315,16 +399,20 @@
 				C152F00278B44D916D63D5FA /* AnalysisResponse.swift in Sources */,
 				F9ADA580D283C5960F058D3B /* AnalysisResultsView.swift in Sources */,
 				FA2BB4B97BA9817FFFC2EA44 /* AnalysisViewModel.swift in Sources */,
+				8C2F4D002F4FED2E00E1AAC8 /* LiveFeedbackOverlayView.swift in Sources */,
 				27C93AFBE7CAA15961E80847 /* AuthService.swift in Sources */,
 				0D83380C0726F8FAC84A69EF /* CameraService.swift in Sources */,
 				7EF0B8D994E9ACA72455B562 /* Color+Hex.swift in Sources */,
 				B4D471051030F78EE44EEA04 /* Constants.swift in Sources */,
+				8C2F4CFE2F4FED0E00E1AAC8 /* LiveSwingAnalyzer.swift in Sources */,
 				D177A1B329E62FF5E25469B0 /* CourtVisionTheme.swift in Sources */,
 				EF3E6D025C023539C8B423D9 /* DesignSystem.swift in Sources */,
 				3C82376BE2C1CE5B1A18B3A5 /* GrandSlamTheme.swift in Sources */,
+				8C2F4D062F4FEDBC00E1AAC8 /* ShareService.swift in Sources */,
 				C0164107779604E6C1C6DE63 /* MainTabView.swift in Sources */,
 				1822FE5E938565BF35FEA4DC /* OnboardingView.swift in Sources */,
 				776EE0871974A4F2A91F0FD0 /* OverlayRenderer.swift in Sources */,
+				8C2F4CFC2F4FECAA00E1AAC8 /* AnalyticsService.swift in Sources */,
 				42497C0B5CF2B0B0E8751F66 /* PoseData.swift in Sources */,
 				107002CAB86804715313BF01 /* PoseEstimationService.swift in Sources */,
 				F9BE1FD16D9EB42C09F5FFDD /* ProfileView.swift in Sources */,
@@ -338,9 +426,20 @@
 				1CF8DA588DB3A083BE27308C /* SessionsListView.swift in Sources */,
 				EB8C507C2E3B4F2DFD4062BE /* SignInView.swift in Sources */,
 				A703F054BF1A1B9E13F930B7 /* StrokeAnalysisModel.swift in Sources */,
+				8C2F4D082F4FEDC100E1AAC8 /* StrokeDetector.swift in Sources */,
 				F4C6DADA264A2796241C520A /* SubscriptionService.swift in Sources */,
 				86A3C62109D4AD57D454C6B9 /* TennisCoachAIApp.swift in Sources */,
 				1DBA1549698D38857D3C7609 /* UserProfileModel.swift in Sources */,
+				8C2F4D022F4FED9900E1AAC8 /* FeedbackPromptView.swift in Sources */,
+				AA11BB22CC33DD44EE55FF66 /* PhaseDetailCard.swift in Sources */,
+				BB22CC33DD44EE55FF667788 /* PhaseTimelineView.swift in Sources */,
+				8C2F4D042F4FEDAF00E1AAC8 /* FeedbackService.swift in Sources */,
+				CC33DD44EE55FF66778899AA /* ProComparisonService.swift in Sources */,
+				DD44EE55FF66778899AABBCC /* ProComparisonView.swift in Sources */,
+				EE55FF66778899AABBCCDDEE /* SwingAnalysisReportView.swift in Sources */,
+				FF66778899AABBCCDDEE0011 /* SwingPathOverlayView.swift in Sources */,
+				00112233445566778899AABB /* VoiceFeedbackService.swift in Sources */,
+				112233445566778899AABBCC /* ZoneIndicator.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

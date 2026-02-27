@@ -30,6 +30,8 @@ struct StrokeResult: Codable, Identifiable {
     let gradingRationale: String?
     let nextRepsPlan: String?
     let verifiedSources: [String]?
+    let phaseBreakdown: PhaseBreakdown?
+    let analysisCategories: [AnalysisCategory]?
 
     enum CodingKeys: String, CodingKey {
         case type
@@ -40,5 +42,7 @@ struct StrokeResult: Codable, Identifiable {
         case gradingRationale = "grading_rationale"
         case nextRepsPlan = "next_reps_plan"
         case verifiedSources = "verified_sources"
+        case phaseBreakdown = "phase_breakdown"
+        case analysisCategories = "analysis_categories"
     }
 }

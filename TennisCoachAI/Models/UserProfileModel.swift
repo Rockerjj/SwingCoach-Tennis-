@@ -52,6 +52,36 @@ enum SkillLevel: String, Codable, CaseIterable {
     }
 }
 
+enum Handedness: String, Codable, CaseIterable {
+    case right = "right"
+    case left = "left"
+
+    var displayName: String {
+        rawValue.capitalized
+    }
+
+    var dominantWrist: String {
+        self == .right ? "right_wrist" : "left_wrist"
+    }
+
+    var dominantElbow: String {
+        self == .right ? "right_elbow" : "left_elbow"
+    }
+
+    var dominantShoulder: String {
+        self == .right ? "right_shoulder" : "left_shoulder"
+    }
+
+    static var current: Handedness {
+        let stored = UserDefaults.standard.string(forKey: "handedness") ?? "right"
+        return Handedness(rawValue: stored) ?? .right
+    }
+
+    static func save(_ hand: Handedness) {
+        UserDefaults.standard.set(hand.rawValue, forKey: "handedness")
+    }
+}
+
 enum SubscriptionTier: String, Codable {
     case free = "free"
     case monthly = "monthly"

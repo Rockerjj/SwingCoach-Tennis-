@@ -64,7 +64,9 @@ final class AnalysisViewModel: ObservableObject {
                 fps: AppConstants.Camera.processingFPS,
                 frames: extraction.frames,
                 keyFrameTimestamps: extraction.keyFrames.map(\.timestamp),
-                skillLevel: UserDefaults.standard.string(forKey: "skillLevel") ?? "beginner"
+                skillLevel: UserDefaults.standard.string(forKey: "skillLevel") ?? "beginner",
+                handedness: Handedness.current.rawValue,
+                detectedStrokes: extraction.detectedStrokes
             )
 
             // Backend debug mode expects any non-empty bearer token.
@@ -125,6 +127,8 @@ final class AnalysisViewModel: ObservableObject {
             model.gradingRationale = stroke.gradingRationale
             model.nextRepsPlan = stroke.nextRepsPlan
             model.verifiedSourcesJSON = try? JSONEncoder().encode(stroke.verifiedSources ?? [])
+            model.phaseBreakdownJSON = try? JSONEncoder().encode(stroke.phaseBreakdown)
+            model.analysisCategoriesJSON = try? JSONEncoder().encode(stroke.analysisCategories)
             model.session = session
             context.insert(model)
         }

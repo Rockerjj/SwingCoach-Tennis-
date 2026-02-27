@@ -31,6 +31,8 @@ struct SessionPosePayload: Codable {
     let frames: [FramePoseData]
     let keyFrameTimestamps: [Double]
     let skillLevel: String
+    let handedness: String
+    let detectedStrokes: [DetectedStroke]
 
     enum CodingKeys: String, CodingKey {
         case sessionID = "session_id"
@@ -39,6 +41,8 @@ struct SessionPosePayload: Codable {
         case frames
         case keyFrameTimestamps = "key_frame_timestamps"
         case skillLevel = "skill_level"
+        case handedness
+        case detectedStrokes = "detected_strokes"
     }
 }
 

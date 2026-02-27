@@ -1,4 +1,5 @@
 import AVFoundation
+import AVFAudio
 import UIKit
 import Combine
 
@@ -53,11 +54,23 @@ final class CameraService: NSObject, ObservableObject {
 
     // MARK: - Session Setup
 
+    private func configureAudioSession() {
+        let audioSession = AVAudioSession.sharedInstance()
+        do {
+            try audioSession.setCategory(.playAndRecord, mode: .videoRecording, options: [.defaultToSpeaker, .allowBluetooth])
+            try audioSession.setActive(true)
+        } catch {
+            print("Audio session configuration failed: \(error)")
+        }
+    }
+
     @MainActor
     func setupSession() async throws {
         guard await requestAuthorization() else {
             throw CameraError.unauthorized
         }
+
+        configureAudioSession()
 
         let session = AVCaptureSession()
         session.sessionPreset = .high

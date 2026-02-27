@@ -30,6 +30,7 @@ final class PoseEstimationService: ObservableObject {
         let frames: [FramePoseData]
         let keyFrames: [(timestamp: Double, image: UIImage)]
         let duration: Double
+        let detectedStrokes: [DetectedStroke]
     }
 
     // MARK: - Main Extraction Pipeline
@@ -72,11 +73,12 @@ final class PoseEstimationService: ObservableObject {
         var keyFrames: [(timestamp: Double, image: UIImage)] = []
         var frameIndex = 0
         var previousWristVelocity: Double = 0
+        var lastStrokeTimestamp: Double = -10
+        var recentVelocities: [Double] = []
 
         while reader.status == .reading, let sampleBuffer = readerOutput.copyNextSampleBuffer() {
             frameIndex += 1
 
-            // Skip frames to match target processing FPS
             if frameIndex % sampleInterval != 0 { continue }
             let currentFrameIndex = frameIndex
 
@@ -87,14 +89,20 @@ final class PoseEstimationService: ObservableObject {
             if let poseData = try await detectPose(in: pixelBuffer, frameIndex: currentFrameIndex, timestamp: timestamp) {
                 allFrames.append(poseData)
 
-                // Detect stroke apex: sudden deceleration of wrist after high velocity
                 let wristVelocity = calculateWristVelocity(current: poseData, previous: allFrames.dropLast().last)
-                let isStrokeApex = previousWristVelocity > 0.05 && wristVelocity < previousWristVelocity * 0.5
+                recentVelocities.append(wristVelocity)
+                if recentVelocities.count > 10 { recentVelocities.removeFirst() }
+
+                let avgVelocity = recentVelocities.reduce(0, +) / Double(recentVelocities.count)
+                let isHighVelocity = wristVelocity > 0.03 && wristVelocity > avgVelocity * 1.8
+                let isDeceleration = previousWristVelocity > 0.03 && wristVelocity < previousWristVelocity * 0.6
+                let isStrokeApex = (isHighVelocity || isDeceleration) && (timestamp - lastStrokeTimestamp) > minTimeBetweenStrokes
                 previousWristVelocity = wristVelocity
 
                 if isStrokeApex && keyFrames.count < AppConstants.Analysis.maxKeyFrames {
                     let image = imageFromPixelBuffer(pixelBuffer)
                     keyFrames.append((timestamp: timestamp, image: image))
+                    lastStrokeTimestamp = timestamp
                 }
             }
 
@@ -107,12 +115,29 @@ final class PoseEstimationService: ObservableObject {
             throw PoseError.noPersonDetected
         }
 
-        // If we didn't capture enough key frames, sample evenly
+        let detector = StrokeDetector()
+        let detectedStrokes = detector.detectStrokes(frames: allFrames)
+
+        if !detectedStrokes.isEmpty {
+            var strokeKeyFrames: [(timestamp: Double, image: UIImage)] = []
+            for stroke in detectedStrokes {
+                let contactTime = stroke.contactTimestamp
+                if let existingKF = keyFrames.first(where: { abs($0.timestamp - contactTime) < 0.2 }) {
+                    strokeKeyFrames.append(existingKF)
+                }
+            }
+            if !strokeKeyFrames.isEmpty {
+                keyFrames = strokeKeyFrames + keyFrames.filter { kf in
+                    !strokeKeyFrames.contains(where: { abs($0.timestamp - kf.timestamp) < 0.5 })
+                }
+            }
+        }
+
         if keyFrames.count < 5 {
             keyFrames = try await extractEvenlySpacedKeyFrames(from: videoURL, count: 10, duration: duration)
         }
 
-        return ExtractionResult(frames: allFrames, keyFrames: keyFrames, duration: duration)
+        return ExtractionResult(frames: allFrames, keyFrames: keyFrames, duration: duration, detectedStrokes: detectedStrokes)
     }
 
     // MARK: - Pose Detection
@@ -152,13 +177,16 @@ final class PoseEstimationService: ObservableObject {
 
     // MARK: - Stroke Apex Detection
 
+    private let minTimeBetweenStrokes: Double = 1.5
+
     private func calculateWristVelocity(current: FramePoseData, previous: FramePoseData?) -> Double {
         guard let prev = previous else { return 0 }
 
-        let currentRightWrist = current.joints.first { $0.name == "right_wrist" }
-        let prevRightWrist = prev.joints.first { $0.name == "right_wrist" }
+        let wristName = Handedness.current.dominantWrist
+        let currentWrist = current.joints.first { $0.name == wristName }
+        let prevWrist = prev.joints.first { $0.name == wristName }
 
-        guard let cw = currentRightWrist, let pw = prevRightWrist else { return 0 }
+        guard let cw = currentWrist, let pw = prevWrist else { return 0 }
 
         let dx = cw.x - pw.x
         let dy = cw.y - pw.y

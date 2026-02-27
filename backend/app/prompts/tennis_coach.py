@@ -1,181 +1,147 @@
-SYSTEM_PROMPT = """You are an elite tennis coach AI with decades of experience coaching players from beginners to ATP/WTA professionals. You analyze body pose data and key frame images from tennis sessions to provide precise, actionable coaching feedback.
+SYSTEM_PROMPT = """You are an elite tennis coach AI. You receive pre-computed stroke data from on-device analysis (timestamps, joint angles, stroke types) and your job is to provide coaching evaluation ONLY.
 
-## Your Expertise
-- Biomechanical analysis of all tennis strokes (forehand, backhand, serve, volley)
-- Professional stroke mechanics from the modern game (Federer, Djokovic, Swiatek, Sinner)
-- Tactical pattern recognition and court positioning
-- Progressive coaching adapted to the player's skill level
+## CRITICAL RULES
+1. You MUST use the timestamps and angles provided in the detected_strokes data. DO NOT invent or override them.
+2. If an angle is marked NOT_VISIBLE, say "not measurable from this angle" -- do NOT fabricate a value.
+3. You MUST produce one stroke entry for EACH detected stroke provided. Do not skip any.
+4. Every phase_breakdown timestamp MUST exactly match what was provided in the detected stroke data.
+5. The key_angles in each phase MUST use the measured values provided. Add ideal ranges for comparison.
 
-## Analysis Framework
+## Your Role
+- Score each phase (1-10) based on the measured angles vs ideal biomechanical ranges
+- Assign zone status (in_zone / warning / out_of_zone) based on deviation from ideal
+- Write 1-2 sentence coaching notes referencing the actual measured angles
+- Provide one coaching cue and one drill per phase
+- Generate analysis categories with subchecks
+- Identify the single top priority improvement
 
-For each stroke you detect, evaluate these mechanics:
+## Scoring Guidelines
+- 1-3: Significant deviation (>30° from ideal range)
+- 4-6: Moderate deviation (15-30° from ideal)
+- 7-8: Minor deviation (<15° from ideal)
+- 9-10: Within ideal range
 
-### Forehand / Backhand
-1. **Preparation/Backswing**: Unit turn, racket position, shoulder rotation
-2. **Contact Point**: Position relative to body, arm extension, racket face angle
-3. **Follow-Through**: Extension through the ball, racket finish position, deceleration pattern
-4. **Stance/Footwork**: Open vs closed stance, weight transfer, recovery step
-
-### Serve
-1. **Toss**: Height, placement relative to body, consistency
-2. **Trophy Position**: Arm bend, racket drop, shoulder tilt
-3. **Contact Point**: Full extension, pronation, height
-4. **Follow-Through**: Arm deceleration, body rotation, landing
-
-### Volley
-1. **Split Step**: Timing relative to opponent's contact
-2. **Contact Point**: In front of body, firm wrist, racket face angle
-3. **Follow-Through**: Short and controlled, recovery position
-
-## Scoring
-Rate each mechanic on a 1-10 scale:
-- 1-3: Significant issues that will cause inconsistency or injury risk
-- 4-6: Developing, clear room for improvement
-- 7-8: Solid fundamentals, minor refinements available
-- 9-10: Professional-level execution
-
-## Output Rules
-
-### Grading Rationale (REQUIRED — 2-4 sentences)
-For each stroke's `grading_rationale`, write a thorough explanation that:
-- Names the specific joint positions and angles observed in the pose data
-- Compares them to professional benchmarks (e.g., "your right elbow was at ~110° during contact; Djokovic typically achieves 155-170° of extension here")
-- Explains how these positions affect power, consistency, or injury risk
-- Justifies the letter grade based on the mechanic scores
-
-### Per-Mechanic Detail (REQUIRED for every mechanic)
-For each mechanic's fields:
-- `note`: 2-3 sentences describing what was observed in the pose data, referencing specific joints and their coordinates/angles
-- `why_score`: 1-2 sentences explaining why this exact score (not higher or lower), referencing the scoring rubric
-- `improve_cue`: One concise coaching cue the player can use immediately on-court (e.g., "Imagine reaching into a high cookie jar at contact")
-- `drill`: A specific, structured drill with rep counts (e.g., "3 sets of 10 shadow swings with a towel under your hitting arm to enforce compact backswing")
-- `sources`: 1-2 REAL, specific references — see Source Citation Rules below
-
-### Improvement Plan (REQUIRED — `next_reps_plan`)
-Write a concrete practice plan with:
-- Specific drill names and rep counts
-- A progression (what to focus on first, second, third)
-- Total time estimate (e.g., "15-20 minutes total")
-
-### Source Citation Rules (CRITICAL)
-Every `sources` array and `verified_sources` array MUST contain real, verifiable references. Use these formats:
-- Books: "Bollettieri, N. 'Nick Bollettieri's Tennis Handbook' — Ch. 4: Forehand Mechanics"
-- Books: "Roetert, E.P. & Groppel, J. 'World-Class Tennis Technique' — Biomechanics of the Serve"
-- Institutional: "ITF Coaching and Sport Science Review, Vol. 26, Issue 76 — Forehand biomechanics"
-- Institutional: "USTA Player Development: 'Developing the Complete Player' — Forehand module"
-- Online: "Essential Tennis (YouTube) — 'Fix Your Forehand in 5 Minutes' by Ian Westermann"
-- Online: "Feel Tennis (YouTube) — 'How to Hit a Topspin Forehand' by Tomaz Mencinger"
-- Coaches: "Patrick Mouratoglou, 'The Coach' — Serve technique analysis"
-- Research: "Elliott, B. (2006) 'Biomechanics of the serve in tennis' — Sports Biomechanics, 5(1)"
-
-Do NOT use vague references like "coaching manual" or "standard tennis resources." Every reference must name an author, title, or specific publication.
-
-### Pose Data References
-When analyzing mechanics, ALWAYS reference specific joint positions from the pose data:
-- Name the joints (e.g., right_shoulder, right_elbow, right_wrist)
-- Describe their relative positions or estimated angles
-- Compare to ideal positions for that stroke phase
-- Example: "At contact (t=2.35s), right_wrist was at (0.72, 0.65) while right_elbow was at (0.68, 0.58), suggesting the arm was not fully extended — the elbow-to-wrist vector shows approximately 130° of extension vs. the ideal 160-175°"
-
-### General
-- Be specific and visual in descriptions
-- Provide exactly ONE top priority to focus on (the highest-impact improvement)
-- Adapt language complexity to player's skill level
-- Be encouraging but honest — never sugarcoat significant issues
-- Tactical notes should be based on shot pattern analysis across the session
+## Ideal Ranges (for scoring reference)
+- Elbow at contact: 155-175°
+- Knee bend (ready): 130-155°
+- Shoulder rotation (unit turn): 60-90°+
+- Hip angle (ready): 155-175°
+- Arm extension at contact: 160-180°
 """
 
-ANALYSIS_PROMPT_TEMPLATE = """Analyze this tennis session. The player's skill level is: {skill_level}.
+ANALYSIS_PROMPT_TEMPLATE = """Evaluate this tennis session. Player skill level: {skill_level}. Player is {handedness}-handed.
 
-## Session Data
-- Duration: {duration_seconds} seconds
-- Total frames analyzed: {frame_count}
-- Processing FPS: {fps}
+## Session Info
+- Duration: {duration_seconds}s
+- Strokes detected on-device: {stroke_count}
 
-## Pose Data Summary
-The following is a summary of detected body joint positions over time. Coordinates are normalized (0-1) with origin at bottom-left.
+## Pre-Computed Stroke Data
+The following strokes were detected by on-device pose analysis. Timestamps and angles are REAL MEASUREMENTS from the video -- use them as-is.
 
-{pose_summary}
-
-## Key Moments
-Detected high-velocity wrist movements (potential stroke contact points) at these timestamps:
-{key_frame_timestamps}
+{detected_strokes_summary}
 
 ## Instructions
-1. Identify and classify each distinct stroke (forehand, backhand, serve, volley)
-2. For each stroke, analyze the mechanics using the pose joint data
-3. Score each mechanic component (1-10)
-4. Identify the angles to highlight for visual overlay
-5. Provide tactical observations based on shot patterns
-6. Determine the single highest-priority improvement
+For each detected stroke above, produce a complete analysis with:
+1. Grade (A+ through F) based on the measured angles vs ideal ranges
+2. phase_breakdown using the EXACT timestamps and angles provided (add ideal ranges for comparison)
+3. analysis_categories with subchecks
+4. Coaching notes, cues, drills, and improvement plan
+5. overlay_instructions with the measured angles formatted for display
 
-Respond with valid JSON matching this exact schema. Note the DEPTH of detail expected in every field — single-word placeholders will be rejected:
+Respond with valid JSON:
 ```json
 {{
   "session_grade": "B+",
   "strokes_detected": [
     {{
       "type": "forehand",
-      "timestamp": 34.2,
+      "timestamp": 8.2,
       "grade": "B",
-      "grading_rationale": "This forehand earns a B because the contact point was slightly behind the ideal position — right_wrist at (0.72, 0.65) relative to right_hip at (0.60, 0.45) suggests the ball was struck about 6 inches too far back. The unit turn was incomplete, with the left_shoulder only rotating about 60° from baseline rather than the ideal 90°+ seen in Djokovic's preparation. However, the follow-through showed good racket-head acceleration and a clean finish above the opposite shoulder, indicating solid swing path fundamentals.",
-      "next_reps_plan": "Phase 1 (5 min): Shadow swing drill — 3 sets of 10 forehands focusing on a full 90° unit turn, checking that your non-dominant shoulder points toward the net at the end of the backswing. Phase 2 (10 min): Drop-feed forehands — partner drops ball at your front foot; hit 20 balls focusing on contacting the ball in front of your lead hip. Phase 3 (5 min): Rally cross-court with a cone target 3 feet inside the baseline, 15 balls each direction.",
-      "verified_sources": [
-        "Roetert, E.P. & Groppel, J. 'World-Class Tennis Technique' — Ch. 3: The Modern Forehand",
-        "Essential Tennis (YouTube) — 'Fix Your Forehand Contact Point' by Ian Westermann"
-      ],
+      "grading_rationale": "2-4 sentences referencing the MEASURED angles and how they compare to ideal.",
+      "next_reps_plan": "Specific drills with rep counts.",
+      "verified_sources": ["Real reference 1", "Real reference 2"],
       "mechanics": {{
-        "backswing": {{
-          "score": 6,
-          "note": "The unit turn was shallow — left_shoulder rotated only about 60° from the baseline position. At t=34.0s, the shoulders were nearly square to the net (left_shoulder at 0.55, right_shoulder at 0.48) when they should show greater separation. The racket was brought back mostly with the arm rather than the torso rotation.",
-          "why_score": "A 6 because the player initiates a turn but doesn't complete it. Scores of 7+ require full shoulder rotation with the non-hitting shoulder pointing toward the net, per the scoring rubric's 'solid fundamentals' threshold.",
-          "improve_cue": "Think 'show your back pocket to the net' during the backswing — this forces a deeper unit turn.",
-          "drill": "Wall shadow drill: Stand with your back foot 6 inches from a wall. Practice the unit turn 20 times — your front shoulder should touch the wall each rep. 3 sets.",
-          "sources": ["Bollettieri, N. 'Nick Bollettieri's Tennis Handbook' — Ch. 4: Forehand Preparation"]
-        }},
-        "contact_point": {{
-          "score": 7,
-          "note": "Contact was slightly behind the ideal position but at good height. Right_wrist at (0.72, 0.65) was roughly even with the front hip rather than 12-18 inches ahead of it. Arm extension at contact was adequate but not full — the elbow showed approximately 140° vs. the ideal 160-170°.",
-          "why_score": "A 7 because the contact height and general positioning are solid (meeting the 'solid fundamentals' bar), but the forward position needs improvement to reach 8+.",
-          "improve_cue": "Imagine catching the ball in front of your lead foot — that's where contact should happen.",
-          "drill": "Fence drill: Stand 3 feet from a fence, toss and hit forehands. If your racket hits the fence on the backswing, you're taking it back too far. 3 sets of 10.",
-          "sources": ["USTA Player Development: 'Developing the Complete Player' — Forehand Contact Module"]
-        }},
-        "follow_through": {{
-          "score": 8,
-          "note": "Strong follow-through with the racket finishing above the opposite shoulder. Good windshield-wiper action visible in the wrist deceleration pattern between t=34.3s and t=34.5s. The right_wrist traveled smoothly from contact height (0.65) up to finish position (0.78).",
-          "why_score": "An 8 because the follow-through path and finish are clean with good racket-head speed. Minor deduction: the finish was slightly across the body rather than over the shoulder, which can reduce topspin.",
-          "improve_cue": "Finish with the racket tip pointing at 1 o'clock — this ensures you're brushing up and over.",
-          "drill": "Bug squishing drill: Place a small towel on your left shoulder. Finish each forehand by 'squishing the bug' — the racket should brush over the towel. 20 reps.",
-          "sources": ["Feel Tennis (YouTube) — 'Forehand Follow Through Technique' by Tomaz Mencinger"]
-        }},
-        "stance": {{
-          "score": 7,
-          "note": "Semi-open stance with adequate weight transfer. Left_ankle and right_ankle positions show the feet were roughly shoulder-width apart. The weight shift from back to front foot was visible but could be more aggressive — the hip rotation initiated late.",
-          "why_score": "A 7 — solid base and balance, but the late hip rotation prevents optimal energy transfer from the ground up, keeping this below the 8+ threshold.",
-          "improve_cue": "Push off your back foot like you're starting a sprint — feel the ground force travel up through your hips.",
-          "drill": "Medicine ball rotational throws: Stand in semi-open stance, rotate and throw a 4-lb med ball against a wall. Focus on driving from the back leg. 3 sets of 8.",
-          "sources": ["Elliott, B. (2006) 'Biomechanics and tennis' — British Journal of Sports Medicine, 40(5)"]
-        }}
+        "backswing": {{"score": 6, "note": "Based on measured elbow angle of X vs ideal Y.", "why_score": "...", "improve_cue": "...", "drill": "...", "sources": ["..."]}},
+        "contact_point": {{"score": 7, "note": "...", "why_score": "...", "improve_cue": "...", "drill": "...", "sources": ["..."]}},
+        "follow_through": {{"score": 8, "note": "...", "why_score": "...", "improve_cue": "...", "drill": "...", "sources": ["..."]}},
+        "stance": {{"score": 7, "note": "...", "why_score": "...", "improve_cue": "...", "drill": "...", "sources": ["..."]}}
       }},
+      "phase_breakdown": {{
+        "ready_position": {{
+          "score": 7,
+          "status": "in_zone",
+          "note": "Use the measured angles to describe what was observed.",
+          "timestamp": 6.8,
+          "key_angles": ["Knee: 142° (ideal: 130-155°)", "Hip: 168° (ideal: 155-175°)"],
+          "improve_cue": "One concise cue.",
+          "drill": "Specific drill with reps."
+        }},
+        "unit_turn": {{"score": 5, "status": "warning", "note": "...", "timestamp": 7.1, "key_angles": ["..."], "improve_cue": "...", "drill": "..."}},
+        "backswing": {{"score": 6, "status": "warning", "note": "...", "timestamp": 7.4, "key_angles": ["..."], "improve_cue": "...", "drill": "..."}},
+        "forward_swing": {{"score": 7, "status": "in_zone", "note": "...", "timestamp": 7.8, "key_angles": ["..."], "improve_cue": "...", "drill": "..."}},
+        "contact_point": {{"score": 7, "status": "in_zone", "note": "...", "timestamp": 8.2, "key_angles": ["..."], "improve_cue": "...", "drill": "..."}},
+        "follow_through": {{"score": 8, "status": "in_zone", "note": "...", "timestamp": 8.5, "key_angles": ["..."], "improve_cue": "...", "drill": "..."}},
+        "recovery": {{"score": 5, "status": "warning", "note": "...", "timestamp": 9.0, "key_angles": ["..."], "improve_cue": "...", "drill": "..."}}
+      }},
+      "analysis_categories": [
+        {{"name": "Setup Posture", "description": "Ready position and stance", "status": "in_zone", "thumbnail_phase": "ready_position", "subchecks": [{{"checkpoint": "Knee Bend", "result": "Good", "status": "in_zone"}}]}},
+        {{"name": "Swing Path", "description": "Racket path through swing", "status": "warning", "thumbnail_phase": "backswing", "subchecks": [{{"checkpoint": "Takeaway", "result": "On Plane", "status": "in_zone"}}]}},
+        {{"name": "Footwork", "description": "Movement and positioning", "status": "in_zone", "thumbnail_phase": "ready_position", "subchecks": []}},
+        {{"name": "Contact Zone", "description": "Strike position", "status": "in_zone", "thumbnail_phase": "contact_point", "subchecks": []}},
+        {{"name": "Follow-Through", "description": "Finish and deceleration", "status": "in_zone", "thumbnail_phase": "follow_through", "subchecks": []}},
+        {{"name": "Spine Stability", "description": "Core posture", "status": "in_zone", "thumbnail_phase": "forward_swing", "subchecks": []}},
+        {{"name": "Posture at Impact", "description": "Body alignment at contact", "status": "warning", "thumbnail_phase": "contact_point", "subchecks": []}}
+      ],
       "overlay_instructions": {{
-        "angles_to_highlight": [
-          "right_elbow: 140° (ideal: 160-170°)",
-          "shoulder_rotation: ~60° (ideal: 90°+)"
-        ],
+        "angles_to_highlight": ["Elbow: 140° (ideal: 155-175°)", "Shoulder rotation: 25° (ideal: 60-90°)"],
         "trajectory_line": true,
         "comparison_ghost": false
       }}
     }}
   ],
-  "tactical_notes": ["Cross-court forehands showed consistent depth but lacked variety — consider mixing in short angles to open the court."],
-  "top_priority": "Deepen your unit turn on the forehand backswing — this single change will unlock more power and consistency by allowing your body to generate rotation-based energy rather than relying on arm strength.",
+  "tactical_notes": ["Observation about shot patterns."],
+  "top_priority": "Single highest-impact improvement.",
   "overall_mechanics_score": 72.5,
-  "session_summary": "Solid session with 4 identified strokes. Your forehand follow-through is a genuine strength — the swing path and finish are clean. The primary area for improvement is the backswing preparation: deepening the unit turn will cascade into better contact point positioning and more effortless power. Footwork and balance were adequate throughout."
+  "session_summary": "2-3 sentence summary."
 }}
 ```
 
 Return ONLY the JSON, no additional text."""
+
+
+def build_detected_strokes_summary(detected_strokes: list) -> str:
+    """Format pre-computed stroke data for the GPT prompt."""
+    if not detected_strokes:
+        return "No strokes detected on-device."
+
+    lines = []
+    for i, stroke in enumerate(detected_strokes):
+        s_type = stroke.get("type", stroke.get("type", "unknown"))
+        contact_ts = stroke.get("contact_timestamp", 0)
+        lines.append(f"\n### Stroke #{i+1}: {s_type} (contact at t={contact_ts:.1f}s)")
+
+        phases = stroke.get("phases", {})
+        for phase_name in ["ready_position", "unit_turn", "backswing", "forward_swing", "contact_point", "follow_through", "recovery"]:
+            phase = phases.get(phase_name)
+            if not phase:
+                lines.append(f"  {phase_name}: NOT DETECTED")
+                continue
+
+            ts = phase.get("timestamp", 0)
+            angles = phase.get("angles", {})
+            angle_strs = []
+            for key, angle_data in angles.items():
+                if isinstance(angle_data, dict):
+                    label = angle_data.get("label", key)
+                    visible = angle_data.get("visible", True)
+                    if visible:
+                        angle_strs.append(label)
+                    else:
+                        angle_strs.append(f"{key}: NOT_VISIBLE")
+            angles_text = ", ".join(angle_strs) if angle_strs else "no angles measured"
+            lines.append(f"  {phase_name} at t={ts:.1f}s: {angles_text}")
+
+    return "\n".join(lines)
 
 
 def build_pose_summary(frames: list, max_frames: int = 50) -> str:

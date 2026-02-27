@@ -5,6 +5,7 @@ struct ProfileView: View {
     @EnvironmentObject var subscriptionService: SubscriptionService
     @AppStorage("selectedTheme") private var selectedTheme = "Court Vision"
     @State private var selectedSkillLevel: SkillLevel = .beginner
+    @State private var selectedHandedness: Handedness = Handedness.current
     let theme = DesignSystem.current
 
     var body: some View {
@@ -17,6 +18,7 @@ struct ProfileView: View {
                         profileHeader
                         subscriptionCard
                         settingsSection
+                        handednessSection
                         themeSection
                         legalSection
                         signOutButton
@@ -143,6 +145,55 @@ struct ProfileView: View {
                     if level != SkillLevel.allCases.last {
                         Divider()
                             .background(theme.surfaceSecondary)
+                    }
+                }
+            }
+            .background(
+                RoundedRectangle(cornerRadius: Radius.md)
+                    .fill(theme.surfacePrimary)
+            )
+        }
+    }
+
+    // MARK: - Handedness
+
+    private var handednessSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            Text("DOMINANT HAND")
+                .font(AppFont.body(size: 12, weight: .semibold))
+                .foregroundStyle(theme.textTertiary)
+                .padding(.leading, Spacing.xs)
+
+            VStack(spacing: 0) {
+                ForEach(Handedness.allCases, id: \.self) { hand in
+                    Button(action: {
+                        selectedHandedness = hand
+                        Handedness.save(hand)
+                    }) {
+                        HStack {
+                            Image(systemName: hand == .left ? "hand.raised.fingers.spread" : "hand.raised.fingers.spread")
+                                .font(.system(size: 16))
+                                .foregroundStyle(theme.accent)
+                                .scaleEffect(x: hand == .left ? -1 : 1, y: 1)
+
+                            Text("\(hand.displayName)-Handed")
+                                .font(AppFont.body(size: 15, weight: .medium))
+                                .foregroundStyle(theme.textPrimary)
+
+                            Spacer()
+
+                            if selectedHandedness == hand {
+                                Image(systemName: "checkmark")
+                                    .foregroundStyle(theme.accent)
+                                    .font(.system(size: 14, weight: .bold))
+                            }
+                        }
+                        .padding(Spacing.md)
+                    }
+                    .buttonStyle(.plain)
+
+                    if hand != Handedness.allCases.last {
+                        Divider().background(theme.surfaceSecondary)
                     }
                 }
             }

@@ -15,12 +15,18 @@ final class PlaybackViewModel: ObservableObject {
     @Published var autoSlowEnabled = true
     @Published var isInStrokeWindow = false
     @Published var videoNaturalSize: CGSize = CGSize(width: 1080, height: 1920)
+    @Published var racketTrajectory: [CGPoint] = []
+    @Published var smoothedJoints: [JointData] = []
 
     let player: AVPlayer
     private let videoURL: URL
     private var timeObserverToken: Any?
     private var sortedFrames: [FramePoseData] = []
     private var strokeWindows: [(start: Double, end: Double)] = []
+    private let maxTrajectoryPoints = 60
+    private var rawTrajectoryBuffer: [CGPoint] = []
+    private var previousSmoothedJoints: [String: (x: Double, y: Double)] = [:]
+    private let smoothingFactor: Double = 0.35
 
     init(url: URL) {
         self.videoURL = url
@@ -68,11 +74,39 @@ final class PlaybackViewModel: ObservableObject {
 
         if let frame = nearestFrame(to: seconds) {
             currentJoints = frame.joints
+            smoothedJoints = applySmoothingToJoints(frame.joints)
+
+            let hand = Handedness.current
+            let wristName = hand.dominantWrist
+            let elbowName = hand.dominantElbow
+
+            if let wrist = frame.joints.first(where: { $0.name == wristName }),
+               wrist.confidence > 0.3 {
+                let racketHead: CGPoint
+                if let elbow = frame.joints.first(where: { $0.name == elbowName }),
+                   elbow.confidence > 0.3 {
+                    let dx = wrist.x - elbow.x
+                    let dy = wrist.y - elbow.y
+                    racketHead = CGPoint(x: wrist.x + dx * 0.6, y: wrist.y + dy * 0.6)
+                } else {
+                    racketHead = CGPoint(x: wrist.x, y: wrist.y)
+                }
+
+                rawTrajectoryBuffer.append(racketHead)
+                if rawTrajectoryBuffer.count > maxTrajectoryPoints {
+                    rawTrajectoryBuffer.removeFirst()
+                }
+                racketTrajectory = smoothTrajectory(rawTrajectoryBuffer)
+            }
         }
 
         let inWindow = strokeWindows.contains { seconds >= $0.start && seconds <= $0.end }
         if inWindow != isInStrokeWindow {
             isInStrokeWindow = inWindow
+            if !inWindow {
+                rawTrajectoryBuffer.removeAll()
+                racketTrajectory.removeAll()
+            }
         }
 
         if autoSlowEnabled && inWindow {
@@ -84,6 +118,56 @@ final class PlaybackViewModel: ObservableObject {
                 player.rate = selectedSpeed
             }
         }
+    }
+
+    func seekTo(timestamp: Double) {
+        let time = CMTime(seconds: timestamp, preferredTimescale: 600)
+        player.seek(to: time, toleranceBefore: .zero, toleranceAfter: .zero)
+        pause()
+        rawTrajectoryBuffer.removeAll()
+        racketTrajectory.removeAll()
+        handleTimeUpdate(timestamp)
+    }
+
+    private func applySmoothingToJoints(_ joints: [JointData]) -> [JointData] {
+        joints.map { joint in
+            if let prev = previousSmoothedJoints[joint.name] {
+                let smoothX = prev.x + smoothingFactor * (joint.x - prev.x)
+                let smoothY = prev.y + smoothingFactor * (joint.y - prev.y)
+                previousSmoothedJoints[joint.name] = (x: smoothX, y: smoothY)
+                return JointData(name: joint.name, x: smoothX, y: smoothY, confidence: joint.confidence)
+            } else {
+                previousSmoothedJoints[joint.name] = (x: joint.x, y: joint.y)
+                return joint
+            }
+        }
+    }
+
+    private func smoothTrajectory(_ points: [CGPoint]) -> [CGPoint] {
+        guard points.count >= 4 else { return points }
+
+        var smoothed: [CGPoint] = []
+        for i in 1..<(points.count - 2) {
+            let p0 = points[i - 1]
+            let p1 = points[i]
+            let p2 = points[i + 1]
+            let p3 = points[i + 2]
+
+            for t in stride(from: 0.0, to: 1.0, by: 0.5) {
+                let tt = t * t
+                let ttt = tt * t
+                let x = 0.5 * ((2 * p1.x) +
+                    (-p0.x + p2.x) * t +
+                    (2 * p0.x - 5 * p1.x + 4 * p2.x - p3.x) * tt +
+                    (-p0.x + 3 * p1.x - 3 * p2.x + p3.x) * ttt)
+                let y = 0.5 * ((2 * p1.y) +
+                    (-p0.y + p2.y) * t +
+                    (2 * p0.y - 5 * p1.y + 4 * p2.y - p3.y) * tt +
+                    (-p0.y + 3 * p1.y - 3 * p2.y + p3.y) * ttt)
+                smoothed.append(CGPoint(x: x, y: y))
+            }
+        }
+        return smoothed
     }
 
     private func nearestFrame(to time: Double) -> FramePoseData? {
@@ -178,8 +262,11 @@ struct AnalysisResultsView: View {
     @StateObject private var viewModel: AnalysisViewModel
     @StateObject private var playback: PlaybackViewModel
     @State private var showOverlay = true
+    @State private var showSwingPath = false
     @State private var selectedStroke: StrokeAnalysisModel?
+    @State private var selectedPhase: SwingPhase?
     @State private var showFeedbackPrompt = false
+    @State private var showProComparison = false
     @EnvironmentObject var authService: AuthService
     @Environment(\.modelContext) private var modelContext
 
@@ -291,14 +378,67 @@ struct AnalysisResultsView: View {
         ShareService.shared.presentShareSheet(image: image, from: rootVC)
     }
 
+    private var highlightedJointNames: Set<String> {
+        guard let phase = selectedPhase,
+              let stroke = selectedStroke,
+              let breakdown = stroke.phaseBreakdown,
+              let detail = breakdown.detail(for: phase)
+        else { return [] }
+
+        let side = Handedness.current == .right ? "right" : "left"
+        var joints = Set<String>()
+        for angle in detail.keyAngles {
+            let lower = angle.lowercased()
+            if lower.contains("elbow") { joints.insert("\(side)_elbow") }
+            if lower.contains("shoulder") { joints.insert("\(side)_shoulder"); joints.insert("left_shoulder"); joints.insert("right_shoulder") }
+            if lower.contains("wrist") { joints.insert("\(side)_wrist") }
+            if lower.contains("knee") { joints.insert("\(side)_knee") }
+            if lower.contains("hip") { joints.insert("\(side)_hip") }
+            if lower.contains("ankle") { joints.insert("\(side)_ankle") }
+            if lower.contains("spine") || lower.contains("torso") || lower.contains("rotation") {
+                joints.insert("left_shoulder"); joints.insert("right_shoulder")
+                joints.insert("left_hip"); joints.insert("right_hip")
+            }
+        }
+        return joints
+    }
+
     private var analysisContent: some View {
         ScrollView {
             VStack(spacing: 0) {
-                LiveVideoPlayerSection(
-                    playback: playback,
-                    showOverlay: $showOverlay,
-                    hasVideo: session.videoLocalURL != nil
-                )
+                ZStack {
+                    LiveVideoPlayerSection(
+                        playback: playback,
+                        showOverlay: $showOverlay,
+                        showSwingPath: $showSwingPath,
+                        hasVideo: session.videoLocalURL != nil
+                    )
+
+                    if showSwingPath && !playback.racketTrajectory.isEmpty {
+                        SwingPathOverlayView(
+                            wristPoints: playback.racketTrajectory,
+                            videoNaturalSize: playback.videoNaturalSize
+                        )
+                        .containerRelativeFrame(.vertical) { height, _ in
+                            height * 0.62
+                        }
+                        .allowsHitTesting(false)
+                    }
+
+                    if showOverlay && !playback.smoothedJoints.isEmpty {
+                        WireframeOverlayView(
+                            joints: playback.smoothedJoints,
+                            videoNaturalSize: playback.videoNaturalSize,
+                            highlightedJoints: highlightedJointNames,
+                            highlightAngles: selectedPhaseAngles
+                        )
+                        .containerRelativeFrame(.vertical) { height, _ in
+                            height * 0.62
+                        }
+                        .allowsHitTesting(false)
+                    }
+                }
+                .clipped()
 
                 if showOverlay {
                     OverlayInfoBadges(selectedStroke: selectedStroke)
@@ -309,13 +449,50 @@ struct AnalysisResultsView: View {
                     selectedStroke: $selectedStroke
                 )
 
-                SessionSummaryCard(session: session)
+                if let stroke = selectedStroke, let breakdown = stroke.phaseBreakdown {
+                    PhaseTimelineStrip(
+                        breakdown: breakdown,
+                        selectedPhase: $selectedPhase,
+                        onPhaseSelected: { phase in
+                            if let detail = breakdown.detail(for: phase) {
+                                playback.seekTo(timestamp: detail.timestamp)
+                            }
+                        }
+                    )
+                }
+
+                SessionSummaryCard(
+                    session: session,
+                    analysisCategories: selectedStroke?.analysisCategories
+                )
+
+                ProCompareButton(
+                    strokeType: selectedStroke?.strokeType ?? .forehand,
+                    onTap: { showProComparison = true }
+                )
 
                 StrokeCardsSection(strokes: session.strokeAnalyses)
 
                 TacticalNotesCard(notes: session.tacticalNotes)
             }
         }
+        .sheet(isPresented: $showProComparison) {
+            if let stroke = selectedStroke {
+                ProComparisonSheetView(
+                    strokeType: stroke.strokeType,
+                    userJoints: playback.currentJoints
+                )
+            }
+        }
+    }
+
+    private var selectedPhaseAngles: [String] {
+        guard let phase = selectedPhase,
+              let stroke = selectedStroke,
+              let breakdown = stroke.phaseBreakdown,
+              let detail = breakdown.detail(for: phase)
+        else { return [] }
+        return detail.keyAngles
     }
 }
 
@@ -427,6 +604,7 @@ struct AnalysisFailedContent: View {
 struct LiveVideoPlayerSection: View {
     @ObservedObject var playback: PlaybackViewModel
     @Binding var showOverlay: Bool
+    @Binding var showSwingPath: Bool
     let hasVideo: Bool
     private let theme = DesignSystem.current
 
@@ -440,18 +618,11 @@ struct LiveVideoPlayerSection: View {
                     .clipped()
                     .onTapGesture { playback.togglePlayPause() }
 
-                if showOverlay && !playback.currentJoints.isEmpty {
-                    WireframeOverlayView(
-                        joints: playback.currentJoints,
-                        videoNaturalSize: playback.videoNaturalSize
-                    )
-                    .containerRelativeFrame(.vertical) { height, _ in
-                        height * 0.62
-                    }
-                    .allowsHitTesting(false)
-                }
-
-                VideoControlsOverlay(playback: playback, showOverlay: $showOverlay)
+                VideoControlsOverlay(
+                    playback: playback,
+                    showOverlay: $showOverlay,
+                    showSwingPath: $showSwingPath
+                )
             }
             .clipped()
         } else {
@@ -483,6 +654,7 @@ struct LiveVideoPlayerSection: View {
 struct VideoControlsOverlay: View {
     @ObservedObject var playback: PlaybackViewModel
     @Binding var showOverlay: Bool
+    @Binding var showSwingPath: Bool
     private let theme = DesignSystem.current
 
     var body: some View {
@@ -517,6 +689,8 @@ struct VideoControlsOverlay: View {
 
             Spacer()
 
+            swingPathToggleButton
+
             AutoSlowToggle(
                 isEnabled: playback.autoSlowEnabled,
                 onToggle: { playback.autoSlowEnabled.toggle() }
@@ -540,6 +714,24 @@ struct VideoControlsOverlay: View {
             .background(
                 Capsule()
                     .fill(showOverlay ? theme.accent : theme.surfaceElevated.opacity(0.85))
+            )
+        }
+    }
+
+    private var swingPathToggleButton: some View {
+        Button(action: { showSwingPath.toggle() }) {
+            HStack(spacing: 4) {
+                Image(systemName: "point.topleft.down.to.point.bottomright.curvepath.fill")
+                    .font(.system(size: 11))
+                Text("Path")
+                    .font(AppFont.body(size: 12, weight: .medium))
+            }
+            .foregroundStyle(showSwingPath ? theme.textOnAccent : .white.opacity(0.8))
+            .padding(.horizontal, Spacing.sm)
+            .padding(.vertical, Spacing.xs)
+            .background(
+                Capsule()
+                    .fill(showSwingPath ? theme.accentSecondary : Color.black.opacity(0.3))
             )
         }
     }
@@ -779,6 +971,7 @@ struct StrokeTimelineMarker: View {
 
 struct SessionSummaryCard: View {
     let session: SessionModel
+    var analysisCategories: [AnalysisCategory]? = nil
     private let theme = DesignSystem.current
 
     var body: some View {
@@ -787,10 +980,31 @@ struct SessionSummaryCard: View {
             if let priority = session.topPriority {
                 priorityBanner(priority)
             }
+            if let categories = analysisCategories, !categories.isEmpty {
+                reportCardSection(categories)
+            }
         }
         .padding(Spacing.md)
         .background(theme.surfacePrimary)
         .padding(.top, 1)
+    }
+
+    private func reportCardSection(_ categories: [AnalysisCategory]) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            HStack(spacing: 5) {
+                Image(systemName: "list.clipboard")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(theme.accent)
+                Text("SWING ANALYSIS")
+                    .font(AppFont.body(size: 11, weight: .bold))
+                    .foregroundStyle(theme.accent)
+                    .tracking(0.5)
+            }
+
+            ForEach(categories) { category in
+                ReportCategoryRow(category: category)
+            }
+        }
     }
 
     private var headerRow: some View {
@@ -1337,11 +1551,316 @@ struct TacticalNotesCard: View {
     }
 }
 
+// MARK: - Phase Timeline Strip (integrated above coaching cards)
+
+struct PhaseTimelineStrip: View {
+    let breakdown: PhaseBreakdown
+    @Binding var selectedPhase: SwingPhase?
+    var onPhaseSelected: ((SwingPhase) -> Void)? = nil
+    private let theme = DesignSystem.current
+
+    var body: some View {
+        VStack(spacing: 0) {
+            VStack(alignment: .leading, spacing: Spacing.sm) {
+                HStack(spacing: 5) {
+                    Image(systemName: "timeline.selection")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(theme.accent)
+                    Text("PHASE BREAKDOWN")
+                        .font(AppFont.body(size: 11, weight: .bold))
+                        .foregroundStyle(theme.accent)
+                        .tracking(0.5)
+                }
+                .padding(.horizontal, Spacing.md)
+
+                phaseTimeline
+            }
+            .padding(.vertical, Spacing.md)
+            .background(theme.surfacePrimary)
+
+            if let phase = selectedPhase, let detail = breakdown.detail(for: phase) {
+                PhaseDetailCard(phase: phase, detail: detail)
+                    .padding(.horizontal, Spacing.md)
+                    .padding(.top, Spacing.xs)
+                    .padding(.bottom, Spacing.sm)
+                    .background(theme.surfacePrimary)
+            }
+        }
+    }
+
+    private var phaseTimeline: some View {
+        HStack(spacing: 0) {
+            ForEach(breakdown.allPhases, id: \.0) { phase, detail in
+                phaseNode(phase: phase, detail: detail)
+            }
+        }
+        .padding(.horizontal, Spacing.sm)
+    }
+
+    private func phaseNode(phase: SwingPhase, detail: PhaseDetail?) -> some View {
+        let isSelected = selectedPhase == phase
+        let score = detail?.score ?? 0
+        let status = detail?.status ?? .warning
+
+        return Button(action: {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                if selectedPhase == phase {
+                    selectedPhase = nil
+                } else {
+                    selectedPhase = phase
+                    onPhaseSelected?(phase)
+                }
+            }
+        }) {
+            VStack(spacing: 4) {
+                Circle()
+                    .fill(zoneColor(status))
+                    .frame(width: 32, height: 32)
+                    .overlay(
+                        Text("\(score)")
+                            .font(AppFont.mono(size: 12, weight: .bold))
+                            .foregroundStyle(.white)
+                    )
+                    .overlay(
+                        Circle()
+                            .stroke(isSelected ? theme.accent : .clear, lineWidth: 2.5)
+                            .frame(width: 38, height: 38)
+                    )
+                    .scaleEffect(isSelected ? 1.1 : 1.0)
+
+                Text(phase.displayName)
+                    .font(AppFont.body(size: 9, weight: .semibold))
+                    .foregroundStyle(isSelected ? theme.accent : theme.textTertiary)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+                    .frame(height: 24, alignment: .top)
+            }
+            .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func zoneColor(_ status: ZoneStatus) -> Color {
+        switch status {
+        case .inZone: return theme.success
+        case .warning: return theme.warning
+        case .outOfZone: return theme.error
+        }
+    }
+}
+
+// MARK: - Report Category Row (inside summary card)
+
+struct ReportCategoryRow: View {
+    let category: AnalysisCategory
+    private let theme = DesignSystem.current
+
+    var body: some View {
+        HStack(spacing: Spacing.sm) {
+            RoundedRectangle(cornerRadius: Radius.sm)
+                .fill(zoneBgColor)
+                .frame(width: 32, height: 32)
+                .overlay(
+                    Image(systemName: categoryIcon)
+                        .font(.system(size: 14))
+                        .foregroundStyle(zoneColor)
+                )
+
+            VStack(alignment: .leading, spacing: 1) {
+                Text(category.name)
+                    .font(AppFont.body(size: 13, weight: .semibold))
+                    .foregroundStyle(theme.textPrimary)
+
+                Text(category.description)
+                    .font(AppFont.body(size: 11))
+                    .foregroundStyle(theme.textTertiary)
+                    .lineLimit(1)
+            }
+
+            Spacer()
+
+            Text(category.status.displayLabel)
+                .font(AppFont.body(size: 11, weight: .bold))
+                .foregroundStyle(zoneColor)
+                .padding(.horizontal, Spacing.xs)
+                .padding(.vertical, 3)
+                .background(
+                    Capsule().fill(zoneBgColor)
+                )
+        }
+        .padding(.vertical, 4)
+    }
+
+    private var categoryIcon: String {
+        switch category.name.lowercased() {
+        case let n where n.contains("posture"): return "figure.stand"
+        case let n where n.contains("swing"): return "arrow.up.forward"
+        case let n where n.contains("foot"): return "shoeprints.fill"
+        case let n where n.contains("contact"): return "target"
+        case let n where n.contains("follow"): return "arrow.turn.up.right"
+        case let n where n.contains("spine"): return "arrow.up.and.down"
+        default: return "checkmark.circle"
+        }
+    }
+
+    private var zoneColor: Color {
+        switch category.status {
+        case .inZone: return theme.success
+        case .warning: return theme.warning
+        case .outOfZone: return theme.error
+        }
+    }
+
+    private var zoneBgColor: Color {
+        switch category.status {
+        case .inZone: return theme.success.opacity(0.08)
+        case .warning: return theme.warning.opacity(0.08)
+        case .outOfZone: return theme.error.opacity(0.07)
+        }
+    }
+}
+
+// MARK: - Pro Compare Button
+
+struct ProCompareButton: View {
+    let strokeType: StrokeType
+    let onTap: () -> Void
+    private let theme = DesignSystem.current
+
+    var body: some View {
+        Button(action: onTap) {
+            HStack(spacing: Spacing.sm) {
+                Image(systemName: "trophy.fill")
+                    .font(.system(size: 16))
+                    .foregroundStyle(theme.accentSecondary)
+                    .frame(width: 36, height: 36)
+                    .background(theme.accentSecondary.opacity(0.08))
+                    .clipShape(RoundedRectangle(cornerRadius: Radius.sm))
+
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Compare to Pro")
+                        .font(AppFont.body(size: 14, weight: .semibold))
+                        .foregroundStyle(theme.textPrimary)
+
+                    Text("See how your \(strokeType.displayName.lowercased()) stacks up")
+                        .font(AppFont.body(size: 12))
+                        .foregroundStyle(theme.textTertiary)
+                }
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(theme.accentSecondary)
+            }
+            .padding(Spacing.md)
+            .background(
+                RoundedRectangle(cornerRadius: Radius.md)
+                    .fill(theme.surfacePrimary)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: Radius.md)
+                            .stroke(theme.accentSecondary.opacity(0.3), lineWidth: 1)
+                    )
+            )
+        }
+        .buttonStyle(.plain)
+        .padding(.horizontal, Spacing.md)
+        .padding(.vertical, Spacing.xs)
+    }
+}
+
+// MARK: - Pro Comparison Sheet
+
+struct ProComparisonSheetView: View {
+    let strokeType: StrokeType
+    let userJoints: [JointData]
+    @Environment(\.dismiss) private var dismiss
+    private let theme = DesignSystem.current
+    private let proService = ProComparisonService()
+
+    @State private var selectedPro: ProPlayer?
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: Spacing.md) {
+                    proSelectorRow
+                    comparisonView
+                }
+            }
+            .background(theme.background)
+            .navigationTitle("Compare to Pro")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") { dismiss() }
+                        .font(AppFont.body(size: 15, weight: .medium))
+                        .foregroundStyle(theme.accent)
+                }
+            }
+        }
+        .onAppear {
+            selectedPro = proService.availablePros(for: strokeType).first
+        }
+    }
+
+    private var proSelectorRow: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: Spacing.sm) {
+                ForEach(proService.availablePros(for: strokeType)) { pro in
+                    Button(action: { selectedPro = pro }) {
+                        VStack(spacing: 4) {
+                            Text(pro.icon)
+                                .font(.system(size: 24))
+                                .frame(width: 48, height: 48)
+                                .background(
+                                    Circle()
+                                        .fill(theme.surfaceSecondary)
+                                        .overlay(
+                                            Circle()
+                                                .stroke(
+                                                    selectedPro?.id == pro.id ? theme.accent : .clear,
+                                                    lineWidth: 2.5
+                                                )
+                                        )
+                                )
+
+                            Text(pro.name)
+                                .font(AppFont.body(size: 11, weight: .semibold))
+                                .foregroundStyle(
+                                    selectedPro?.id == pro.id ? theme.accent : theme.textTertiary
+                                )
+                        }
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal, Spacing.md)
+        }
+    }
+
+    @ViewBuilder
+    private var comparisonView: some View {
+        if let pro = selectedPro {
+            ProComparisonView(
+                userJoints: userJoints,
+                proName: pro.name,
+                strokeType: strokeType,
+                alignmentScores: [],
+                windowBadges: []
+            )
+            .padding(.horizontal, Spacing.md)
+        }
+    }
+}
+
 // MARK: - Wireframe Overlay View
 
 struct WireframeOverlayView: View {
     let joints: [JointData]
     let videoNaturalSize: CGSize
+    var highlightedJoints: Set<String> = []
+    var highlightAngles: [String] = []
     private let theme = DesignSystem.current
 
     private static let headJoints: Set<String> = [
@@ -1367,6 +1886,8 @@ struct WireframeOverlayView: View {
         joints.filter { !Self.headJoints.contains($0.name) }
     }
 
+    @State private var pulseScale: CGFloat = 1.0
+
     var body: some View {
         GeometryReader { geo in
             let map = Dictionary(uniqueKeysWithValues: bodyJoints.map { ($0.name, $0) })
@@ -1379,26 +1900,146 @@ struct WireframeOverlayView: View {
                         guard let ja = map[a], let jb = map[b] else { continue }
                         let ptA = toScreen(ja, crop: c)
                         let ptB = toScreen(jb, crop: c)
+
+                        let isHighlighted = highlightedJoints.contains(a) || highlightedJoints.contains(b)
+                        let lineColor = isHighlighted ? theme.skeletonWarning : theme.trajectoryLine
+                        let lineWidth: CGFloat = isHighlighted ? 5 : 3.5
+
                         var p = Path()
                         p.move(to: ptA)
                         p.addLine(to: ptB)
                         context.stroke(
                             p,
-                            with: .color(theme.trajectoryLine.opacity(0.9)),
-                            style: StrokeStyle(lineWidth: 3.5, lineCap: .round, lineJoin: .round)
+                            with: .color(lineColor.opacity(0.9)),
+                            style: StrokeStyle(lineWidth: lineWidth, lineCap: .round, lineJoin: .round)
                         )
                     }
                 }
 
                 ForEach(bodyJoints, id: \.name) { j in
-                    Circle()
-                        .fill(theme.angleAnnotation)
-                        .frame(width: 10, height: 10)
-                        .shadow(color: .black.opacity(0.3), radius: 3)
-                        .position(toScreen(j, crop: crop))
+                    let isHighlighted = highlightedJoints.contains(j.name)
+                    let pos = toScreen(j, crop: crop)
+
+                    if isHighlighted {
+                        Circle()
+                            .stroke(theme.skeletonWarning, lineWidth: 2)
+                            .frame(width: 22, height: 22)
+                            .scaleEffect(pulseScale)
+                            .opacity(Double(2.0 - pulseScale))
+                            .position(pos)
+
+                        Circle()
+                            .fill(theme.skeletonWarning)
+                            .frame(width: 12, height: 12)
+                            .shadow(color: theme.skeletonWarning.opacity(0.5), radius: 6)
+                            .position(pos)
+                    } else {
+                        Circle()
+                            .fill(theme.angleAnnotation)
+                            .frame(width: 10, height: 10)
+                            .shadow(color: .black.opacity(0.3), radius: 3)
+                            .position(pos)
+                    }
+                }
+
+                ForEach(Array(angleLabelsForDisplay(map: map, crop: crop).enumerated()), id: \.offset) { _, item in
+                    Text(item.text)
+                        .font(AppFont.mono(size: 10, weight: .bold))
+                        .foregroundStyle(theme.skeletonWarning)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 3)
+                        .background(
+                            Capsule()
+                                .fill(Color.black.opacity(0.7))
+                        )
+                        .position(x: item.position.x + 40, y: item.position.y - 12)
+                }
+            }
+            .onAppear {
+                withAnimation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true)) {
+                    pulseScale = 1.5
                 }
             }
         }
+    }
+
+    private struct AngleLabel {
+        let text: String
+        let position: CGPoint
+    }
+
+    private func angleLabelsForDisplay(map: [String: JointData], crop: CropInfo) -> [AngleLabel] {
+        guard !highlightAngles.isEmpty else { return [] }
+
+        let hand = Handedness.current
+        let side = hand == .right ? "right" : "left"
+
+        var labels: [AngleLabel] = []
+        for angle in highlightAngles {
+            let lower = angle.lowercased()
+            var jointName: String?
+            var computedAngle: Double?
+
+            if lower.contains("elbow") {
+                jointName = "\(side)_elbow"
+                computedAngle = computeAngle(
+                    a: map["\(side)_shoulder"],
+                    b: map["\(side)_elbow"],
+                    c: map["\(side)_wrist"]
+                )
+            } else if lower.contains("shoulder") && lower.contains("rotation") {
+                jointName = "\(side)_shoulder"
+                computedAngle = computeShoulderRotation(map)
+            } else if lower.contains("knee") {
+                jointName = "\(side)_knee"
+                computedAngle = computeAngle(
+                    a: map["\(side)_hip"],
+                    b: map["\(side)_knee"],
+                    c: map["\(side)_ankle"]
+                )
+            } else if lower.contains("hip") && !lower.contains("rotation") {
+                jointName = "\(side)_hip"
+                computedAngle = computeAngle(
+                    a: map["\(side)_shoulder"],
+                    b: map["\(side)_hip"],
+                    c: map["\(side)_knee"]
+                )
+            } else if lower.contains("wrist") {
+                jointName = "\(side)_wrist"
+            }
+
+            if let name = jointName, let joint = map[name] {
+                var displayText = angle
+                if let measured = computedAngle {
+                    let parts = angle.split(separator: "(")
+                    let idealPart = parts.count > 1 ? " (\(parts[1])" : ""
+                    let labelKey = angle.split(separator: ":").first.map(String.init) ?? angle
+                    displayText = "\(labelKey): \(Int(measured))°\(idealPart)"
+                }
+                labels.append(AngleLabel(text: displayText, position: toScreen(joint, crop: crop)))
+            }
+        }
+        return labels
+    }
+
+    private func computeAngle(a: JointData?, b: JointData?, c: JointData?) -> Double? {
+        guard let a = a, let b = b, let c = c else { return nil }
+        let ba = (x: a.x - b.x, y: a.y - b.y)
+        let bc = (x: c.x - b.x, y: c.y - b.y)
+        let dot = ba.x * bc.x + ba.y * bc.y
+        let magBA = sqrt(ba.x * ba.x + ba.y * ba.y)
+        let magBC = sqrt(bc.x * bc.x + bc.y * bc.y)
+        guard magBA > 0, magBC > 0 else { return nil }
+        let cosAngle = max(-1, min(1, dot / (magBA * magBC)))
+        return acos(cosAngle) * 180 / .pi
+    }
+
+    private func computeShoulderRotation(_ map: [String: JointData]) -> Double? {
+        guard let ls = map["left_shoulder"], let rs = map["right_shoulder"] else { return nil }
+        let dx = rs.x - ls.x
+        let dy = rs.y - ls.y
+        let angle = atan2(abs(dy), abs(dx)) * 180 / .pi
+        return 90 - angle
     }
 
     private struct CropInfo {

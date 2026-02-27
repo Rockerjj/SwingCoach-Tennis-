@@ -47,7 +47,7 @@ async def analyze_session(
 
         if supabase is not None:
             for stroke in result.strokes_detected:
-                supabase.table("stroke_analyses").insert({
+                stroke_row = {
                     "id": str(uuid4()),
                     "session_id": session_id,
                     "stroke_type": stroke.type,
@@ -55,7 +55,12 @@ async def analyze_session(
                     "grade": stroke.grade,
                     "mechanics": stroke.mechanics.model_dump(),
                     "overlay_instructions": stroke.overlay_instructions.model_dump(),
-                }).execute()
+                }
+                if stroke.phase_breakdown:
+                    stroke_row["phase_breakdown"] = stroke.phase_breakdown.model_dump()
+                if stroke.analysis_categories:
+                    stroke_row["analysis_categories"] = [c.model_dump() for c in stroke.analysis_categories]
+                supabase.table("stroke_analyses").insert(stroke_row).execute()
 
             supabase.table("sessions").update({
                 "status": "ready",

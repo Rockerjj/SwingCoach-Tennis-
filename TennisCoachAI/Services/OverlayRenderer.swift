@@ -183,16 +183,133 @@ final class OverlayRenderer {
         return resultImage
     }
 
+    // MARK: - Swing Path
+
+    func drawSwingPath(
+        on image: UIImage,
+        pathPoints: [[Double]],
+        planeAngle: Double?,
+        annotations: [PathAnnotation]?
+    ) -> UIImage {
+        let size = image.size
+
+        UIGraphicsBeginImageContextWithOptions(size, false, image.scale)
+        image.draw(at: .zero)
+        guard let context = UIGraphicsGetCurrentContext() else { return image }
+
+        let points = pathPoints.compactMap { coord -> CGPoint? in
+            guard coord.count >= 2 else { return nil }
+            return denormalize(x: coord[0], y: coord[1], in: size)
+        }
+
+        guard points.count >= 2 else {
+            UIGraphicsEndImageContext()
+            return image
+        }
+
+        if let angle = planeAngle {
+            drawSwingPlaneReference(context: context, angle: angle, size: size)
+        }
+
+        let pathColor = uiColor(theme.success)
+        context.setStrokeColor(pathColor.withAlphaComponent(0.3).cgColor)
+        context.setLineWidth(8.0)
+        context.setLineCap(.round)
+        context.setLineJoin(.round)
+        context.setShadow(offset: .zero, blur: 12, color: pathColor.withAlphaComponent(0.4).cgColor)
+
+        context.move(to: points[0])
+        for point in points.dropFirst() {
+            context.addLine(to: point)
+        }
+        context.strokePath()
+
+        context.setShadow(offset: .zero, blur: 0)
+        context.setStrokeColor(pathColor.cgColor)
+        context.setLineWidth(3.0)
+        context.move(to: points[0])
+        for point in points.dropFirst() {
+            context.addLine(to: point)
+        }
+        context.strokePath()
+
+        let resultImage = UIGraphicsGetImageFromCurrentImageContext() ?? image
+        UIGraphicsEndImageContext()
+        return resultImage
+    }
+
+    private func drawSwingPlaneReference(context: CGContext, angle: Double, size: CGSize) {
+        let centerX = size.width * 0.5
+        let centerY = size.height * 0.5
+        let length = max(size.width, size.height)
+        let radians = angle * .pi / 180.0
+
+        let dx = cos(radians) * length * 0.5
+        let dy = sin(radians) * length * 0.5
+
+        context.setStrokeColor(UIColor.white.withAlphaComponent(0.15).cgColor)
+        context.setLineWidth(1.5)
+        context.setLineDash(phase: 0, lengths: [6, 4])
+
+        context.move(to: CGPoint(x: centerX - dx, y: centerY + dy))
+        context.addLine(to: CGPoint(x: centerX + dx, y: centerY - dy))
+        context.strokePath()
+
+        context.setLineDash(phase: 0, lengths: [])
+    }
+
+    // MARK: - Pro Ghost Overlay
+
+    func drawProGhost(
+        on image: UIImage,
+        proJoints: [JointData],
+        opacity: CGFloat = 0.4
+    ) -> UIImage {
+        let size = image.size
+
+        UIGraphicsBeginImageContextWithOptions(size, false, image.scale)
+        image.draw(at: .zero)
+        guard let context = UIGraphicsGetCurrentContext() else { return image }
+
+        let jointMap = Dictionary(uniqueKeysWithValues: proJoints.map { ($0.name, $0) })
+        let ghostColor = UIColor(red: 0.83, green: 0.58, blue: 0.16, alpha: opacity)
+
+        for (startName, endName) in Self.boneConnections {
+            guard let start = jointMap[startName], let end = jointMap[endName] else { continue }
+
+            let startPoint = denormalize(x: start.x, y: start.y, in: size)
+            let endPoint = denormalize(x: end.x, y: end.y, in: size)
+
+            context.setStrokeColor(ghostColor.cgColor)
+            context.setLineWidth(2.5)
+            context.setLineCap(.round)
+            context.setShadow(offset: .zero, blur: 6, color: ghostColor.withAlphaComponent(0.3).cgColor)
+
+            context.move(to: startPoint)
+            context.addLine(to: endPoint)
+            context.strokePath()
+        }
+
+        context.setShadow(offset: .zero, blur: 0)
+
+        for joint in proJoints {
+            let point = denormalize(x: joint.x, y: joint.y, in: size)
+            context.setFillColor(ghostColor.cgColor)
+            context.fillEllipse(in: CGRect(x: point.x - 3, y: point.y - 3, width: 6, height: 6))
+        }
+
+        let resultImage = UIGraphicsGetImageFromCurrentImageContext() ?? image
+        UIGraphicsEndImageContext()
+        return resultImage
+    }
+
     // MARK: - Helpers
 
-    /// Vision framework returns normalized coords (0-1) with origin at bottom-left;
-    /// UIKit uses top-left origin. This converts.
     private func denormalize(x: Double, y: Double, in size: CGSize) -> CGPoint {
         CGPoint(x: x * size.width, y: (1.0 - y) * size.height)
     }
 
     private func uiColor(_ color: any ShapeStyle) -> UIColor {
-        // Fallback for theme colors — in production, theme colors should provide UIColor directly
         .white
     }
 

@@ -3,6 +3,9 @@ import AVFoundation
 
 struct RecordView: View {
     @StateObject private var viewModel = RecordViewModel()
+    @StateObject private var liveAnalyzer = LiveSwingAnalyzer()
+    @StateObject private var voiceFeedback = VoiceFeedbackService()
+    @State private var liveModeEnabled = false
     @Environment(\.modelContext) private var modelContext
     let theme = DesignSystem.current
     var switchToSessions: () -> Void
@@ -60,6 +63,16 @@ struct RecordView: View {
                         .font(AppFont.body(size: 16))
                         .foregroundStyle(theme.textSecondary)
                 }
+            }
+
+            if liveModeEnabled && viewModel.isRecording {
+                LiveFeedbackOverlayView(
+                    isActive: liveModeEnabled && viewModel.isRecording,
+                    currentPhase: liveAnalyzer.currentPhase,
+                    latestFeedback: liveAnalyzer.latestFeedback,
+                    formGrade: liveAnalyzer.currentFormGrade
+                )
+                .allowsHitTesting(false)
             }
 
             VStack {
@@ -198,6 +211,8 @@ struct RecordView: View {
 
     private var recordingControls: some View {
         HStack(spacing: Spacing.xxl) {
+            liveModeToggle
+
             if viewModel.isRecording {
                 Button(action: { viewModel.stopRecording() }) {
                     ZStack {
@@ -225,6 +240,26 @@ struct RecordView: View {
                 .disabled(!viewModel.isSessionReady)
                 .opacity(viewModel.isSessionReady ? 1 : 0.4)
             }
+
+            Color.clear.frame(width: 48, height: 48)
+        }
+    }
+
+    private var liveModeToggle: some View {
+        Button(action: {
+            liveModeEnabled.toggle()
+            voiceFeedback.isEnabled = liveModeEnabled
+        }) {
+            VStack(spacing: 3) {
+                Image(systemName: liveModeEnabled ? "waveform.circle.fill" : "waveform.circle")
+                    .font(.system(size: 24))
+                    .foregroundStyle(liveModeEnabled ? theme.accentSecondary : .white.opacity(0.6))
+
+                Text("Live")
+                    .font(AppFont.body(size: 10, weight: .semibold))
+                    .foregroundStyle(liveModeEnabled ? theme.accentSecondary : .white.opacity(0.6))
+            }
+            .frame(width: 48, height: 48)
         }
     }
 

@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, ConfigDict
-from typing import Optional
+from typing import Optional, Literal
 from datetime import datetime
 
 
@@ -21,6 +21,23 @@ class FramePoseData(BaseModel):
     confidence: float
 
 
+class MeasuredAngleData(BaseModel):
+    value: float
+    label: str
+    visible: bool
+
+
+class DetectedPhaseData(BaseModel):
+    timestamp: float
+    angles: dict[str, MeasuredAngleData] = {}
+
+
+class DetectedStrokeData(BaseModel):
+    type: str
+    contact_timestamp: float
+    phases: dict[str, DetectedPhaseData] = {}
+
+
 class SessionPosePayload(BaseModel):
     session_id: str
     duration_seconds: int
@@ -28,6 +45,8 @@ class SessionPosePayload(BaseModel):
     frames: list[FramePoseData]
     key_frame_timestamps: list[float]
     skill_level: str = "beginner"
+    handedness: str = "right"
+    detected_strokes: list[DetectedStrokeData] = []
 
 
 class UserProfile(BaseModel):
@@ -36,6 +55,9 @@ class UserProfile(BaseModel):
 
 
 # --- Response Models ---
+
+ZoneStatus = Literal["in_zone", "warning", "out_of_zone"]
+
 
 class MechanicDetail(BaseModel):
     score: int = Field(ge=1, le=10)
@@ -54,11 +76,83 @@ class StrokeMechanics(BaseModel):
     toss: Optional[MechanicDetail] = None
 
 
+# --- Swing Path Overlay ---
+
+class PathAnnotation(BaseModel):
+    label: str
+    position: list[float] = Field(min_length=2, max_length=2)
+    status: ZoneStatus = "in_zone"
+
+
 class OverlayInstructions(BaseModel):
     angles_to_highlight: list[str] = []
     trajectory_line: bool = False
     comparison_ghost: bool = False
+    swing_path_points: Optional[list[list[float]]] = None
+    swing_plane_angle: Optional[float] = None
+    path_annotations: Optional[list[PathAnnotation]] = None
 
+
+# --- 7-Phase Swing Breakdown ---
+
+class PhaseDetail(BaseModel):
+    score: int = Field(ge=1, le=10)
+    status: ZoneStatus = "in_zone"
+    note: str
+    timestamp: float
+    key_angles: list[str] = []
+    improve_cue: Optional[str] = None
+    drill: Optional[str] = None
+
+
+class PhaseBreakdown(BaseModel):
+    ready_position: Optional[PhaseDetail] = None
+    unit_turn: Optional[PhaseDetail] = None
+    backswing: Optional[PhaseDetail] = None
+    forward_swing: Optional[PhaseDetail] = None
+    contact_point: Optional[PhaseDetail] = None
+    follow_through: Optional[PhaseDetail] = None
+    recovery: Optional[PhaseDetail] = None
+
+
+# --- Analysis Report Card Categories ---
+
+class SubCheck(BaseModel):
+    checkpoint: str
+    result: str
+    status: ZoneStatus = "in_zone"
+
+
+class AnalysisCategory(BaseModel):
+    name: str
+    description: str
+    status: ZoneStatus = "in_zone"
+    subchecks: list[SubCheck] = []
+    thumbnail_phase: Optional[str] = None
+
+
+# --- Pro Comparison ---
+
+class AlignmentScore(BaseModel):
+    body_group: str
+    percentage: int = Field(ge=0, le=100)
+    status: ZoneStatus = "in_zone"
+
+
+class WindowBadge(BaseModel):
+    label: str
+    status: ZoneStatus = "in_zone"
+    phase: str = ""
+
+
+class ProComparisonResult(BaseModel):
+    pro_name: str
+    stroke_type: str
+    alignment_scores: list[AlignmentScore] = []
+    window_badges: list[WindowBadge] = []
+
+
+# --- Stroke Result (extended) ---
 
 class StrokeResult(BaseModel):
     type: str
@@ -69,6 +163,8 @@ class StrokeResult(BaseModel):
     grading_rationale: Optional[str] = None
     next_reps_plan: Optional[str] = None
     verified_sources: list[str] = []
+    phase_breakdown: Optional[PhaseBreakdown] = None
+    analysis_categories: Optional[list[AnalysisCategory]] = None
 
 
 class AnalysisResponse(BaseModel):

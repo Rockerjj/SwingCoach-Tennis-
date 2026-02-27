@@ -40,6 +40,9 @@ create table if not exists stroke_analyses (
     grade text not null,
     mechanics jsonb not null default '{}'::jsonb,
     overlay_instructions jsonb not null default '{}'::jsonb,
+    phase_breakdown jsonb,
+    analysis_categories jsonb,
+    pro_comparison jsonb,
     created_at timestamptz not null default now()
 );
 

@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 
 final class FeedbackService {
     static let shared = FeedbackService()
