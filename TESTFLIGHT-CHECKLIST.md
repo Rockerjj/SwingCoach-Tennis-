@@ -7,11 +7,11 @@
   - `CURRENT_PROJECT_VERSION` is `1`
   - Deployment target is `17.0`
 - [ ] Run `xcodegen generate` to regenerate `.xcodeproj` from `project.yml`
-- [ ] Open `TennisCoachAI.xcodeproj` in Xcode
+- [ ] Open `TennisIQ.xcodeproj` in Xcode
 - [ ] Set your Team in Signing & Capabilities
 - [ ] Verify Sign in with Apple capability is enabled in Xcode
 - [ ] Add a 1024x1024 app icon PNG to `Assets.xcassets/AppIcon.appiconset/` and update `Contents.json` with the filename
-- [ ] Select the `TennisCoachAI.storekit` configuration for StoreKit testing in Xcode scheme
+- [ ] Select the `TennisIQ.storekit` configuration for StoreKit testing in Xcode scheme
 
 ## Build & Test Locally
 
@@ -57,11 +57,11 @@
 
 ## App Store Connect Setup
 
-- [ ] Create app in App Store Connect with bundle ID `com.tenniscoachai.app`
+- [ ] Create app in App Store Connect with bundle ID `com.tennisiq.app`
 - [ ] Configure subscription products (see `app-store-metadata.md`)
 - [ ] Upload screenshots for all required device sizes
 - [ ] Fill in all metadata from `app-store-metadata.md`
-- [ ] Set Privacy Policy URL: `https://tenniscoachai.com/privacy`
+- [ ] Set Privacy Policy URL: `https://tennisiq.com/privacy`
 - [ ] Set App Store Contact Info
 - [ ] Add review notes from `app-store-metadata.md`
 - [ ] Submit for review

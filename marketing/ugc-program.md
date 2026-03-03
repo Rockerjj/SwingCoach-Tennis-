@@ -2,7 +2,7 @@
 
 ## Overview
 
-The app has a built-in viral loop: shareable analysis images with skeleton overlay, grade badge, and "Analyzed by Tennis Coach AI" watermark. This program incentivizes users to actually share.
+The app has a built-in viral loop: shareable analysis images with skeleton overlay, grade badge, and "Analyzed by Tennis IQ" watermark. This program incentivizes users to actually share.
 
 ---
 
@@ -12,7 +12,7 @@ The Share button in the analysis results screen generates a 1080x1920 image cont
 - Skeleton overlay of the user's body
 - Letter grade badge (A through F)
 - Stroke type label (Forehand, Backhand, Serve, Volley)
-- "Analyzed by Tennis Coach AI" watermark at the bottom
+- "Analyzed by Tennis IQ" watermark at the bottom
 
 Users can share to Instagram Stories, TikTok, save to camera roll, or send via messages.
 
@@ -21,10 +21,10 @@ Users can share to Instagram Stories, TikTok, save to camera roll, or send via m
 ## Incentive Tiers
 
 ### Tier 1: Share for Free Month
-**Offer:** Post your AI analysis on Instagram or TikTok with #TennisCoachAI and tag @tenniscoachai. DM us the link for 1 free month of premium.
+**Offer:** Post your AI analysis on Instagram or TikTok with #TennisIQ and tag @tennisiq. DM us the link for 1 free month of premium.
 
 **Verification:**
-- User DMs screenshot of their post with #TennisCoachAI
+- User DMs screenshot of their post with #TennisIQ
 - Post must be public
 - Post must include the analysis image from the app (watermark visible)
 - Grant promo code for 1 month free
@@ -53,7 +53,7 @@ Users can share to Instagram Stories, TikTok, save to camera roll, or send via m
 - Potential affiliate commission (30% of referral revenue)
 
 **Criteria:**
-- Posted 5+ analysis videos with #TennisCoachAI
+- Posted 5+ analysis videos with #TennisIQ
 - Generated 10+ App Store installs (tracked via their promo code)
 - Active user of the app (uses it at least weekly)
 
@@ -62,7 +62,7 @@ Users can share to Instagram Stories, TikTok, save to camera roll, or send via m
 ## Community Hashtag Strategy
 
 ### Primary Hashtag
-`#TennisCoachAI` — Track this across Instagram, TikTok, X, YouTube
+`#TennisIQ` — Track this across Instagram, TikTok, X, YouTube
 
 ### Secondary Hashtags (for specific campaigns)
 - `#AITennisChallenge` — Monthly improvement challenges
@@ -70,7 +70,7 @@ Users can share to Instagram Stories, TikTok, save to camera roll, or send via m
 - `#TennisBrainPower` — Educational AI coaching tips
 
 ### Monitoring
-- Check #TennisCoachAI daily for new posts
+- Check #TennisIQ daily for new posts
 - Like and comment on every post within 24 hours
 - Repost the best ones to official story/feed (with credit)
 - DM the poster thanking them + offering promo code
@@ -80,16 +80,16 @@ Users can share to Instagram Stories, TikTok, save to camera roll, or send via m
 ## Launch Promotion
 
 ### First 100 Sharers
-The first 100 users who share their analysis with #TennisCoachAI get 2 months free (instead of 1). Create FOMO and urgency.
+The first 100 users who share their analysis with #TennisIQ get 2 months free (instead of 1). Create FOMO and urgency.
 
 **Announcement Post:**
 ```
 🎾 Share Your AI Analysis, Get Free Premium
 
 For the next 100 people:
-1. Analyze your strokes in Tennis Coach AI
+1. Analyze your strokes in Tennis IQ
 2. Share the analysis image on Instagram or TikTok
-3. Use #TennisCoachAI and tag @tenniscoachai
+3. Use #TennisIQ and tag @tennisiq
 4. DM us the link
 
 You get 2 free months of unlimited AI coaching.
@@ -103,7 +103,7 @@ Download free on the App Store. Link in bio.
 
 ## Tracking Dashboard
 
-| Week | Posts with #TennisCoachAI | Promo Codes Sent | Est. Installs from UGC | Cost (Promo Value) |
+| Week | Posts with #TennisIQ | Promo Codes Sent | Est. Installs from UGC | Cost (Promo Value) |
 |------|--------------------------|------------------|------------------------|-------------------|
 | W1   |                          |                  |                        |                   |
 | W2   |                          |                  |                        |                   |

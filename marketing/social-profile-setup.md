@@ -5,7 +5,7 @@ Set up these accounts with consistent branding across all platforms.
 ---
 
 ## Handle
-`@tenniscoachai` on all platforms
+`@tennisiq` on all platforms
 
 ## Bio (adapt per platform character limits)
 
@@ -22,7 +22,7 @@ AI tennis coach 🎾 Film your strokes. Get instant coaching. Free on iOS.
 ## Link in Bio
 Use a link tree or direct App Store link:
 - Primary: App Store download link
-- Secondary: tenniscoachai.com
+- Secondary: tennisiq.com
 
 ## Profile Picture
 Use the app icon (tennis ball + AI brain motif in lime green #C8FF00 on dark background).
@@ -31,7 +31,7 @@ Use the app icon (tennis ball + AI brain motif in lime green #C8FF00 on dark bac
 
 ## Platform-Specific Setup
 
-### Instagram (@tenniscoachai)
+### Instagram (@tennisiq)
 - **Category:** App
 - **Bio:** AI-powered tennis coaching in your pocket. Film your strokes → get instant feedback 🎾
 - **Link:** App Store link
@@ -43,19 +43,19 @@ Use the app icon (tennis ball + AI brain motif in lime green #C8FF00 on dark bac
 - **Content format:** Reels (vertical 9:16)
 - **Post frequency:** 4-5x/week
 
-### TikTok (@tenniscoachai)
+### TikTok (@tennisiq)
 - **Bio:** Your AI tennis coach 🎾 See your skeleton. Get your grade. Improve every stroke.
 - **Link:** App Store link
 - **Content format:** Vertical video (9:16, 15-60 sec)
 - **Post frequency:** 5-7x/week (repurpose Instagram Reels)
 
-### YouTube (@tenniscoachai)
-- **Channel name:** Tennis Coach AI
+### YouTube (@tennisiq)
+- **Channel name:** Tennis IQ
 - **About:** AI-powered tennis stroke analysis app. We use computer vision and GPT-4o to analyze your form, grade your strokes, and give you personalized coaching — all from your iPhone.
 - **Content format:** YouTube Shorts (vertical, repurpose best Reels) + occasional long-form tutorials
 - **Post frequency:** 3-4 Shorts/week
 
-### Twitter/X (@tenniscoachai)
+### Twitter/X (@tennisiq)
 - **Bio:** AI tennis coach for your pocket. Film → Analyze → Improve. Built with Apple Vision + GPT-4o. iOS app.
 - **Pinned tweet:** Launch announcement with demo video
 - **Content:** Daily posts + engagement in tennis communities
@@ -80,7 +80,7 @@ Use the app icon (tennis ball + AI brain motif in lime green #C8FF00 on dark bac
 ## Hashtag Sets
 
 **Primary (use on every post):**
-#TennisCoachAI #AITennis #TennisTraining
+#TennisIQ #AITennis #TennisTraining
 
 **Rotation Set A (technique):**
 #TennisTips #TennisServe #TennisForehand #TennisBackhand #TennisVolley #TennisTechnique

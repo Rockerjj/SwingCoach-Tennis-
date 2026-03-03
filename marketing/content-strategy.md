@@ -1,4 +1,4 @@
-# UGC-First Content Strategy — Tennis Coach AI
+# UGC-First Content Strategy — Tennis IQ
 
 ## Core Thesis
 
@@ -18,7 +18,7 @@ The app's "magic moment" — skeleton overlay + instant AI grades — is inheren
 [3-8s SETUP]: Show yourself hitting the stroke naturally
 [8-15s REVEAL]: Cut to the app showing skeleton overlay
 [15-22s PAYOFF]: Show the grade + key coaching feedback
-[22-30s CTA]: "Download Tennis Coach AI — link in bio"
+[22-30s CTA]: "Download Tennis IQ — link in bio"
 ```
 
 **Variations:**

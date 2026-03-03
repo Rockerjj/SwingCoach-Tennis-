@@ -2,7 +2,7 @@ import SwiftUI
 import SwiftData
 
 @main
-struct TennisCoachAIApp: App {
+struct TennisIQApp: App {
     @StateObject private var authService = AuthService()
     @StateObject private var subscriptionService = SubscriptionService()
     private let analytics = AnalyticsService.shared

@@ -40,7 +40,7 @@ Never lead with "download my app." Build credibility by being genuinely helpful 
 Title: Used AI to analyze my serve — found 3 things I never noticed
 
 Body: I've been working on my serve for months and felt stuck. Started 
-using an app that does AI pose analysis (Tennis Coach AI) and it flagged 
+using an app that does AI pose analysis (Tennis IQ) and it flagged 
 my toss placement, contact height, and follow-through angle. Here's the 
 before/after with skeleton overlay. [images]
 
@@ -111,7 +111,7 @@ Subject: Free AI Tennis Coaching for Your Members
 
 Hi [Club Name],
 
-I built a free iOS app called Tennis Coach AI that uses AI to analyze 
+I built a free iOS app called Tennis IQ that uses AI to analyze 
 tennis strokes and provide coaching feedback. I'd love to offer your 
 members free premium access for 30 days.
 
@@ -151,7 +151,7 @@ Subject: Free AI tennis analysis tool for your students
 
 Hi [Coach Name],
 
-I built an iOS app called Tennis Coach AI that uses AI to analyze strokes 
+I built an iOS app called Tennis IQ that uses AI to analyze strokes 
 with skeleton overlays and letter grades. I think it could be a great 
 supplement to your lessons.
 

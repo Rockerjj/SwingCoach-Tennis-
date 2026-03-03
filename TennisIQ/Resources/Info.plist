@@ -8,11 +8,11 @@
 		<true/>
 	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>TennisCoachAI needs camera access to record your tennis sessions for AI analysis.</string>
+	<string>Tennis IQ needs camera access to record your tennis sessions for AI analysis.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>TennisCoachAI uses the microphone to capture audio during your session.</string>
+	<string>Tennis IQ uses the microphone to capture audio during your session.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>TennisCoachAI saves analyzed videos to your photo library.</string>
+	<string>Tennis IQ saves analyzed videos to your photo library.</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 </dict>

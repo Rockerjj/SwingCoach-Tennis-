@@ -15,7 +15,7 @@
 ### Account Setup
 1. Go to searchads.apple.com
 2. Create account with your Apple ID
-3. Link your app (com.tenniscoachai.app)
+3. Link your app (com.tennisiq.app)
 4. Set up conversion tracking (install + subscription events)
 
 ### Campaign Structure
@@ -127,7 +127,7 @@ Optimization: App Installs (switch to App Events/Purchase after 50+ events)
 Format: Vertical Video (9:16), 15-20 seconds
 Hook (0-3s): Text overlay "I let AI analyze my forehand..."
 Body (3-15s): Show hitting stroke -> cut to skeleton overlay -> show grade
-CTA (15-20s): "Download Tennis Coach AI — Free"
+CTA (15-20s): "Download Tennis IQ — Free"
 ```
 
 **Creative 2: "Before vs After" (Transformation)**

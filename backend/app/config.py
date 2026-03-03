@@ -3,7 +3,7 @@ from functools import lru_cache
 
 
 class Settings(BaseSettings):
-    app_name: str = "TennisCoachAI API"
+    app_name: str = "TennisIQ API"
     debug: bool = False
 
     # OpenAI
@@ -17,7 +17,7 @@ class Settings(BaseSettings):
 
     # Auth
     apple_team_id: str = ""
-    apple_bundle_id: str = "com.tenniscoachai.app"
+    apple_bundle_id: str = "com.tennisiq.app"
 
     # Rate limits
     max_video_duration_seconds: int = 1800

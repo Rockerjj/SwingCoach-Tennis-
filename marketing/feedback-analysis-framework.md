@@ -100,7 +100,7 @@ LIMIT 50;
 ```
 Thank you so much for the kind review! It means a lot. If you ever 
 want to suggest features or have feedback, reach out anytime at 
-support@tenniscoachai.com. Keep improving your game! 🎾
+support@tennisiq.com. Keep improving your game! 🎾
 ```
 
 **Negative Review (1-2 stars, UX issue):**
@@ -108,7 +108,7 @@ support@tenniscoachai.com. Keep improving your game! 🎾
 Thank you for the feedback — we're sorry about the [issue]. We're 
 actively working on improving this. We just pushed a fix in [version]. 
 Could you try updating the app? If the issue persists, please reach 
-out to support@tenniscoachai.com so we can help directly.
+out to support@tennisiq.com so we can help directly.
 ```
 
 **Negative Review (1-2 stars, analysis quality):**
@@ -116,7 +116,7 @@ out to support@tenniscoachai.com so we can help directly.
 We appreciate the honest feedback. Our AI analysis is constantly 
 improving — we take quality seriously. If you'd be open to sharing 
 the specific session that felt inaccurate, email us at 
-support@tenniscoachai.com and we'll investigate. Your input directly 
+support@tennisiq.com and we'll investigate. Your input directly 
 shapes our improvements.
 ```
 
@@ -140,12 +140,12 @@ shapes our improvements.
 
 ```
 Opening (2 min):
-"Thanks for taking the time. I'm trying to make Tennis Coach AI 
+"Thanks for taking the time. I'm trying to make Tennis IQ 
 better and your feedback is really valuable. No wrong answers."
 
 Usage (3 min):
 1. "How often do you play tennis?"
-2. "How did you first hear about Tennis Coach AI?"
+2. "How did you first hear about Tennis IQ?"
 3. "How often do you use the app?"
 
 Experience (5 min):

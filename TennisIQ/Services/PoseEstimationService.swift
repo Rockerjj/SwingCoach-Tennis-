@@ -10,7 +10,7 @@ final class PoseEstimationService: ObservableObject {
     @Published var isProcessing = false
     @Published var error: PoseError?
 
-    private let processingQueue = DispatchQueue(label: "com.tenniscoachai.pose", qos: .userInitiated)
+    private let processingQueue = DispatchQueue(label: "com.tennisiq.pose", qos: .userInitiated)
 
     enum PoseError: LocalizedError {
         case videoLoadFailed

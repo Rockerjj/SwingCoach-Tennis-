@@ -31,7 +31,7 @@ Subject: AI Tennis Analysis App — Free Lifetime Access for Your Channel
 Hi [Channel Name],
 
 I watch your stroke analysis videos regularly and built something I 
-think you'll find interesting — Tennis Coach AI, an iOS app that uses 
+think you'll find interesting — Tennis IQ, an iOS app that uses 
 computer vision (Apple Vision) and GPT-4o to analyze tennis strokes 
 with skeleton overlays and letter grades.
 
@@ -78,7 +78,7 @@ Look for accounts that post Reels about tennis technique, drills, and improvemen
 ```
 Hey [Name]! Love your tennis content, especially the [specific post] video.
 
-I built an AI tennis coaching app (Tennis Coach AI) that does skeleton 
+I built an AI tennis coaching app (Tennis IQ) that does skeleton 
 overlay analysis and grades strokes A through F. Would love to give you 
 free lifetime premium access to try it.
 
@@ -103,7 +103,7 @@ Subject: Story Pitch — AI is Now Coaching Tennis Players
 
 Hi [Host Name],
 
-I'm the founder of Tennis Coach AI, an iPhone app that uses AI to analyze 
+I'm the founder of Tennis IQ, an iPhone app that uses AI to analyze 
 tennis strokes and provide coaching feedback. Think of it as a private 
 coach in your pocket.
 

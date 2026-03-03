@@ -1,5 +1,5 @@
 {
-  "identifier" : "com.tenniscoachai.app.storekit",
+  "identifier" : "com.tennisiq.app.storekit",
   "nonRenewingSubscriptions" : [],
   "products" : [],
   "settings" : {
@@ -56,9 +56,9 @@
   },
   "subscriptionGroups" : [
     {
-      "id" : "tenniscoachai_premium",
+      "id" : "tennisiq_premium",
       "localizations" : [],
-      "name" : "TennisCoachAI Premium",
+      "name" : "TennisIQ Premium",
       "subscriptions" : [
         {
           "adHocOffers" : [],
@@ -75,10 +75,10 @@
               "locale" : "en_US"
             }
           ],
-          "productID" : "tenniscoachai_monthly",
+          "productID" : "tennisiq_monthly",
           "recurringSubscriptionPeriod" : "P1M",
           "referenceName" : "Monthly Premium",
-          "subscriptionGroupID" : "tenniscoachai_premium",
+          "subscriptionGroupID" : "tennisiq_premium",
           "type" : "RecurringSubscription"
         },
         {
@@ -96,10 +96,10 @@
               "locale" : "en_US"
             }
           ],
-          "productID" : "tenniscoachai_annual",
+          "productID" : "tennisiq_annual",
           "recurringSubscriptionPeriod" : "P1Y",
           "referenceName" : "Annual Premium",
-          "subscriptionGroupID" : "tenniscoachai_premium",
+          "subscriptionGroupID" : "tennisiq_premium",
           "type" : "RecurringSubscription"
         }
       ]
