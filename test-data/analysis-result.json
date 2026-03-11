@@ -1,0 +1,330 @@
+{
+  "session_grade": "C+",
+  "strokes_detected": [
+    {
+      "type": "forehand",
+      "timestamp": 12.0,
+      "grade": "C+",
+      "mechanics": {
+        "backswing": {
+          "score": 7,
+          "note": "At backswing, elbow was 100\u00b0 and shoulder rotation was 65\u00b0, which is within the ideal turn range and shows better coil than earlier phases.",
+          "why_score": "Shoulder rotation at 65\u00b0 is in the ideal range, but hip angle at 150\u00b0 is slightly below the 155-175\u00b0 reference and the arm extension at 90\u00b0 indicates a compact shape rather than a fully organized hitting structure.",
+          "improve_cue": "Turn the chest more early, then keep the hitting arm relaxed and organized.",
+          "drill": "Shadow unit-turn to backswing holds, 3 sets of 8 reps with a 2-second pause.",
+          "sources": [
+            "ITF forehand biomechanics guidance",
+            "USTA forehand preparation fundamentals"
+          ]
+        },
+        "contact_point": {
+          "score": 7,
+          "note": "At contact, elbow reached 155\u00b0, which is right at the ideal contact range, while arm extension was 150\u00b0, slightly short of the ideal 160-180\u00b0.",
+          "why_score": "The contact structure is functional because elbow angle meets the target, but limited shoulder rotation at 20\u00b0 and slightly short extension reduce power transfer and spacing quality.",
+          "improve_cue": "Reach through the ball with a longer strike zone.",
+          "drill": "Self-drop forehands with freeze at contact, 3 sets of 10 reps.",
+          "sources": [
+            "ITF impact position references",
+            "USTA contact-point fundamentals"
+          ]
+        },
+        "follow_through": {
+          "score": 6,
+          "note": "Follow-through showed elbow at 90\u00b0, shoulder rotation at 10\u00b0, and arm extension at 100\u00b0, indicating a compact finish with limited rotational release.",
+          "why_score": "The finish is controlled, but the low shoulder rotation and shortened arm path suggest the swing may be decelerating too early rather than fully releasing through the shot.",
+          "improve_cue": "Let the chest and arm continue to wrap naturally after contact.",
+          "drill": "Low-to-high shadow swings finishing over the shoulder, 2 sets of 12 reps.",
+          "sources": [
+            "ITF swing path and deceleration principles",
+            "USTA forehand finish fundamentals"
+          ]
+        },
+        "stance": {
+          "score": 8,
+          "note": "Ready and swing-phase lower body was generally stable, with knee angles of 155\u00b0, 145\u00b0, 140\u00b0, 135\u00b0, and 140\u00b0 staying in or near the ideal ready range.",
+          "why_score": "Knee bend and hip posture were consistent and supportive, giving a solid base. The main issue is not stance stability but insufficient upper-body turn on top of that base.",
+          "improve_cue": "Keep the same base, but coil the shoulders more over it.",
+          "drill": "Split-step to load-position repetitions, 3 sets of 10 reps.",
+          "sources": [
+            "USTA movement and stance fundamentals",
+            "ITF lower-body loading guidance"
+          ]
+        },
+        "toss": null
+      },
+      "overlay_instructions": {
+        "angles_to_highlight": [
+          "Ready t=10.0s - Knee: 155\u00b0 (ideal: 130-155\u00b0)",
+          "Unit turn t=10.5s - Shoulder rotation: 45\u00b0 (ideal: 60-90\u00b0+)",
+          "Backswing t=11.0s - Shoulder rotation: 65\u00b0 (ideal: 60-90\u00b0+)",
+          "Contact t=12.0s - Elbow: 155\u00b0 (ideal: 155-175\u00b0)",
+          "Contact t=12.0s - Arm extension: 150\u00b0 (ideal: 160-180\u00b0)",
+          "Contact t=12.0s - Shoulder rotation: 20\u00b0 (ideal: 60-90\u00b0+)"
+        ],
+        "trajectory_line": true,
+        "comparison_ghost": true,
+        "swing_path_points": null,
+        "swing_plane_angle": null,
+        "path_annotations": null
+      },
+      "grading_rationale": "This forehand shows solid lower-body setup, with knee bend in the ideal range at ready position (155\u00b0) and contact (140\u00b0), and hip angles generally stable between 160-170\u00b0. The biggest limitation is torso coil and uncoil: shoulder rotation measured only 15\u00b0 in ready position, 45\u00b0 in unit turn, and 20\u00b0 at contact, which is well below the ideal 60-90\u00b0+ turn for efficient forehand loading. Contact structure is usable with elbow at 155\u00b0 meeting the ideal contact range, but arm extension at contact was 150\u00b0, slightly short of the ideal 160-180\u00b0, suggesting reduced reach and strike-zone extension.",
+      "next_reps_plan": "3 sets of 10 shadow forehands emphasizing a bigger unit turn to at least the feel of 60-90\u00b0 shoulder coil, then 3 sets of 8 self-drop forehands focusing on reaching through contact with a longer arm extension. Finish with 2 sets of 10 split-step to unit-turn reps, pausing at t=10.5s feel positions before swinging.",
+      "verified_sources": [
+        "International Tennis Federation (ITF) biomechanics and stroke production guidance",
+        "United States Tennis Association (USTA) player development forehand fundamentals"
+      ],
+      "phase_breakdown": {
+        "ready_position": {
+          "score": 7,
+          "status": "warning",
+          "note": "The base is solid with knee at 155\u00b0 and hip at 170\u00b0, both in the ideal ready-position range. Shoulder rotation is only 15\u00b0, well below the ideal 60-90\u00b0+, so the stroke starts with limited coil.",
+          "timestamp": 10.0,
+          "key_angles": [
+            "Elbow: 145\u00b0",
+            "Knee: 155\u00b0 (ideal: 130-155\u00b0)",
+            "Hip: 170\u00b0 (ideal: 155-175\u00b0)",
+            "Shoulder rotation: 15\u00b0 (ideal: 60-90\u00b0+)",
+            "Arm extension: 60\u00b0"
+          ],
+          "improve_cue": "Set your base, then turn your shoulders sooner.",
+          "drill": "Split-step to unit-turn shadow reps, 2 sets of 10."
+        },
+        "unit_turn": {
+          "score": 5,
+          "status": "warning",
+          "note": "Knee at 145\u00b0 and hip at 160\u00b0 are supportive, but shoulder rotation at 45\u00b0 is still below the ideal 60-90\u00b0+ range. This suggests incomplete torso loading for an intermediate forehand.",
+          "timestamp": 10.5,
+          "key_angles": [
+            "Elbow: 130\u00b0",
+            "Knee: 145\u00b0 (ideal: 130-155\u00b0)",
+            "Hip: 160\u00b0 (ideal: 155-175\u00b0)",
+            "Shoulder rotation: 45\u00b0 (ideal: 60-90\u00b0+)",
+            "Arm extension: 70\u00b0"
+          ],
+          "improve_cue": "Show more of your back to the net on the turn.",
+          "drill": "Unit-turn pause drill, 3 sets of 8 reps with a 2-second hold."
+        },
+        "backswing": {
+          "score": 8,
+          "status": "in_zone",
+          "note": "This is the strongest loading phase: shoulder rotation reaches 65\u00b0, which is inside the ideal range, and knee bend at 140\u00b0 supports balance. Hip angle at 150\u00b0 is slightly below the 155-175\u00b0 reference, but overall the backswing is organized.",
+          "timestamp": 11.0,
+          "key_angles": [
+            "Elbow: 100\u00b0",
+            "Knee: 140\u00b0 (ideal: 130-155\u00b0)",
+            "Hip: 150\u00b0 (ideal: 155-175\u00b0)",
+            "Shoulder rotation: 65\u00b0 (ideal: 60-90\u00b0+)",
+            "Arm extension: 90\u00b0"
+          ],
+          "improve_cue": "Keep this coil, then drive forward from the same loaded base.",
+          "drill": "Shadow backswing-to-launch reps, 3 sets of 8."
+        },
+        "forward_swing": {
+          "score": 6,
+          "status": "warning",
+          "note": "Knee at 135\u00b0 and hip at 155\u00b0 are in the ideal range, but shoulder rotation drops to 40\u00b0, below the ideal 60-90\u00b0+ benchmark. That indicates the swing is moving forward without maximizing rotational contribution.",
+          "timestamp": 11.5,
+          "key_angles": [
+            "Elbow: 120\u00b0",
+            "Knee: 135\u00b0 (ideal: 130-155\u00b0)",
+            "Hip: 155\u00b0 (ideal: 155-175\u00b0)",
+            "Shoulder rotation: 40\u00b0 (ideal: 60-90\u00b0+)",
+            "Arm extension: 120\u00b0"
+          ],
+          "improve_cue": "Uncoil the chest through the ball instead of just pushing the arm.",
+          "drill": "Medicine-ball style torso-rotation shadows without a ball, 2 sets of 10."
+        },
+        "contact_point": {
+          "score": 7,
+          "status": "warning",
+          "note": "Elbow at contact is 155\u00b0, which meets the ideal 155-175\u00b0 range, and knee at 140\u00b0 plus hip at 165\u00b0 provide a stable strike base. Arm extension at 150\u00b0 is slightly short of the ideal 160-180\u00b0, and shoulder rotation at 20\u00b0 is far below the ideal rotational benchmark, so contact is stable but not fully extended or driven.",
+          "timestamp": 12.0,
+          "key_angles": [
+            "Elbow: 155\u00b0 (ideal: 155-175\u00b0)",
+            "Knee: 140\u00b0 (ideal: 130-155\u00b0)",
+            "Hip: 165\u00b0 (ideal: 155-175\u00b0)",
+            "Shoulder rotation: 20\u00b0 (ideal: 60-90\u00b0+)",
+            "Arm extension: 150\u00b0 (ideal: 160-180\u00b0)"
+          ],
+          "improve_cue": "Meet the ball farther in front and extend through it.",
+          "drill": "Drop-feed contact freeze drill, 3 sets of 10."
+        },
+        "follow_through": {
+          "score": 6,
+          "status": "warning",
+          "note": "The finish is compact, with elbow at 90\u00b0 and arm extension at 100\u00b0. Knee at 145\u00b0 and hip at 170\u00b0 remain stable, but shoulder rotation at 10\u00b0 suggests limited rotational release after contact.",
+          "timestamp": 12.5,
+          "key_angles": [
+            "Elbow: 90\u00b0",
+            "Knee: 145\u00b0 (ideal: 130-155\u00b0)",
+            "Hip: 170\u00b0 (ideal: 155-175\u00b0)",
+            "Shoulder rotation: 10\u00b0 (ideal: 60-90\u00b0+)",
+            "Arm extension: 100\u00b0"
+          ],
+          "improve_cue": "Let the swing finish fully across and up.",
+          "drill": "Finish-over-shoulder shadow swings, 2 sets of 12."
+        },
+        "recovery": {
+          "score": 7,
+          "status": "in_zone",
+          "note": "Recovery posture is balanced with knee at 155\u00b0 and hip at 175\u00b0, both in the ideal range. Shoulder rotation returns to 5\u00b0, which is expected in recovery, and the body appears structurally reset well for the next ball.",
+          "timestamp": 13.0,
+          "key_angles": [
+            "Elbow: 140\u00b0",
+            "Knee: 155\u00b0 (ideal: 130-155\u00b0)",
+            "Hip: 175\u00b0 (ideal: 155-175\u00b0)",
+            "Shoulder rotation: 5\u00b0 (ideal: 60-90\u00b0+)",
+            "Arm extension: 50\u00b0"
+          ],
+          "improve_cue": "Recover with the same balance you had at setup.",
+          "drill": "Hit-and-recover footwork pattern, 2 sets of 8 reps."
+        }
+      },
+      "analysis_categories": [
+        {
+          "name": "Setup Posture",
+          "description": "Ready position and initial body organization",
+          "status": "in_zone",
+          "subchecks": [
+            {
+              "checkpoint": "Knee Bend",
+              "result": "155\u00b0 is in the ideal 130-155\u00b0 range",
+              "status": "in_zone"
+            },
+            {
+              "checkpoint": "Hip Posture",
+              "result": "170\u00b0 is in the ideal 155-175\u00b0 range",
+              "status": "in_zone"
+            },
+            {
+              "checkpoint": "Initial Shoulder Coil",
+              "result": "15\u00b0 is well below the ideal 60-90\u00b0+ range",
+              "status": "warning"
+            }
+          ],
+          "thumbnail_phase": "ready_position"
+        },
+        {
+          "name": "Swing Path",
+          "description": "Preparation through forward acceleration",
+          "status": "warning",
+          "subchecks": [
+            {
+              "checkpoint": "Unit Turn",
+              "result": "45\u00b0 shoulder rotation is below ideal",
+              "status": "warning"
+            },
+            {
+              "checkpoint": "Backswing Coil",
+              "result": "65\u00b0 shoulder rotation is in the ideal range",
+              "status": "in_zone"
+            },
+            {
+              "checkpoint": "Forward Uncoil",
+              "result": "40\u00b0 shoulder rotation indicates limited rotational drive",
+              "status": "warning"
+            }
+          ],
+          "thumbnail_phase": "backswing"
+        },
+        {
+          "name": "Footwork",
+          "description": "Base, balance, and lower-body support",
+          "status": "in_zone",
+          "subchecks": [
+            {
+              "checkpoint": "Ready Base",
+              "result": "Knee and hip angles were stable and within ideal ranges",
+              "status": "in_zone"
+            },
+            {
+              "checkpoint": "Load Through Swing",
+              "result": "Knee angles from 135-145\u00b0 supported balance and drive",
+              "status": "in_zone"
+            }
+          ],
+          "thumbnail_phase": "ready_position"
+        },
+        {
+          "name": "Contact Zone",
+          "description": "Strike position and extension at impact",
+          "status": "warning",
+          "subchecks": [
+            {
+              "checkpoint": "Elbow at Contact",
+              "result": "155\u00b0 meets the ideal 155-175\u00b0 range",
+              "status": "in_zone"
+            },
+            {
+              "checkpoint": "Arm Extension",
+              "result": "150\u00b0 is slightly below the ideal 160-180\u00b0 range",
+              "status": "warning"
+            },
+            {
+              "checkpoint": "Rotational Support at Contact",
+              "result": "20\u00b0 shoulder rotation is below ideal",
+              "status": "warning"
+            }
+          ],
+          "thumbnail_phase": "contact_point"
+        },
+        {
+          "name": "Follow-Through",
+          "description": "Finish and deceleration",
+          "status": "warning",
+          "subchecks": [
+            {
+              "checkpoint": "Finish Shape",
+              "result": "Elbow 90\u00b0 and arm extension 100\u00b0 indicate a compact finish",
+              "status": "warning"
+            },
+            {
+              "checkpoint": "Body Release",
+              "result": "10\u00b0 shoulder rotation suggests limited release after contact",
+              "status": "warning"
+            }
+          ],
+          "thumbnail_phase": "follow_through"
+        },
+        {
+          "name": "Spine Stability",
+          "description": "Core-supported posture through the stroke",
+          "status": "in_zone",
+          "subchecks": [
+            {
+              "checkpoint": "Hip-Knee Structure",
+              "result": "Hip 155\u00b0 and knee 135\u00b0 at forward swing show stable support",
+              "status": "in_zone"
+            }
+          ],
+          "thumbnail_phase": "forward_swing"
+        },
+        {
+          "name": "Posture at Impact",
+          "description": "Body alignment and strike support at contact",
+          "status": "warning",
+          "subchecks": [
+            {
+              "checkpoint": "Lower-Body Stability",
+              "result": "Knee 140\u00b0 and hip 165\u00b0 are in ideal ranges",
+              "status": "in_zone"
+            },
+            {
+              "checkpoint": "Upper-Body Contribution",
+              "result": "Shoulder rotation 20\u00b0 is below ideal and limits power transfer",
+              "status": "warning"
+            }
+          ],
+          "thumbnail_phase": "contact_point"
+        }
+      ]
+    }
+  ],
+  "tactical_notes": [
+    "The stroke has a stable base, so the next tactical gain is not footwork but creating more shoulder coil to produce heavier, deeper forehands.",
+    "With current contact extension at 150\u00b0, you may struggle to drive through balls consistently when rushed; improving spacing and extension should help rally tolerance."
+  ],
+  "top_priority": "Increase shoulder rotation during the unit turn and into the swing, because the measured 45\u00b0 at unit turn and 20\u00b0 at contact are the biggest limits on power, spacing, and overall forehand efficiency.",
+  "overall_mechanics_score": 67.0,
+  "session_summary": "This session contained one forehand with a solid lower-body base and acceptable contact structure, especially the 155\u00b0 elbow angle at impact. The main technical issue is insufficient shoulder turn and rotational release, with only 45\u00b0 at unit turn and 20\u00b0 at contact compared with the ideal 60-90\u00b0+ benchmark. Prioritize bigger torso coil and longer extension through contact to raise both power and consistency."
+}
