@@ -3,7 +3,7 @@ import logging
 from uuid import uuid4
 from datetime import datetime
 
-from fastapi import APIRouter, UploadFile, File, Depends, HTTPException
+from fastapi import APIRouter, UploadFile, File, Depends, HTTPException, Request
 from typing import Optional
 from supabase import Client
 
@@ -18,18 +18,36 @@ router = APIRouter(prefix="/sessions", tags=["sessions"])
 
 @router.post("/analyze", response_model=AnalysisResponse)
 async def analyze_session(
-    pose_data: UploadFile = File(...),
+    request: Request,
     user_id: str = Depends(get_current_user_id),
     supabase: Optional[Client] = Depends(get_supabase),
 ):
-    pose_bytes = await pose_data.read()
+    # Parse multipart form: pose_data + key_frame_0, key_frame_1, ...
+    form = await request.form()
+
+    pose_file = form.get("pose_data")
+    if pose_file is None:
+        raise HTTPException(status_code=400, detail="Missing pose_data")
+
+    pose_bytes = await pose_file.read()
     try:
         pose_dict = json.loads(pose_bytes)
         pose_payload = SessionPosePayload(**pose_dict)
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Invalid pose data: {e}")
 
+    # Read all key frame images from multipart (key_frame_0, key_frame_1, ...)
     key_frame_images: list[bytes] = []
+    for key in sorted(form.keys()):
+        if key.startswith("key_frame_"):
+            try:
+                img_bytes = await form[key].read()
+                if img_bytes:
+                    key_frame_images.append(img_bytes)
+            except Exception as e:
+                logger.warning(f"Failed to read {key}: {e}")
+
+    logger.info(f"Received {len(key_frame_images)} key frame images for analysis")
     session_id = pose_payload.session_id or str(uuid4())
 
     if supabase is not None:

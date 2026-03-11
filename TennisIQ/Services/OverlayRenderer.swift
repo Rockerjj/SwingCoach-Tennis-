@@ -310,7 +310,12 @@ final class OverlayRenderer {
     }
 
     private func uiColor(_ color: any ShapeStyle) -> UIColor {
-        .white
+        // ShapeStyle can be a Color in most of our usage; attempt to cast
+        if let swiftUIColor = color as? Color {
+            return UIColor(swiftUIColor)
+        }
+        // Fallback for non-Color ShapeStyles
+        return .white
     }
 
     private func uiColor(_ color: Color) -> UIColor {

@@ -52,7 +52,7 @@ class LLMCoachingService:
                     "type": "image_url",
                     "image_url": {
                         "url": f"data:image/jpeg;base64,{b64}",
-                        "detail": "low",
+                        "detail": "high",
                     },
                 })
             except Exception as e:
@@ -71,7 +71,7 @@ class LLMCoachingService:
             ],
             response_format={"type": "json_object"},
             temperature=0.3,
-            max_tokens=8000,
+            max_tokens=12000,
         )
 
         raw_json = response.choices[0].message.content
@@ -84,7 +84,7 @@ class LLMCoachingService:
             logger.error(f"Failed to parse LLM response: {e}\nRaw: {raw_json[:500]}")
             raise ValueError(f"LLM returned invalid analysis format: {e}")
 
-    def _resize_image(self, img_bytes: bytes, max_size: int = 512) -> bytes:
+    def _resize_image(self, img_bytes: bytes, max_size: int = 1024) -> bytes:
         img = Image.open(BytesIO(img_bytes))
         img.thumbnail((max_size, max_size), Image.Resampling.LANCZOS)
         buffer = BytesIO()

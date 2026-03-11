@@ -34,7 +34,10 @@ def get_current_user_id(
     settings = get_settings()
 
     # In debug mode, accept any token and return a dev user ID
-    if settings.debug:
+    # SAFETY: Only allow debug bypass when explicitly enabled via env
+    import os
+    if settings.debug and os.getenv("ALLOW_DEBUG_AUTH", "").lower() == "true":
+        logger.warning("DEBUG AUTH: Bypassing token verification — do NOT use in production")
         return "dev-user-001"
 
     token = authorization.removeprefix("Bearer ").strip()

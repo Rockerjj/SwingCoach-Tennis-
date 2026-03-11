@@ -145,8 +145,18 @@ final class PoseEstimationService: ObservableObject {
     private func detectPose(in pixelBuffer: CVPixelBuffer, frameIndex: Int, timestamp: Double) async throws -> FramePoseData? {
         let request = VNDetectHumanBodyPoseRequest()
 
+        // Dispatch Vision work to processing queue to avoid blocking cooperative thread pool
         let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
-        try handler.perform([request])
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            processingQueue.async {
+                do {
+                    try handler.perform([request])
+                    continuation.resume()
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
 
         guard let observation = request.results?.first else { return nil }
 

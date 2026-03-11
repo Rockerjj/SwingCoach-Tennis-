@@ -233,7 +233,7 @@ final class StrokeDetector {
         }
 
         let isRight = handedness == .right
-        let midX = (map["left_shoulder"]?.x ?? 0.5 + (map["right_shoulder"]?.x ?? 0.5)) / 2
+        let midX = ((map["left_shoulder"]?.x ?? 0.5) + (map["right_shoulder"]?.x ?? 0.5)) / 2
 
         if isRight {
             return wrist.x > midX ? "forehand" : "backhand"
