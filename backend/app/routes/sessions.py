@@ -51,7 +51,7 @@ async def analyze_session(
     session_id = pose_payload.session_id or str(uuid4())
 
     if supabase is not None:
-        supabase.table("sessions").insert({
+        supabase.table("sessions").upsert({
             "id": session_id,
             "user_id": user_id,
             "recorded_at": datetime.utcnow().isoformat(),
@@ -71,14 +71,13 @@ async def analyze_session(
                     "stroke_type": stroke.type,
                     "timestamp": stroke.timestamp,
                     "grade": stroke.grade,
-                    "mechanics": stroke.mechanics.model_dump(),
-                    "overlay_instructions": stroke.overlay_instructions.model_dump(),
+                    "mechanics": stroke.mechanics.model_dump() if stroke.mechanics else {},
+                    "overlay_instructions": stroke.overlay_instructions.model_dump() if stroke.overlay_instructions else {},
                 }
-                if stroke.phase_breakdown:
-                    stroke_row["phase_breakdown"] = stroke.phase_breakdown.model_dump()
-                if stroke.analysis_categories:
-                    stroke_row["analysis_categories"] = [c.model_dump() for c in stroke.analysis_categories]
-                supabase.table("stroke_analyses").insert(stroke_row).execute()
+                try:
+                    supabase.table("stroke_analyses").insert(stroke_row).execute()
+                except Exception as e:
+                    logger.warning(f"Failed to insert stroke analysis: {e}")
 
             supabase.table("sessions").update({
                 "status": "ready",

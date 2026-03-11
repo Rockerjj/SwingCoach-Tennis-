@@ -44,7 +44,11 @@ class LLMCoachingService:
 
         content: list[dict] = [{"type": "text", "text": user_prompt}]
 
-        for img_bytes in key_frame_images[:10]:
+        # Limit images based on stroke count to stay within token budget
+        max_images = 6 if len(pose_payload.detected_strokes) > 3 else 10
+        image_detail = "low" if len(pose_payload.detected_strokes) > 4 else "high"
+
+        for img_bytes in key_frame_images[:max_images]:
             try:
                 resized = self._resize_image(img_bytes, max_size=512)
                 b64 = base64.b64encode(resized).decode("utf-8")
@@ -52,7 +56,7 @@ class LLMCoachingService:
                     "type": "image_url",
                     "image_url": {
                         "url": f"data:image/jpeg;base64,{b64}",
-                        "detail": "high",
+                        "detail": image_detail,
                     },
                 })
             except Exception as e:
@@ -71,18 +75,37 @@ class LLMCoachingService:
             ],
             response_format={"type": "json_object"},
             temperature=0.3,
-            max_completion_tokens=12000,
+            max_completion_tokens=32000,
         )
 
-        raw_json = response.choices[0].message.content
-        logger.info(f"LLM response received, tokens used: {response.usage.total_tokens}")
+        choice = response.choices[0]
+        raw_json = choice.message.content
+        finish_reason = choice.finish_reason
+        refusal = getattr(choice.message, 'refusal', None)
+
+        logger.info(
+            f"LLM response received, tokens used: {response.usage.total_tokens}, "
+            f"finish_reason={finish_reason}, refusal={refusal}, "
+            f"content_length={len(raw_json) if raw_json else 0}"
+        )
+
+        if refusal:
+            logger.error(f"LLM refused the request: {refusal}")
+            raise ValueError(f"LLM refused to analyze: {refusal}")
+
+        if not raw_json or not raw_json.strip():
+            logger.error(f"LLM returned empty content. finish_reason={finish_reason}")
+            raise ValueError(f"LLM returned empty response (finish_reason={finish_reason})")
 
         try:
             parsed = json.loads(raw_json)
             return AnalysisResponse(**parsed)
-        except (json.JSONDecodeError, Exception) as e:
-            logger.error(f"Failed to parse LLM response: {e}\nRaw: {raw_json[:500]}")
-            raise ValueError(f"LLM returned invalid analysis format: {e}")
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse LLM JSON: {e}\nRaw: {raw_json[:1000]}")
+            raise ValueError(f"LLM returned invalid JSON: {e}")
+        except Exception as e:
+            logger.error(f"Failed to validate response: {e}\nRaw: {raw_json[:1000]}")
+            raise ValueError(f"LLM response didn't match schema: {e}")
 
     def _resize_image(self, img_bytes: bytes, max_size: int = 1024) -> bytes:
         img = Image.open(BytesIO(img_bytes))

@@ -33,16 +33,18 @@ class DetectedPhaseData(BaseModel):
 
 
 class DetectedStrokeData(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
     type: str
-    contact_timestamp: float
+    contact_timestamp: float = Field(alias="contactTimestamp", default=0.0)
     phases: dict[str, DetectedPhaseData] = {}
 
 
 class SessionPosePayload(BaseModel):
-    session_id: str
-    duration_seconds: int
-    fps: int
-    frames: list[FramePoseData]
+    model_config = ConfigDict(populate_by_name=True)
+    session_id: str = ""
+    duration_seconds: int = 0
+    fps: int = 30
+    frames: list[FramePoseData] = []
     key_frame_timestamps: list[float]
     skill_level: str = "beginner"
     handedness: str = "right"
