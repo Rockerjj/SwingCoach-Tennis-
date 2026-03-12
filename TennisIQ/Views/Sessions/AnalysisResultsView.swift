@@ -446,9 +446,19 @@ struct AnalysisResultsView: View {
                 }
                 .clipped()
 
-                if showOverlay {
-                    OverlayInfoBadges(selectedStroke: selectedStroke)
-                }
+                VideoFocusInsightCard(
+                    selectedStroke: selectedStroke,
+                    selectedPhase: selectedPhase,
+                    onJumpToFocus: {
+                        if let phase = selectedPhase,
+                           let breakdown = selectedStroke?.phaseBreakdown,
+                           let detail = breakdown.detail(for: phase) {
+                            playback.seekTo(timestamp: detail.timestamp)
+                        } else if let stroke = selectedStroke {
+                            playback.selectStroke(stroke)
+                        }
+                    }
+                )
 
                 StrokeTimelineStrip(
                     strokes: session.strokeAnalyses,
@@ -473,7 +483,18 @@ struct AnalysisResultsView: View {
 
                 SessionSummaryCard(
                     session: session,
-                    analysisCategories: selectedStroke?.analysisCategories
+                    analysisCategories: selectedStroke?.analysisCategories,
+                    onSelectCategory: { category in
+                        if let phase = selectedStroke?.phaseBreakdown?.allPhases.first(where: {
+                            ($0.0.displayName.localizedCaseInsensitiveContains(category.name)) ||
+                            (category.name.localizedCaseInsensitiveContains($0.0.displayName))
+                        })?.0 {
+                            selectedPhase = phase
+                            if let detail = selectedStroke?.phaseBreakdown?.detail(for: phase) {
+                                playback.seekTo(timestamp: detail.timestamp)
+                            }
+                        }
+                    }
                 )
 
                 ProCompareButton(
@@ -622,9 +643,8 @@ struct LiveVideoPlayerSection: View {
         if hasVideo {
             ZStack {
                 PlayerLayerView(player: playback.player)
-                    .containerRelativeFrame(.vertical) { height, _ in
-                        height * 0.62
-                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: UIScreen.main.bounds.height * 0.68)
                     .clipped()
                     .onTapGesture { playback.togglePlayPause() }
 
@@ -643,9 +663,8 @@ struct LiveVideoPlayerSection: View {
     private var noVideoPlaceholder: some View {
         Rectangle()
             .fill(theme.surfaceSecondary)
-            .containerRelativeFrame(.vertical) { height, _ in
-                height * 0.62
-            }
+            .frame(maxWidth: .infinity)
+            .frame(height: UIScreen.main.bounds.height * 0.68)
             .overlay {
                 VStack(spacing: Spacing.xs) {
                     Image(systemName: "video.slash")
@@ -667,6 +686,8 @@ struct VideoControlsOverlay: View {
     @Binding var showSwingPath: Bool
     private let theme = DesignSystem.current
 
+    @State private var showSpeedOptions = false
+
     var body: some View {
         VStack {
             topControls
@@ -676,74 +697,84 @@ struct VideoControlsOverlay: View {
     }
 
     private var topControls: some View {
-        HStack {
+        HStack(alignment: .top) {
             if playback.isInStrokeWindow && playback.autoSlowEnabled {
                 StrokeWindowBadge()
             }
             Spacer()
             overlayToggleButton
         }
-        .padding(Spacing.sm)
+        .padding(.horizontal, Spacing.md)
+        .padding(.top, Spacing.lg)
     }
 
     private var bottomControls: some View {
-        HStack(spacing: Spacing.sm) {
+        HStack(alignment: .bottom) {
             PlayPauseButton(isPlaying: playback.isPlaying) {
                 playback.togglePlayPause()
             }
 
-            SpeedPicker(
-                selectedSpeed: playback.selectedSpeed,
-                onSelect: { playback.setSpeed($0) }
-            )
-
             Spacer()
 
-            swingPathToggleButton
-
-            AutoSlowToggle(
-                isEnabled: playback.autoSlowEnabled,
-                onToggle: { playback.autoSlowEnabled.toggle() }
-            )
+            HStack(spacing: Spacing.md) {
+                speedMenu
+                textToggleButton(title: "Path", isActive: showSwingPath) { showSwingPath.toggle() }
+                textToggleButton(title: showOverlay ? "Overlay" : "Clean", isActive: showOverlay) { showOverlay.toggle() }
+                AutoSlowToggle(
+                    isEnabled: playback.autoSlowEnabled,
+                    onToggle: { playback.autoSlowEnabled.toggle() }
+                )
+            }
         }
-        .padding(.horizontal, Spacing.sm)
-        .padding(.bottom, Spacing.sm)
+        .padding(.horizontal, Spacing.md)
+        .padding(.bottom, Spacing.md)
     }
 
     private var overlayToggleButton: some View {
         Button(action: { showOverlay.toggle() }) {
-            HStack(spacing: 4) {
-                Image(systemName: showOverlay ? "eye.fill" : "eye.slash.fill")
-                    .font(.system(size: 12))
-                Text("Overlay")
-                    .font(AppFont.body(size: 12, weight: .medium))
-            }
-            .foregroundStyle(showOverlay ? theme.textOnAccent : theme.textSecondary)
-            .padding(.horizontal, Spacing.sm)
-            .padding(.vertical, Spacing.xs)
-            .background(
-                Capsule()
-                    .fill(showOverlay ? theme.accent : theme.surfaceElevated.opacity(0.85))
-            )
+            Text(showOverlay ? "Overlay On" : "Clean View")
+                .font(AppFont.body(size: 11, weight: .semibold))
+                .foregroundStyle(.white.opacity(showOverlay ? 0.95 : 0.72))
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(Color.black.opacity(0.18))
+                .clipShape(Capsule())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var speedMenu: some View {
+        Menu {
+            Button("0.25x") { playback.setSpeed(0.25) }
+            Button("0.5x") { playback.setSpeed(0.5) }
+            Button("1x") { playback.setSpeed(1.0) }
+        } label: {
+            Text(speedLabel(playback.selectedSpeed))
+                .font(AppFont.mono(size: 12, weight: .bold))
+                .foregroundStyle(.white.opacity(0.92))
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(Color.black.opacity(0.18))
+                .clipShape(Capsule())
         }
     }
 
-    private var swingPathToggleButton: some View {
-        Button(action: { showSwingPath.toggle() }) {
-            HStack(spacing: 4) {
-                Image(systemName: "point.topleft.down.to.point.bottomright.curvepath.fill")
-                    .font(.system(size: 11))
-                Text("Path")
-                    .font(AppFont.body(size: 12, weight: .medium))
-            }
-            .foregroundStyle(showSwingPath ? theme.textOnAccent : .white.opacity(0.8))
-            .padding(.horizontal, Spacing.sm)
-            .padding(.vertical, Spacing.xs)
-            .background(
-                Capsule()
-                    .fill(showSwingPath ? theme.accentSecondary : Color.black.opacity(0.3))
-            )
+    private func textToggleButton(title: String, isActive: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(title)
+                .font(AppFont.body(size: 11, weight: .semibold))
+                .foregroundStyle(.white.opacity(isActive ? 0.96 : 0.72))
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(Color.black.opacity(isActive ? 0.22 : 0.14))
+                .clipShape(Capsule())
         }
+        .buttonStyle(.plain)
+    }
+
+    private func speedLabel(_ speed: Float) -> String {
+        if speed == 1.0 { return "1x" }
+        return String(format: "%.2gx", speed)
     }
 }
 
@@ -847,61 +878,93 @@ struct StrokeWindowBadge: View {
     }
 }
 
-// MARK: - Overlay Info Badges
+// MARK: - Focus Insight Card
 
-struct OverlayInfoBadges: View {
+struct VideoFocusInsightCard: View {
     let selectedStroke: StrokeAnalysisModel?
+    let selectedPhase: SwingPhase?
+    let onJumpToFocus: () -> Void
     private let theme = DesignSystem.current
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.xs) {
-            if let stroke = selectedStroke, let overlay = stroke.overlayInstructions {
-                if overlay.anglesToHighlight.isEmpty {
-                    Text("No angle data for this stroke")
-                        .font(AppFont.body(size: 12))
-                        .foregroundStyle(theme.textTertiary)
-                        .padding(.horizontal, Spacing.md)
-                } else {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: Spacing.xs) {
-                            ForEach(overlay.anglesToHighlight, id: \.self) { angle in
-                                AngleBadge(text: angle)
-                            }
-                        }
-                        .padding(.horizontal, Spacing.md)
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            HStack {
+                Text("MAIN FIX")
+                    .font(AppFont.body(size: 11, weight: .semibold))
+                    .foregroundStyle(theme.textTertiary)
+                    .tracking(1.2)
+
+                Spacer()
+
+                Button(action: onJumpToFocus) {
+                    Text("Jump to focus")
+                        .font(AppFont.body(size: 11, weight: .semibold))
+                        .foregroundStyle(theme.accent)
+                }
+                .buttonStyle(.plain)
+            }
+
+            Text(primaryTitle)
+                .font(AppFont.body(size: 20, weight: .semibold))
+                .foregroundStyle(theme.textPrimary)
+
+            if let subtitle {
+                Text(subtitle)
+                    .font(AppFont.body(size: 14))
+                    .foregroundStyle(theme.textSecondary)
+                    .lineSpacing(2)
+            }
+
+            if !focusMetrics.isEmpty {
+                HStack(spacing: Spacing.xs) {
+                    ForEach(focusMetrics.prefix(2), id: \.self) { metric in
+                        Text(metric)
+                            .font(AppFont.mono(size: 11, weight: .medium))
+                            .foregroundStyle(theme.accent)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(
+                                Capsule().fill(theme.accentMuted)
+                            )
                     }
                 }
-            } else {
-                Text("Select a stroke to see pose data")
-                    .font(AppFont.body(size: 12))
-                    .foregroundStyle(theme.textTertiary)
-                    .padding(.horizontal, Spacing.md)
             }
         }
-        .padding(.vertical, Spacing.sm)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(theme.surfacePrimary)
-    }
-}
-
-struct AngleBadge: View {
-    let text: String
-    private let theme = DesignSystem.current
-
-    var body: some View {
-        HStack(spacing: 4) {
-            Image(systemName: "angle")
-                .font(.system(size: 10, weight: .bold))
-            Text(text)
-                .font(AppFont.mono(size: 11))
-        }
-        .foregroundStyle(theme.accent)
-        .padding(.horizontal, Spacing.sm)
-        .padding(.vertical, 6)
+        .padding(Spacing.md)
         .background(
-            Capsule()
-                .fill(theme.accentMuted)
+            RoundedRectangle(cornerRadius: Radius.md)
+                .fill(theme.surfacePrimary)
         )
+        .padding(.horizontal, Spacing.md)
+        .padding(.top, Spacing.md)
+    }
+
+    private var primaryTitle: String {
+        if let phase = selectedPhase {
+            return phase.displayName
+        }
+        if let stroke = selectedStroke {
+            return stroke.strokeType.displayName + " focus"
+        }
+        return "Select a rep to see the main coaching focus"
+    }
+
+    private var subtitle: String? {
+        if let phase = selectedPhase,
+           let stroke = selectedStroke,
+           let detail = stroke.phaseBreakdown?.detail(for: phase) {
+            return detail.improveCue ?? detail.note
+        }
+        return selectedStroke?.gradingRationale ?? selectedStroke?.nextRepsPlan
+    }
+
+    private var focusMetrics: [String] {
+        if let phase = selectedPhase,
+           let stroke = selectedStroke,
+           let detail = stroke.phaseBreakdown?.detail(for: phase) {
+            return detail.keyAngles
+        }
+        return selectedStroke?.overlayInstructions?.anglesToHighlight ?? []
     }
 }
 
@@ -1016,6 +1079,7 @@ struct StrokeTimelineMarker: View {
 struct SessionSummaryCard: View {
     let session: SessionModel
     var analysisCategories: [AnalysisCategory]? = nil
+    var onSelectCategory: ((AnalysisCategory) -> Void)? = nil
     private let theme = DesignSystem.current
 
     var body: some View {
@@ -1046,7 +1110,10 @@ struct SessionSummaryCard: View {
             }
 
             ForEach(categories) { category in
-                ReportCategoryRow(category: category)
+                ReportCategoryRow(
+                    category: category,
+                    onTap: { onSelectCategory?(category) }
+                )
             }
         }
     }
@@ -1780,42 +1847,109 @@ struct PhaseTimelineStrip: View {
 
 struct ReportCategoryRow: View {
     let category: AnalysisCategory
+    var onTap: (() -> Void)? = nil
+    @State private var isExpanded = false
     private let theme = DesignSystem.current
 
     var body: some View {
-        HStack(spacing: Spacing.sm) {
-            RoundedRectangle(cornerRadius: Radius.sm)
-                .fill(zoneBgColor)
-                .frame(width: 32, height: 32)
-                .overlay(
-                    Image(systemName: categoryIcon)
-                        .font(.system(size: 14))
-                        .foregroundStyle(zoneColor)
-                )
+        VStack(alignment: .leading, spacing: 0) {
+            Button(action: {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    isExpanded.toggle()
+                }
+                onTap?()
+            }) {
+                HStack(spacing: Spacing.sm) {
+                    RoundedRectangle(cornerRadius: Radius.sm)
+                        .fill(zoneBgColor)
+                        .frame(width: 36, height: 36)
+                        .overlay(
+                            Image(systemName: categoryIcon)
+                                .font(.system(size: 14))
+                                .foregroundStyle(zoneColor)
+                        )
 
-            VStack(alignment: .leading, spacing: 1) {
-                Text(category.name)
-                    .font(AppFont.body(size: 13, weight: .semibold))
-                    .foregroundStyle(theme.textPrimary)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(category.name)
+                            .font(AppFont.body(size: 13, weight: .semibold))
+                            .foregroundStyle(theme.textPrimary)
 
-                Text(category.description)
-                    .font(AppFont.body(size: 11))
-                    .foregroundStyle(theme.textTertiary)
-                    .lineLimit(1)
+                        Text(categoryHeadline)
+                            .font(AppFont.body(size: 11))
+                            .foregroundStyle(theme.textSecondary)
+                            .lineLimit(1)
+                    }
+
+                    Spacer()
+
+                    VStack(alignment: .trailing, spacing: 4) {
+                        Text(category.status.displayLabel)
+                            .font(AppFont.body(size: 11, weight: .bold))
+                            .foregroundStyle(zoneColor)
+                            .padding(.horizontal, Spacing.xs)
+                            .padding(.vertical, 3)
+                            .background(Capsule().fill(zoneBgColor))
+
+                        Text("Tap to review")
+                            .font(AppFont.body(size: 10, weight: .medium))
+                            .foregroundStyle(theme.textTertiary)
+                    }
+
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(theme.textTertiary)
+                        .rotationEffect(.degrees(isExpanded ? 90 : 0))
+                }
+                .padding(.vertical, 8)
             }
+            .buttonStyle(.plain)
 
-            Spacer()
+            if isExpanded {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    if !category.description.isEmpty {
+                        Text(category.description)
+                            .font(AppFont.body(size: 12))
+                            .foregroundStyle(theme.textSecondary)
+                            .lineSpacing(2)
+                    }
 
-            Text(category.status.displayLabel)
-                .font(AppFont.body(size: 11, weight: .bold))
-                .foregroundStyle(zoneColor)
-                .padding(.horizontal, Spacing.xs)
-                .padding(.vertical, 3)
-                .background(
-                    Capsule().fill(zoneBgColor)
-                )
+                    ForEach(category.subchecks.prefix(2)) { subcheck in
+                        HStack(alignment: .top, spacing: Spacing.xs) {
+                            Circle()
+                                .fill(color(for: subcheck.status))
+                                .frame(width: 7, height: 7)
+                                .padding(.top, 5)
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(subcheck.checkpoint)
+                                    .font(AppFont.body(size: 11, weight: .semibold))
+                                    .foregroundStyle(theme.textPrimary)
+                                Text(subcheck.result)
+                                    .font(AppFont.body(size: 11))
+                                    .foregroundStyle(theme.textSecondary)
+                                    .lineLimit(2)
+                            }
+                        }
+                    }
+                }
+                .padding(.leading, 48)
+                .padding(.top, 2)
+                .padding(.bottom, 8)
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
         }
-        .padding(.vertical, 4)
+    }
+
+    private var categoryHeadline: String {
+        category.subchecks.first?.result ?? category.description
+    }
+
+    private func color(for status: ZoneStatus) -> Color {
+        switch status {
+        case .inZone: return theme.success
+        case .warning: return theme.warning
+        case .outOfZone: return theme.error
+        }
     }
 
     private var categoryIcon: String {
