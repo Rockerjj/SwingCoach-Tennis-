@@ -17,6 +17,7 @@ final class PlaybackViewModel: ObservableObject {
     @Published var videoNaturalSize: CGSize = CGSize(width: 1080, height: 1920)
     @Published var racketTrajectory: [CGPoint] = []
     @Published var smoothedJoints: [JointData] = []
+    @Published var selectedStrokeID: UUID?
 
     let player: AVPlayer
     private let videoURL: URL
@@ -127,6 +128,11 @@ final class PlaybackViewModel: ObservableObject {
         rawTrajectoryBuffer.removeAll()
         racketTrajectory.removeAll()
         handleTimeUpdate(timestamp)
+    }
+
+    func selectStroke(_ stroke: StrokeAnalysisModel) {
+        selectedStrokeID = stroke.id
+        seekTo(timestamp: stroke.timestamp)
     }
 
     private func applySmoothingToJoints(_ joints: [JointData]) -> [JointData] {
@@ -446,7 +452,11 @@ struct AnalysisResultsView: View {
 
                 StrokeTimelineStrip(
                     strokes: session.strokeAnalyses,
-                    selectedStroke: $selectedStroke
+                    selectedStroke: $selectedStroke,
+                    onSelectStroke: { stroke in
+                        selectedStroke = stroke
+                        playback.selectStroke(stroke)
+                    }
                 )
 
                 if let stroke = selectedStroke, let breakdown = stroke.phaseBreakdown {
@@ -801,20 +811,16 @@ struct AutoSlowToggle: View {
 
     var body: some View {
         Button(action: onToggle) {
-            HStack(spacing: 4) {
-                Image(systemName: "hare")
-                    .font(.system(size: 11))
-                Text("Auto Slow")
-                    .font(AppFont.body(size: 11, weight: .medium))
-            }
-            .foregroundStyle(isEnabled ? theme.textOnAccent : .white.opacity(0.8))
-            .padding(.horizontal, Spacing.sm)
-            .padding(.vertical, 6)
-            .background(
-                Capsule()
-                    .fill(isEnabled ? theme.accent.opacity(0.85) : Color.black.opacity(0.4))
-            )
+            Image(systemName: isEnabled ? "slowmo" : "gauge.with.dots.needle.bottom.50percent")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(isEnabled ? theme.textOnAccent : .white.opacity(0.8))
+                .frame(width: 36, height: 36)
+                .background(
+                    Circle()
+                        .fill(isEnabled ? theme.accent.opacity(0.85) : Color.black.opacity(0.4))
+                )
         }
+        .accessibilityLabel(isEnabled ? "Auto slow motion on" : "Auto slow motion off")
     }
 }
 
@@ -904,30 +910,61 @@ struct AngleBadge: View {
 struct StrokeTimelineStrip: View {
     let strokes: [StrokeAnalysisModel]
     @Binding var selectedStroke: StrokeAnalysisModel?
+    let onSelectStroke: (StrokeAnalysisModel) -> Void
     private let theme = DesignSystem.current
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.xs) {
-            Text("STROKE TIMELINE")
-                .font(AppFont.body(size: 11, weight: .semibold))
-                .foregroundStyle(theme.textTertiary)
-                .padding(.horizontal, Spacing.md)
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            HStack(alignment: .firstTextBaseline) {
+                Text("STROKE TIMELINE")
+                    .font(AppFont.body(size: 11, weight: .semibold))
+                    .foregroundStyle(theme.textTertiary)
 
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: Spacing.xs) {
-                    ForEach(strokes) { stroke in
-                        StrokeTimelineMarker(
-                            stroke: stroke,
-                            isSelected: selectedStroke?.id == stroke.id,
-                            onTap: { selectedStroke = stroke }
-                        )
+                Spacer()
+
+                Text(summaryText)
+                    .font(AppFont.mono(size: 11, weight: .medium))
+                    .foregroundStyle(theme.textTertiary)
+            }
+            .padding(.horizontal, Spacing.md)
+
+            ScrollViewReader { proxy in
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: Spacing.xs) {
+                        ForEach(strokes) { stroke in
+                            StrokeTimelineMarker(
+                                stroke: stroke,
+                                isSelected: selectedStroke?.id == stroke.id,
+                                onTap: {
+                                    onSelectStroke(stroke)
+                                    withAnimation(.easeInOut(duration: 0.2)) {
+                                        proxy.scrollTo(stroke.id, anchor: .center)
+                                    }
+                                }
+                            )
+                            .id(stroke.id)
+                        }
+                    }
+                    .padding(.horizontal, Spacing.md)
+                }
+                .onChange(of: selectedStroke?.id) { _, newID in
+                    guard let newID else { return }
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        proxy.scrollTo(newID, anchor: .center)
                     }
                 }
-                .padding(.horizontal, Spacing.md)
             }
         }
         .padding(.vertical, Spacing.md)
         .background(theme.surfacePrimary)
+    }
+
+    private var summaryText: String {
+        guard !strokes.isEmpty else { return "0 strokes" }
+        let grades = strokes.map(\.grade)
+        let avg = dominantGrade(in: grades) ?? "--"
+        let best = grades.min { gradeRankValue($0) < gradeRankValue($1) } ?? "--"
+        return "\(strokes.count) strokes • Avg: \(coachVerdict(for: avg)) • Best: \(coachVerdict(for: best))"
     }
 }
 
@@ -939,31 +976,38 @@ struct StrokeTimelineMarker: View {
 
     var body: some View {
         Button(action: onTap) {
-            VStack(spacing: 4) {
-                Image(systemName: stroke.strokeType.icon)
-                    .font(.system(size: 14))
-                    .foregroundStyle(isSelected ? theme.textOnAccent : theme.textSecondary)
+            VStack(spacing: 6) {
+                HStack(spacing: 6) {
+                    Image(systemName: stroke.strokeType.icon)
+                        .font(.system(size: 12, weight: .semibold))
+                    Text(stroke.strokeType.displayName.uppercased())
+                        .font(AppFont.body(size: 10, weight: .bold))
+                        .lineLimit(1)
+                }
+                .foregroundStyle(isSelected ? Color.white : gradeColor)
 
                 Text(stroke.grade)
-                    .font(AppFont.mono(size: 11, weight: .bold))
-                    .foregroundStyle(isSelected ? theme.textOnAccent : gradeColor)
+                    .font(AppFont.display(size: 18))
+                    .foregroundStyle(isSelected ? Color.white : gradeColor)
             }
-            .frame(width: 48, height: 48)
+            .frame(minWidth: 84)
+            .frame(height: 60)
+            .padding(.horizontal, Spacing.sm)
             .background(
-                RoundedRectangle(cornerRadius: Radius.sm)
-                    .fill(isSelected ? theme.accent : theme.surfaceSecondary)
+                RoundedRectangle(cornerRadius: Radius.md)
+                    .fill(isSelected ? gradeColor : gradeColor.opacity(0.14))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: Radius.md)
+                            .stroke(isSelected ? gradeColor.opacity(0.95) : gradeColor.opacity(0.35), lineWidth: isSelected ? 2 : 1)
+                    )
             )
+            .scaleEffect(isSelected ? 1.04 : 1.0)
         }
         .buttonStyle(.plain)
     }
 
     private var gradeColor: Color {
-        switch stroke.grade.prefix(1) {
-        case "A": return theme.success
-        case "B": return theme.accent
-        case "C": return theme.warning
-        default: return theme.error
-        }
+        semanticGradeColor(for: stroke.grade, theme: theme)
     }
 }
 
@@ -1010,13 +1054,17 @@ struct SessionSummaryCard: View {
     private var headerRow: some View {
         HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: Spacing.xxs) {
-                Text("Session Grade")
+                Text("Session Verdict")
                     .font(AppFont.body(size: 12))
                     .foregroundStyle(theme.textTertiary)
 
-                Text(session.overallGrade ?? "--")
-                    .font(AppFont.display(size: 44))
-                    .foregroundStyle(theme.accent)
+                Text(coachVerdict(for: session.overallGrade ?? "--"))
+                    .font(AppFont.display(size: 28))
+                    .foregroundStyle(semanticGradeColor(for: session.overallGrade ?? "--", theme: theme))
+
+                Text(scoreLabel(for: session.overallGrade ?? "--"))
+                    .font(AppFont.mono(size: 12, weight: .bold))
+                    .foregroundStyle(theme.textSecondary)
             }
 
             Spacer()
@@ -1161,23 +1209,28 @@ struct GradeBadge: View {
     private let theme = DesignSystem.current
 
     var body: some View {
-        Text(grade)
-            .font(AppFont.display(size: 20))
-            .foregroundStyle(gradeColor)
-            .frame(width: 44, height: 36)
-            .background(
-                RoundedRectangle(cornerRadius: Radius.sm)
-                    .fill(gradeColor.opacity(0.12))
-            )
+        VStack(spacing: 2) {
+            Text(scoreLabel(for: grade))
+                .font(AppFont.mono(size: 11, weight: .bold))
+                .foregroundStyle(gradeColor)
+
+            Text(coachVerdict(for: grade))
+                .font(AppFont.body(size: 9, weight: .bold))
+                .foregroundStyle(gradeColor)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+        }
+        .frame(minWidth: 72, minHeight: 40)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
+        .background(
+            RoundedRectangle(cornerRadius: Radius.sm)
+                .fill(gradeColor.opacity(0.12))
+        )
     }
 
     private var gradeColor: Color {
-        switch grade.prefix(1) {
-        case "A": return theme.success
-        case "B": return theme.accent
-        case "C": return theme.warning
-        default: return theme.error
-        }
+        semanticGradeColor(for: grade, theme: theme)
     }
 }
 
@@ -1512,6 +1565,80 @@ struct SectionLabel: View {
                 .foregroundStyle(theme.textTertiary)
                 .tracking(0.5)
         }
+    }
+}
+
+private func normalizedGrade(_ grade: String) -> String {
+    grade.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+}
+
+private func gradeRankValue(_ grade: String) -> Int {
+    switch normalizedGrade(grade) {
+    case "A+": return 1
+    case "A": return 2
+    case "A-": return 3
+    case "B+": return 4
+    case "B": return 5
+    case "B-": return 6
+    case "C+": return 7
+    case "C": return 8
+    case "C-": return 9
+    case "D+": return 10
+    case "D": return 11
+    case "D-": return 12
+    case "F": return 13
+    default: return 99
+    }
+}
+
+private func semanticGradeColor(for grade: String, theme: AppTheme) -> Color {
+    switch normalizedGrade(grade).prefix(1) {
+    case "A": return theme.success
+    case "B": return Color(hex: "#84CC16")
+    case "C": return theme.warning
+    case "D": return Color(hex: "#F97316")
+    case "F": return theme.error
+    default: return theme.textTertiary
+    }
+}
+
+private func dominantGrade(in grades: [String]) -> String? {
+    guard !grades.isEmpty else { return nil }
+    let grouped = Dictionary(grouping: grades, by: { normalizedGrade($0) })
+    return grouped.max { lhs, rhs in
+        if lhs.value.count == rhs.value.count {
+            return gradeRankValue(lhs.key) > gradeRankValue(rhs.key)
+        }
+        return lhs.value.count < rhs.value.count
+    }?.key
+}
+
+private func coachVerdict(for grade: String) -> String {
+    switch normalizedGrade(grade).prefix(1) {
+    case "A": return "Strong rep"
+    case "B": return "Getting closer"
+    case "C": return "Needs work"
+    case "D", "F": return "Priority fix"
+    default: return "Unscored"
+    }
+}
+
+private func scoreLabel(for grade: String) -> String {
+    switch normalizedGrade(grade) {
+    case "A+": return "96/100"
+    case "A": return "93/100"
+    case "A-": return "90/100"
+    case "B+": return "87/100"
+    case "B": return "84/100"
+    case "B-": return "81/100"
+    case "C+": return "78/100"
+    case "C": return "75/100"
+    case "C-": return "72/100"
+    case "D+": return "69/100"
+    case "D": return "66/100"
+    case "D-": return "63/100"
+    case "F": return "55/100"
+    default: return "--"
     }
 }
 
@@ -1942,18 +2069,6 @@ struct WireframeOverlayView: View {
                     }
                 }
 
-                ForEach(Array(angleLabelsForDisplay(map: map, crop: crop).enumerated()), id: \.offset) { _, item in
-                    Text(item.text)
-                        .font(AppFont.mono(size: 10, weight: .bold))
-                        .foregroundStyle(theme.skeletonWarning)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 3)
-                        .background(
-                            Capsule()
-                                .fill(Color.black.opacity(0.7))
-                        )
-                        .position(x: item.position.x + 40, y: item.position.y - 12)
-                }
             }
             .onAppear {
                 withAnimation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true)) {
