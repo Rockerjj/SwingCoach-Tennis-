@@ -444,6 +444,7 @@ struct AnalysisResultsView: View {
                         .allowsHitTesting(false)
                     }
                 }
+                .ignoresSafeArea(edges: .top)
                 .clipped()
 
                 VideoFocusInsightCard(
@@ -1039,32 +1040,46 @@ struct StrokeTimelineMarker: View {
 
     var body: some View {
         Button(action: onTap) {
-            VStack(spacing: 6) {
-                HStack(spacing: 6) {
-                    Image(systemName: stroke.strokeType.icon)
-                        .font(.system(size: 12, weight: .semibold))
-                    Text(stroke.strokeType.displayName.uppercased())
-                        .font(AppFont.body(size: 10, weight: .bold))
-                        .lineLimit(1)
-                }
-                .foregroundStyle(isSelected ? Color.white : gradeColor)
+            VStack(spacing: 3) {
+                Text(stroke.strokeType.displayName.uppercased())
+                    .font(AppFont.body(size: 11, weight: .semibold))
+                    .foregroundStyle(theme.textTertiary)
+                    .lineLimit(1)
 
-                Text(stroke.grade)
-                    .font(AppFont.display(size: 18))
-                    .foregroundStyle(isSelected ? Color.white : gradeColor)
+                Text(scoreLabel(for: stroke.grade))
+                    .font(AppFont.display(size: 28))
+                    .foregroundStyle(gradeColor)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+
+                Text(coachVerdict(for: stroke.grade))
+                    .font(.system(size: 10))
+                    .foregroundStyle(theme.textTertiary)
+                    .lineLimit(1)
             }
-            .frame(minWidth: 84)
-            .frame(height: 60)
+            .frame(minWidth: 80)
+            .frame(height: 72)
             .padding(.horizontal, Spacing.sm)
             .background(
                 RoundedRectangle(cornerRadius: Radius.md)
-                    .fill(isSelected ? gradeColor : gradeColor.opacity(0.14))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: Radius.md)
-                            .stroke(isSelected ? gradeColor.opacity(0.95) : gradeColor.opacity(0.35), lineWidth: isSelected ? 2 : 1)
-                    )
+                    .fill(isSelected ? theme.accentMuted : theme.surfacePrimary)
             )
-            .scaleEffect(isSelected ? 1.04 : 1.0)
+            .overlay(alignment: .leading) {
+                if isSelected {
+                    UnevenRoundedRectangle(
+                        topLeadingRadius: Radius.md,
+                        bottomLeadingRadius: Radius.md,
+                        bottomTrailingRadius: 0,
+                        topTrailingRadius: 0
+                    )
+                    .fill(gradeColor)
+                    .frame(width: 3)
+                }
+            }
+            .overlay(
+                RoundedRectangle(cornerRadius: Radius.md)
+                    .stroke(theme.surfaceSecondary, lineWidth: 1)
+            )
         }
         .buttonStyle(.plain)
     }
@@ -1119,40 +1134,32 @@ struct SessionSummaryCard: View {
     }
 
     private var headerRow: some View {
-        HStack(alignment: .top) {
-            VStack(alignment: .leading, spacing: Spacing.xxs) {
-                Text("Session Verdict")
-                    .font(AppFont.body(size: 12))
-                    .foregroundStyle(theme.textTertiary)
-
-                Text(coachVerdict(for: session.overallGrade ?? "--"))
-                    .font(AppFont.display(size: 28))
-                    .foregroundStyle(semanticGradeColor(for: session.overallGrade ?? "--", theme: theme))
-
-                Text(scoreLabel(for: session.overallGrade ?? "--"))
-                    .font(AppFont.mono(size: 12, weight: .bold))
-                    .foregroundStyle(theme.textSecondary)
-            }
-
+        HStack {
+            statCell(value: scoreLabel(for: session.overallGrade ?? "--"), label: "SCORE")
             Spacer()
+            statCell(value: String(session.strokeAnalyses.count), label: "REPS")
+            Spacer()
+            statCell(value: bestRepVerdict, label: "BEST REP")
+        }
+    }
 
-            VStack(alignment: .trailing, spacing: Spacing.xs) {
-                HStack(spacing: Spacing.xxs) {
-                    Image(systemName: "clock")
-                        .font(.system(size: 12))
-                    Text(formattedDuration)
-                        .font(AppFont.mono(size: 13))
-                }
-                .foregroundStyle(theme.textSecondary)
+    private var bestRepVerdict: String {
+        guard !session.strokeAnalyses.isEmpty else { return "--" }
+        let best = session.strokeAnalyses.min { gradeRankValue($0.grade) < gradeRankValue($1.grade) }
+        return coachVerdict(for: best?.grade ?? "--")
+    }
 
-                HStack(spacing: Spacing.xxs) {
-                    Image(systemName: "figure.tennis")
-                        .font(.system(size: 12))
-                    Text("\(session.strokeAnalyses.count) strokes")
-                        .font(AppFont.mono(size: 13))
-                }
-                .foregroundStyle(theme.textSecondary)
-            }
+    private func statCell(value: String, label: String) -> some View {
+        VStack(spacing: 3) {
+            Text(value)
+                .font(AppFont.mono(size: 20, weight: .bold))
+                .foregroundStyle(theme.textPrimary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+            Text(label)
+                .font(AppFont.body(size: 10, weight: .semibold))
+                .foregroundStyle(theme.textTertiary)
+                .tracking(0.8)
         }
     }
 
@@ -1882,18 +1889,12 @@ struct ReportCategoryRow: View {
 
                     Spacer()
 
-                    VStack(alignment: .trailing, spacing: 4) {
-                        Text(category.status.displayLabel)
-                            .font(AppFont.body(size: 11, weight: .bold))
-                            .foregroundStyle(zoneColor)
-                            .padding(.horizontal, Spacing.xs)
-                            .padding(.vertical, 3)
-                            .background(Capsule().fill(zoneBgColor))
-
-                        Text("Tap to review")
-                            .font(AppFont.body(size: 10, weight: .medium))
-                            .foregroundStyle(theme.textTertiary)
-                    }
+                    Text(statusDisplayText)
+                        .font(AppFont.body(size: 11, weight: .bold))
+                        .foregroundStyle(zoneColor)
+                        .padding(.horizontal, Spacing.xs)
+                        .padding(.vertical, 3)
+                        .background(Capsule().fill(zoneBgColor))
 
                     Image(systemName: "chevron.right")
                         .font(.system(size: 10, weight: .bold))
@@ -1942,6 +1943,14 @@ struct ReportCategoryRow: View {
 
     private var categoryHeadline: String {
         category.subchecks.first?.result ?? category.description
+    }
+
+    private var statusDisplayText: String {
+        switch category.status {
+        case .inZone: return "✓ Clean"
+        case .warning: return "⚡ Adjust"
+        case .outOfZone: return "✗ Fix this"
+        }
     }
 
     private func color(for status: ZoneStatus) -> Color {
@@ -2196,7 +2205,7 @@ struct WireframeOverlayView: View {
                             .position(pos)
                     } else {
                         Circle()
-                            .fill(theme.angleAnnotation)
+                            .fill(theme.skeletonStroke)
                             .frame(width: 10, height: 10)
                             .shadow(color: .black.opacity(0.3), radius: 3)
                             .position(pos)

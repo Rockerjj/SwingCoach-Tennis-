@@ -77,7 +77,8 @@ final class OverlayRenderer {
             let point = denormalize(x: joint.x, y: joint.y, in: size)
             let isHighlighted = highlightJoints.contains(joint.name)
             let dotRadius: CGFloat = isHighlighted ? 6 : 4
-            let dotColor = isHighlighted ? uiColor(theme.skeletonWarning) : uiColor(theme.skeletonCorrect)
+            // in-zone highlighted joints → skeletonCorrect (green); warning/flagged → skeletonWarning (clay); default → skeletonStroke (white)
+            let dotColor = isHighlighted ? uiColor(theme.skeletonWarning) : uiColor(theme.skeletonStroke)
 
             context.setFillColor(dotColor.cgColor)
             context.fillEllipse(in: CGRect(
@@ -88,10 +89,7 @@ final class OverlayRenderer {
             ))
         }
 
-        // Draw angle annotations if available
-        if let result = strokeResult {
-            drawAngleAnnotations(context: context, jointMap: jointMap, result: result, size: size)
-        }
+        // Angle info is shown in coaching cards below the video, not as floating overlays
 
         let resultImage = UIGraphicsGetImageFromCurrentImageContext() ?? image
         UIGraphicsEndImageContext()

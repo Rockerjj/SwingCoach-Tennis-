@@ -51,15 +51,15 @@ struct PhaseDetailCard: View {
                 if let d = detail {
                     ZStack {
                         Circle()
-                            .stroke(theme.surfaceSecondary, lineWidth: 3)
-                            .frame(width: 40, height: 40)
+                            .stroke(theme.surfaceSecondary, lineWidth: 4)
+                            .frame(width: 44, height: 44)
                         Circle()
                             .trim(from: 0, to: CGFloat(d.score) / 10)
-                            .stroke(scoreColor(d.score), style: StrokeStyle(lineWidth: 3, lineCap: .round))
-                            .frame(width: 40, height: 40)
+                            .stroke(scoreColor(d.score), style: StrokeStyle(lineWidth: 4, lineCap: .round))
+                            .frame(width: 44, height: 44)
                             .rotationEffect(.degrees(-90))
-                        Text("\(d.score)")
-                            .font(AppFont.mono(size: 12, weight: .bold))
+                        Text("\(d.score)/10")
+                            .font(AppFont.mono(size: 10, weight: .bold))
                             .foregroundStyle(theme.textPrimary)
                     }
                 }
