@@ -60,15 +60,27 @@ final class DesignSystem: ObservableObject {
 
 struct AppFont {
     static func display(size: CGFloat, weight: Font.Weight = .bold) -> Font {
-        .custom(DesignSystem.current.displayFont, size: size).weight(weight)
+        let name = DesignSystem.current.displayFont
+        if name.isEmpty {
+            return .system(size: size, weight: weight, design: .default)
+        }
+        return .custom(name, size: size).weight(weight)
     }
 
     static func body(size: CGFloat, weight: Font.Weight = .regular) -> Font {
-        .custom(DesignSystem.current.bodyFont, size: size).weight(weight)
+        let name = DesignSystem.current.bodyFont
+        if name.isEmpty {
+            return .system(size: size, weight: weight, design: .default)
+        }
+        return .custom(name, size: size).weight(weight)
     }
 
     static func mono(size: CGFloat, weight: Font.Weight = .medium) -> Font {
-        .custom(DesignSystem.current.monoFont, size: size).weight(weight)
+        let name = DesignSystem.current.monoFont
+        if name.isEmpty {
+            return .system(size: size, weight: weight, design: .monospaced)
+        }
+        return .custom(name, size: size).weight(weight)
     }
 }
 

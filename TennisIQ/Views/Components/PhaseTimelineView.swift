@@ -14,7 +14,7 @@ struct PhaseTimelineView: View {
                     let (phase, detail) = item
                     phaseNode(phase: phase, detail: detail)
                     if index < breakdown.allPhases.count - 1 {
-                        connectingLine(status: detail?.status ?? .warning)
+                        connectingLine
                     }
                 }
             }
@@ -33,40 +33,42 @@ struct PhaseTimelineView: View {
         }) {
             VStack(spacing: Spacing.xxs) {
                 ZStack {
+                    // White fill with colored border
                     Circle()
-                        .fill(zoneColor(status))
-                        .frame(width: 36, height: 36)
+                        .fill(isSelected ? theme.accent : theme.surfacePrimary)
+                        .frame(width: isSelected ? 32 : 28, height: isSelected ? 32 : 28)
+
+                    Circle()
+                        .stroke(isSelected ? theme.accent : borderColor(status), lineWidth: 2)
+                        .frame(width: isSelected ? 32 : 28, height: isSelected ? 32 : 28)
 
                     Text("\(score)")
-                        .font(AppFont.mono(size: 13, weight: .bold))
-                        .foregroundStyle(.white)
+                        .font(AppFont.mono(size: isSelected ? 13 : 11, weight: .bold))
+                        .foregroundStyle(isSelected ? .white : theme.accent)
                 }
-                .overlay(
-                    Circle()
-                        .stroke(isSelected ? theme.accent : .clear, lineWidth: 2.5)
-                        .frame(width: 42, height: 42)
-                )
-                .scaleEffect(isSelected ? 1.1 : 1.0)
+                .shadow(color: isSelected ? theme.accent.opacity(0.2) : .clear, radius: 8, y: 2)
 
                 Text(phase.displayName)
-                    .font(AppFont.body(size: 10, weight: .semibold))
+                    .font(.system(size: 9, weight: .medium))
                     .foregroundStyle(isSelected ? theme.accent : theme.textTertiary)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
-                    .frame(width: 52)
+                    .frame(width: 50)
+                    .textCase(.uppercase)
+                    .tracking(0.3)
             }
             .frame(width: 56)
         }
         .buttonStyle(.plain)
     }
 
-    private func connectingLine(status: ZoneStatus) -> some View {
+    private var connectingLine: some View {
         Rectangle()
-            .fill(zoneColor(status).opacity(0.5))
-            .frame(width: 16, height: 2)
+            .fill(Color(hex: "E5E7EB"))
+            .frame(width: 16, height: 1.5)
     }
 
-    private func zoneColor(_ status: ZoneStatus) -> Color {
+    private func borderColor(_ status: ZoneStatus) -> Color {
         switch status {
         case .inZone: return theme.success
         case .warning: return theme.warning

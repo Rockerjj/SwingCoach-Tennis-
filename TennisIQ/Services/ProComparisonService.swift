@@ -9,9 +9,9 @@ struct ProPlayer: Identifiable {
 
 final class ProComparisonService {
     private static let pros: [ProPlayer] = [
-        ProPlayer(id: "federer", name: "Federer", icon: "🎾", strokes: [.forehand]),
-        ProPlayer(id: "djokovic", name: "Djokovic", icon: "🏆", strokes: [.backhand]),
-        ProPlayer(id: "serena", name: "Serena", icon: "👑", strokes: [.serve])
+        ProPlayer(id: "federer", name: "Federer", icon: "sportscourt", strokes: [.forehand]),
+        ProPlayer(id: "djokovic", name: "Djokovic", icon: "trophy", strokes: [.backhand]),
+        ProPlayer(id: "serena", name: "Serena", icon: "star.fill", strokes: [.serve])
     ]
 
     func availablePros(for strokeType: StrokeType) -> [ProPlayer] {

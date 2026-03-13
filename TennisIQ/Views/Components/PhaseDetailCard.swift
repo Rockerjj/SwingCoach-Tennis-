@@ -20,8 +20,9 @@ struct PhaseDetailCard: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: Radius.md)
-                .stroke(theme.surfaceSecondary, lineWidth: 1)
+                .stroke(Color(hex: "E5E7EB"), lineWidth: 1)
         )
+        .shadow(color: .black.opacity(0.04), radius: 3, y: 1)
     }
 
     private var header: some View {
@@ -36,12 +37,12 @@ struct PhaseDetailCard: View {
 
                 VStack(alignment: .leading, spacing: Spacing.xxs) {
                     Text(phase.displayName)
-                        .font(AppFont.body(size: 15, weight: .semibold))
+                        .font(AppFont.body(size: 16, weight: .bold))
                         .foregroundStyle(theme.textPrimary)
 
                     if let d = detail {
-                        Text(String(format: "@ %.1fs", d.timestamp))
-                            .font(AppFont.mono(size: 12))
+                        Text(String(format: "@ %.2fs", d.timestamp))
+                            .font(AppFont.mono(size: 11))
                             .foregroundStyle(theme.textTertiary)
                     }
                 }
@@ -49,19 +50,7 @@ struct PhaseDetailCard: View {
                 Spacer()
 
                 if let d = detail {
-                    ZStack {
-                        Circle()
-                            .stroke(theme.surfaceSecondary, lineWidth: 4)
-                            .frame(width: 44, height: 44)
-                        Circle()
-                            .trim(from: 0, to: CGFloat(d.score) / 10)
-                            .stroke(scoreColor(d.score), style: StrokeStyle(lineWidth: 4, lineCap: .round))
-                            .frame(width: 44, height: 44)
-                            .rotationEffect(.degrees(-90))
-                        Text("\(d.score)/10")
-                            .font(AppFont.mono(size: 10, weight: .bold))
-                            .foregroundStyle(theme.textPrimary)
-                    }
+                    scoreCircle(d)
                 }
 
                 Image(systemName: "chevron.down")
@@ -74,9 +63,27 @@ struct PhaseDetailCard: View {
         .buttonStyle(.plain)
     }
 
+    private func scoreCircle(_ d: PhaseDetail) -> some View {
+        ZStack {
+            Circle()
+                .fill(scoreColor(d.score).opacity(0.08))
+                .frame(width: 36, height: 36)
+            Text("\(d.score)")
+                .font(AppFont.mono(size: 14, weight: .bold))
+                .foregroundStyle(scoreColor(d.score))
+        }
+    }
+
     private func expandedContent(detail: PhaseDetail) -> some View {
         VStack(alignment: .leading, spacing: Spacing.md) {
             Divider().foregroundStyle(theme.surfaceSecondary)
+
+            // Visual correction diagram
+            AngleCorrectionDiagram(
+                phase: phase,
+                detail: detail,
+                height: 140
+            )
 
             if !detail.keyAngles.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -102,26 +109,21 @@ struct PhaseDetailCard: View {
 
             if let cue = detail.improveCue, !cue.isEmpty {
                 HStack(alignment: .top, spacing: Spacing.sm) {
-                    Rectangle()
-                        .fill(theme.accent)
-                        .frame(width: 4)
-                        .clipShape(RoundedRectangle(cornerRadius: 2))
+                    Image(systemName: "lightbulb.fill")
+                        .font(.system(size: 14))
+                        .foregroundStyle(theme.accent)
+                        .padding(.top, 1)
 
-                    VStack(alignment: .leading, spacing: Spacing.xxs) {
-                        Text("Coaching Cue")
-                            .font(AppFont.body(size: 11, weight: .semibold))
-                            .foregroundStyle(theme.accent)
-                        Text(cue)
-                            .font(AppFont.body(size: 13))
-                            .foregroundStyle(theme.textPrimary)
-                            .lineSpacing(3)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    Text(cue)
+                        .font(AppFont.body(size: 13))
+                        .foregroundStyle(theme.textPrimary)
+                        .lineSpacing(3)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(Spacing.sm)
                 .background(
                     RoundedRectangle(cornerRadius: Radius.sm)
-                        .fill(theme.accentMuted.opacity(0.5))
+                        .fill(theme.accentMuted)
                 )
             }
 
@@ -129,7 +131,7 @@ struct PhaseDetailCard: View {
                 HStack(spacing: Spacing.sm) {
                     Image(systemName: "figure.tennis")
                         .font(.system(size: 16))
-                        .foregroundStyle(theme.accentSecondary)
+                        .foregroundStyle(theme.accent)
 
                     VStack(alignment: .leading, spacing: Spacing.xxs) {
                         Text("Practice Drill")
@@ -157,8 +159,8 @@ struct PhaseDetailCard: View {
     private func scoreColor(_ score: Int) -> Color {
         switch score {
         case 8...10: return theme.success
-        case 5...7: return theme.accent
-        case 3...4: return theme.warning
+        case 5...7: return theme.warning
+        case 3...4: return theme.error
         default: return theme.error
         }
     }

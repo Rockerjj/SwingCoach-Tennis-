@@ -470,6 +470,11 @@ struct AnalysisResultsView: View {
                     }
                 )
 
+                // Hero Insight Card — top priorities above phase timeline
+                if let stroke = selectedStroke {
+                    HeroInsightCard(stroke: stroke)
+                }
+
                 if let stroke = selectedStroke, let breakdown = stroke.phaseBreakdown {
                     PhaseTimelineStrip(
                         breakdown: breakdown,
@@ -498,24 +503,12 @@ struct AnalysisResultsView: View {
                     }
                 )
 
-                ProCompareButton(
-                    strokeType: selectedStroke?.strokeType ?? .forehand,
-                    onTap: { showProComparison = true }
-                )
-
                 StrokeCardsSection(strokes: session.strokeAnalyses)
 
                 TacticalNotesCard(notes: session.tacticalNotes)
             }
         }
-        .sheet(isPresented: $showProComparison) {
-            if let stroke = selectedStroke {
-                ProComparisonSheetView(
-                    strokeType: stroke.strokeType,
-                    userJoints: playback.currentJoints
-                )
-            }
-        }
+        // Pro Comparison removed — not functional yet
     }
 
     private var selectedPhaseAngles: [String] {
@@ -1040,45 +1033,25 @@ struct StrokeTimelineMarker: View {
 
     var body: some View {
         Button(action: onTap) {
-            VStack(spacing: 3) {
-                Text(stroke.strokeType.displayName.uppercased())
-                    .font(AppFont.body(size: 11, weight: .semibold))
-                    .foregroundStyle(theme.textTertiary)
+            HStack(spacing: Spacing.xs) {
+                Text(stroke.strokeType.displayName)
+                    .font(AppFont.body(size: 13, weight: .medium))
+                    .foregroundStyle(isSelected ? .white : theme.textPrimary)
                     .lineLimit(1)
 
-                Text(scoreLabel(for: stroke.grade))
-                    .font(AppFont.display(size: 28))
-                    .foregroundStyle(gradeColor)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
-
-                Text(coachVerdict(for: stroke.grade))
-                    .font(.system(size: 10))
-                    .foregroundStyle(theme.textTertiary)
-                    .lineLimit(1)
+                Text(normalizedGrade(stroke.grade))
+                    .font(AppFont.body(size: 12, weight: .bold))
+                    .foregroundStyle(isSelected ? .white.opacity(0.85) : gradeColor)
             }
-            .frame(minWidth: 80)
-            .frame(height: 72)
-            .padding(.horizontal, Spacing.sm)
+            .padding(.horizontal, Spacing.md)
+            .frame(height: 40)
             .background(
-                RoundedRectangle(cornerRadius: Radius.md)
-                    .fill(isSelected ? theme.accentMuted : theme.surfacePrimary)
+                Capsule()
+                    .fill(isSelected ? theme.accent : theme.surfacePrimary)
             )
-            .overlay(alignment: .leading) {
-                if isSelected {
-                    UnevenRoundedRectangle(
-                        topLeadingRadius: Radius.md,
-                        bottomLeadingRadius: Radius.md,
-                        bottomTrailingRadius: 0,
-                        topTrailingRadius: 0
-                    )
-                    .fill(gradeColor)
-                    .frame(width: 3)
-                }
-            }
             .overlay(
-                RoundedRectangle(cornerRadius: Radius.md)
-                    .stroke(theme.surfaceSecondary, lineWidth: 1)
+                Capsule()
+                    .stroke(isSelected ? theme.accent : Color(hex: "E5E7EB"), lineWidth: 1)
             )
         }
         .buttonStyle(.plain)
@@ -1097,19 +1070,124 @@ struct SessionSummaryCard: View {
     var onSelectCategory: ((AnalysisCategory) -> Void)? = nil
     private let theme = DesignSystem.current
 
+    /// Mock score history for sparkline (until multi-session tracking)
+    private var mockScoreHistory: [Double] {
+        let current = numericScore(for: session.overallGrade ?? "C")
+        return [
+            max(50, current - 14),
+            max(50, current - 10),
+            max(50, current - 12),
+            max(50, current - 7),
+            max(50, current - 4.5),
+            max(50, current - 6),
+            max(50, current - 4.2),
+            current
+        ]
+    }
+
+    private func numericScore(for grade: String) -> Double {
+        switch normalizedGrade(grade) {
+        case "A+": return 96; case "A": return 93; case "A-": return 90
+        case "B+": return 87; case "B": return 84; case "B-": return 81
+        case "C+": return 78; case "C": return 75; case "C-": return 72
+        case "D+": return 69; case "D": return 66; case "D-": return 63
+        case "F": return 55
+        default: return 72
+        }
+    }
+
+    /// Count of items needing work
+    private var thingsToWorkOn: Int {
+        analysisCategories?.filter { $0.status != .inZone }.count ?? 0
+    }
+
     var body: some View {
         VStack(spacing: Spacing.md) {
-            headerRow
-            if let priority = session.topPriority {
-                priorityBanner(priority)
-            }
+            scoreSection
             if let categories = analysisCategories, !categories.isEmpty {
                 reportCardSection(categories)
             }
         }
         .padding(Spacing.md)
-        .background(theme.surfacePrimary)
-        .padding(.top, 1)
+        .background(
+            RoundedRectangle(cornerRadius: Radius.md)
+                .fill(theme.surfacePrimary)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: Radius.md)
+                .stroke(Color(hex: "E5E7EB"), lineWidth: 1)
+        )
+        .shadow(color: .black.opacity(0.04), radius: 3, y: 1)
+        .padding(.horizontal, Spacing.md)
+        .padding(.top, Spacing.sm)
+    }
+
+    private var scoreSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            HStack(alignment: .center, spacing: Spacing.md) {
+                // Score ring — 80pt
+                scoreRing
+
+                // Score details on right
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(alignment: .firstTextBaseline, spacing: Spacing.xs) {
+                        let score = numericScore(for: session.overallGrade ?? "C")
+                        Text(String(format: "%.1f", score))
+                            .font(.system(size: 28, weight: .bold))
+                            .foregroundStyle(theme.textPrimary)
+
+                        Text(normalizedGrade(session.overallGrade ?? "--"))
+                            .font(AppFont.body(size: 11, weight: .bold))
+                            .foregroundStyle(theme.success)
+                            .padding(.horizontal, Spacing.xs)
+                            .padding(.vertical, 2)
+                            .background(
+                                RoundedRectangle(cornerRadius: Radius.sm)
+                                    .fill(theme.success.opacity(0.08))
+                            )
+                    }
+
+                    // Trend
+                    let prev = mockScoreHistory.dropLast().last ?? 0
+                    let current = numericScore(for: session.overallGrade ?? "C")
+                    if prev > 0 {
+                        Text("\u{2191} from \(String(format: "%.1f", prev)) last session")
+                            .font(AppFont.body(size: 12, weight: .semibold))
+                            .foregroundStyle(current >= prev ? theme.success : theme.error)
+                    }
+
+                    // Sparkline
+                    ScoreSparklineView(scores: mockScoreHistory, width: 160, height: 40)
+                }
+            }
+
+            if thingsToWorkOn > 0 {
+                Text("\(thingsToWorkOn) thing\(thingsToWorkOn == 1 ? "" : "s") to work on")
+                    .font(AppFont.body(size: 13))
+                    .foregroundStyle(theme.textTertiary)
+            }
+        }
+    }
+
+    private var scoreRing: some View {
+        let score = numericScore(for: session.overallGrade ?? "C")
+        let progress = score / 100.0
+
+        return ZStack {
+            Circle()
+                .stroke(Color(hex: "F3F4F6"), lineWidth: 7)
+                .frame(width: 80, height: 80)
+
+            Circle()
+                .trim(from: 0, to: progress)
+                .stroke(theme.accent, style: StrokeStyle(lineWidth: 7, lineCap: .round))
+                .frame(width: 80, height: 80)
+                .rotationEffect(.degrees(-90))
+
+            Text(String(format: "%.1f", score))
+                .font(.system(size: 20, weight: .bold))
+                .foregroundStyle(theme.textPrimary)
+        }
     }
 
     private func reportCardSection(_ categories: [AnalysisCategory]) -> some View {
@@ -1117,11 +1195,11 @@ struct SessionSummaryCard: View {
             HStack(spacing: 5) {
                 Image(systemName: "list.clipboard")
                     .font(.system(size: 10, weight: .bold))
-                    .foregroundStyle(theme.accent)
+                    .foregroundStyle(theme.textTertiary)
                 Text("SWING ANALYSIS")
                     .font(AppFont.body(size: 11, weight: .bold))
-                    .foregroundStyle(theme.accent)
-                    .tracking(0.5)
+                    .foregroundStyle(theme.textTertiary)
+                    .tracking(0.8)
             }
 
             ForEach(categories) { category in
@@ -1131,60 +1209,6 @@ struct SessionSummaryCard: View {
                 )
             }
         }
-    }
-
-    private var headerRow: some View {
-        HStack {
-            statCell(value: scoreLabel(for: session.overallGrade ?? "--"), label: "SCORE")
-            Spacer()
-            statCell(value: String(session.strokeAnalyses.count), label: "REPS")
-            Spacer()
-            statCell(value: bestRepVerdict, label: "BEST REP")
-        }
-    }
-
-    private var bestRepVerdict: String {
-        guard !session.strokeAnalyses.isEmpty else { return "--" }
-        let best = session.strokeAnalyses.min { gradeRankValue($0.grade) < gradeRankValue($1.grade) }
-        return coachVerdict(for: best?.grade ?? "--")
-    }
-
-    private func statCell(value: String, label: String) -> some View {
-        VStack(spacing: 3) {
-            Text(value)
-                .font(AppFont.mono(size: 20, weight: .bold))
-                .foregroundStyle(theme.textPrimary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
-            Text(label)
-                .font(AppFont.body(size: 10, weight: .semibold))
-                .foregroundStyle(theme.textTertiary)
-                .tracking(0.8)
-        }
-    }
-
-    private func priorityBanner(_ text: String) -> some View {
-        HStack(spacing: Spacing.xs) {
-            Image(systemName: "target")
-                .font(.system(size: 14))
-                .foregroundStyle(theme.accent)
-
-            Text("Top Priority: \(text)")
-                .font(AppFont.body(size: 14, weight: .medium))
-                .foregroundStyle(theme.textPrimary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(Spacing.sm)
-        .background(
-            RoundedRectangle(cornerRadius: Radius.sm)
-                .fill(theme.accentMuted)
-        )
-    }
-
-    private var formattedDuration: String {
-        let m = session.durationSeconds / 60
-        let s = session.durationSeconds % 60
-        return "\(m)m \(s)s"
     }
 }
 
@@ -1262,11 +1286,13 @@ struct CoachingCard: View {
         VStack(alignment: .leading, spacing: Spacing.md) {
             Divider().foregroundStyle(theme.surfaceSecondary)
 
-            GradeRationaleSection(rationale: stroke.gradingRationale)
+            // What to Fix — bullet points with bold numbers
+            WhatToFixSection(rationale: stroke.gradingRationale)
 
             MechanicsBreakdownSection(mechanics: stroke.mechanics)
 
-            ImprovementPlanSection(plan: stroke.nextRepsPlan)
+            // Practice Drill — card-within-card
+            DrillSection(plan: stroke.nextRepsPlan)
 
             VerifiedSourcesSection(stroke: stroke)
         }
@@ -1308,27 +1334,43 @@ struct GradeBadge: View {
     }
 }
 
-// MARK: - Section 1: Grade Rationale
+// MARK: - Section 1: What to Fix (replaces Grade Rationale)
 
-struct GradeRationaleSection: View {
+struct WhatToFixSection: View {
     let rationale: String?
     private let theme = DesignSystem.current
 
-    var body: some View {
-        if let text = rationale, !text.isEmpty {
-            VStack(alignment: .leading, spacing: Spacing.xs) {
-                SectionLabel(icon: "text.justify.leading", title: "WHY THIS GRADE")
+    /// Split rationale into bullet points
+    private var bullets: [String] {
+        guard let text = rationale, !text.isEmpty else { return [] }
+        // Split on sentences or common delimiters
+        let parts = text.components(separatedBy: CharacterSet(charactersIn: ".;"))
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+        return Array(parts.prefix(3))
+    }
 
-                Text(text)
-                    .font(AppFont.body(size: 13))
-                    .foregroundStyle(theme.textPrimary)
-                    .lineSpacing(3)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(Spacing.sm)
-                    .background(
-                        RoundedRectangle(cornerRadius: Radius.sm)
-                            .fill(theme.accentMuted.opacity(0.5))
-                    )
+    var body: some View {
+        if !bullets.isEmpty {
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                SectionLabel(icon: "exclamationmark.triangle", title: "WHAT TO FIX")
+
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    ForEach(Array(bullets.enumerated()), id: \.offset) { _, bullet in
+                        HStack(alignment: .top, spacing: Spacing.xs) {
+                            Circle()
+                                .fill(theme.warning)
+                                .frame(width: 5, height: 5)
+                                .padding(.top, 6)
+
+                            Text(bullet)
+                                .font(AppFont.body(size: 13))
+                                .foregroundStyle(theme.textPrimary)
+                                .lineSpacing(3)
+                        }
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
     }
@@ -1536,27 +1578,110 @@ struct ScoreBar: View {
     }
 }
 
-// MARK: - Section 3: Improvement Plan
+// MARK: - Section 3: Drill Section (card-within-card with green tint)
 
-struct ImprovementPlanSection: View {
+struct DrillSection: View {
     let plan: String?
     private let theme = DesignSystem.current
+
+    /// Parse plan text into numbered steps
+    private var steps: [(number: Int, text: String, duration: String?)] {
+        guard let text = plan, !text.isEmpty else { return [] }
+        let lines = text.components(separatedBy: CharacterSet.newlines)
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+
+        return lines.enumerated().map { index, line in
+            // Try to extract duration (e.g., "5 min", "10 min")
+            var duration: String? = nil
+            if let dRange = line.range(of: #"\d+\s*min"#, options: .regularExpression) {
+                duration = String(line[dRange])
+            }
+            // Clean up numbered prefix
+            let cleaned = line.replacingOccurrences(
+                of: #"^\d+[\.\)]\s*"#,
+                with: "",
+                options: .regularExpression
+            )
+            return (index + 1, cleaned, duration)
+        }
+    }
 
     var body: some View {
         if let text = plan, !text.isEmpty {
             VStack(alignment: .leading, spacing: Spacing.xs) {
-                SectionLabel(icon: "clipboard", title: "IMPROVEMENT PLAN")
+                HStack(spacing: 5) {
+                    Image(systemName: "play.circle.fill")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(theme.accent)
+                    Text("PRACTICE DRILL")
+                        .font(AppFont.body(size: 11, weight: .bold))
+                        .foregroundStyle(theme.accent)
+                        .tracking(0.5)
+                }
 
-                Text(text)
-                    .font(AppFont.body(size: 13))
-                    .foregroundStyle(theme.textPrimary)
-                    .lineSpacing(3)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(Spacing.sm)
+                VStack(alignment: .leading, spacing: Spacing.sm) {
+                    if !steps.isEmpty {
+                        ForEach(steps, id: \.number) { step in
+                            HStack(alignment: .center, spacing: Spacing.sm) {
+                                // Step number circle
+                                ZStack {
+                                    Circle()
+                                        .fill(theme.accent)
+                                        .frame(width: 24, height: 24)
+                                    Text("\(step.number)")
+                                        .font(AppFont.body(size: 11, weight: .bold))
+                                        .foregroundStyle(.white)
+                                }
+
+                                Text(step.text)
+                                    .font(AppFont.body(size: 13))
+                                    .foregroundStyle(theme.textPrimary)
+                                    .lineSpacing(2)
+
+                                Spacer()
+
+                                if let dur = step.duration {
+                                    Text(dur)
+                                        .font(AppFont.mono(size: 11))
+                                        .foregroundStyle(theme.textTertiary)
+                                }
+                            }
+                            .padding(.vertical, Spacing.xxs)
+
+                            if step.number < steps.count {
+                                Divider()
+                                    .foregroundStyle(theme.accent.opacity(0.08))
+                            }
+                        }
+                    } else {
+                        // Fallback: show as paragraph
+                        Text(text)
+                            .font(AppFont.body(size: 13))
+                            .foregroundStyle(theme.textPrimary)
+                            .lineSpacing(3)
+                    }
+
+                    // Watch Demo button (placeholder)
+                    HStack(spacing: Spacing.xxs) {
+                        Image(systemName: "play.fill")
+                            .font(.system(size: 12))
+                        Text("Watch Demo")
+                            .font(AppFont.body(size: 14, weight: .semibold))
+                    }
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 44)
                     .background(
                         RoundedRectangle(cornerRadius: Radius.sm)
-                            .fill(theme.surfaceSecondary)
+                            .fill(theme.accent)
                     )
+                }
+                .padding(Spacing.sm)
+                .background(
+                    RoundedRectangle(cornerRadius: Radius.sm)
+                        .fill(theme.accentMuted)
+                )
             }
         }
     }
@@ -1790,12 +1915,21 @@ struct PhaseTimelineStrip: View {
     }
 
     private var phaseTimeline: some View {
-        HStack(spacing: 0) {
-            ForEach(breakdown.allPhases, id: \.0) { phase, detail in
-                phaseNode(phase: phase, detail: detail)
+        ZStack(alignment: .top) {
+            // Connecting line behind dots
+            Rectangle()
+                .fill(Color(hex: "E5E7EB"))
+                .frame(height: 1.5)
+                .padding(.horizontal, Spacing.lg)
+                .offset(y: 14)
+
+            HStack(spacing: 0) {
+                ForEach(breakdown.allPhases, id: \.0) { phase, detail in
+                    phaseNode(phase: phase, detail: detail)
+                }
             }
         }
-        .padding(.horizontal, Spacing.sm)
+        .padding(.horizontal, Spacing.xxs)
     }
 
     private func phaseNode(phase: SwingPhase, detail: PhaseDetail?) -> some View {
@@ -1813,35 +1947,38 @@ struct PhaseTimelineStrip: View {
                 }
             }
         }) {
-            VStack(spacing: 4) {
-                Circle()
-                    .fill(zoneColor(status))
-                    .frame(width: 32, height: 32)
-                    .overlay(
-                        Text("\(score)")
-                            .font(AppFont.mono(size: 12, weight: .bold))
-                            .foregroundStyle(.white)
-                    )
-                    .overlay(
-                        Circle()
-                            .stroke(isSelected ? theme.accent : .clear, lineWidth: 2.5)
-                            .frame(width: 38, height: 38)
-                    )
-                    .scaleEffect(isSelected ? 1.1 : 1.0)
+            VStack(spacing: 6) {
+                ZStack {
+                    // White fill with colored border
+                    Circle()
+                        .fill(isSelected ? theme.accent : theme.surfacePrimary)
+                        .frame(width: isSelected ? 32 : 28, height: isSelected ? 32 : 28)
+
+                    Circle()
+                        .stroke(isSelected ? theme.accent : borderColor(status), lineWidth: 2)
+                        .frame(width: isSelected ? 32 : 28, height: isSelected ? 32 : 28)
+
+                    Text("\(score)")
+                        .font(AppFont.mono(size: isSelected ? 12 : 10, weight: .bold))
+                        .foregroundStyle(isSelected ? .white : theme.accent)
+                }
+                .shadow(color: isSelected ? theme.accent.opacity(0.2) : .clear, radius: 8, y: 2)
 
                 Text(phase.displayName)
-                    .font(AppFont.body(size: 9, weight: .semibold))
+                    .font(.system(size: 8.5, weight: .medium))
                     .foregroundStyle(isSelected ? theme.accent : theme.textTertiary)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
-                    .frame(height: 24, alignment: .top)
+                    .frame(height: 22, alignment: .top)
+                    .textCase(.uppercase)
+                    .tracking(0.3)
             }
             .frame(maxWidth: .infinity)
         }
         .buttonStyle(.plain)
     }
 
-    private func zoneColor(_ status: ZoneStatus) -> Color {
+    private func borderColor(_ status: ZoneStatus) -> Color {
         switch status {
         case .inZone: return theme.success
         case .warning: return theme.warning
@@ -1855,109 +1992,69 @@ struct PhaseTimelineStrip: View {
 struct ReportCategoryRow: View {
     let category: AnalysisCategory
     var onTap: (() -> Void)? = nil
-    @State private var isExpanded = false
     private let theme = DesignSystem.current
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Button(action: {
-                withAnimation(.easeInOut(duration: 0.2)) {
-                    isExpanded.toggle()
+        Button(action: { onTap?() }) {
+            HStack(spacing: Spacing.sm) {
+                // Colored status dot
+                Circle()
+                    .fill(zoneColor)
+                    .frame(width: 6, height: 6)
+
+                // Icon in accent-tinted circle
+                Image(systemName: categoryIcon)
+                    .font(.system(size: 14))
+                    .foregroundStyle(theme.accent)
+                    .frame(width: 32, height: 32)
+                    .background(Circle().fill(theme.accentMuted))
+
+                // Name + one-line insight
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(category.name)
+                        .font(AppFont.body(size: 14, weight: .semibold))
+                        .foregroundStyle(theme.textPrimary)
+
+                    Text(oneLineInsight)
+                        .font(AppFont.body(size: 12))
+                        .foregroundStyle(insightColor)
+                        .lineLimit(1)
+                        .lineSpacing(2)
                 }
-                onTap?()
-            }) {
-                HStack(spacing: Spacing.sm) {
-                    RoundedRectangle(cornerRadius: Radius.sm)
-                        .fill(zoneBgColor)
-                        .frame(width: 36, height: 36)
-                        .overlay(
-                            Image(systemName: categoryIcon)
-                                .font(.system(size: 14))
-                                .foregroundStyle(zoneColor)
-                        )
 
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(category.name)
-                            .font(AppFont.body(size: 13, weight: .semibold))
-                            .foregroundStyle(theme.textPrimary)
+                Spacer()
 
-                        Text(categoryHeadline)
-                            .font(AppFont.body(size: 11))
-                            .foregroundStyle(theme.textSecondary)
-                            .lineLimit(1)
-                    }
-
-                    Spacer()
-
-                    Text(statusDisplayText)
-                        .font(AppFont.body(size: 11, weight: .bold))
-                        .foregroundStyle(zoneColor)
-                        .padding(.horizontal, Spacing.xs)
-                        .padding(.vertical, 3)
-                        .background(Capsule().fill(zoneBgColor))
-
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 10, weight: .bold))
-                        .foregroundStyle(theme.textTertiary)
-                        .rotationEffect(.degrees(isExpanded ? 90 : 0))
-                }
-                .padding(.vertical, 8)
+                // Chevron
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(theme.textTertiary)
             }
-            .buttonStyle(.plain)
-
-            if isExpanded {
-                VStack(alignment: .leading, spacing: Spacing.xs) {
-                    if !category.description.isEmpty {
-                        Text(category.description)
-                            .font(AppFont.body(size: 12))
-                            .foregroundStyle(theme.textSecondary)
-                            .lineSpacing(2)
-                    }
-
-                    ForEach(category.subchecks.prefix(2)) { subcheck in
-                        HStack(alignment: .top, spacing: Spacing.xs) {
-                            Circle()
-                                .fill(color(for: subcheck.status))
-                                .frame(width: 7, height: 7)
-                                .padding(.top, 5)
-
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(subcheck.checkpoint)
-                                    .font(AppFont.body(size: 11, weight: .semibold))
-                                    .foregroundStyle(theme.textPrimary)
-                                Text(subcheck.result)
-                                    .font(AppFont.body(size: 11))
-                                    .foregroundStyle(theme.textSecondary)
-                                    .lineLimit(2)
-                            }
-                        }
-                    }
-                }
-                .padding(.leading, 48)
-                .padding(.top, 2)
-                .padding(.bottom, 8)
-                .transition(.opacity.combined(with: .move(edge: .top)))
-            }
+            .padding(.vertical, 10)
+            .frame(minHeight: 56)
+        }
+        .buttonStyle(.plain)
+        .overlay(alignment: .bottom) {
+            Divider().foregroundStyle(Color(hex: "F3F4F6"))
         }
     }
 
-    private var categoryHeadline: String {
-        category.subchecks.first?.result ?? category.description
-    }
-
-    private var statusDisplayText: String {
+    /// One-line insight: positive for in-zone, specific issue for warning/out-of-zone
+    private var oneLineInsight: String {
         switch category.status {
-        case .inZone: return "✓ Clean"
-        case .warning: return "⚡ Adjust"
-        case .outOfZone: return "✗ Fix this"
+        case .inZone:
+            let positiveNote = category.subchecks.first?.result ?? category.description
+            return "Looks great \u{2014} \(positiveNote.lowercased())"
+        case .warning, .outOfZone:
+            // Use the first subcheck result that indicates a problem, or the category description
+            let issueCheck = category.subchecks.first(where: { $0.status != .inZone })
+            return issueCheck?.result ?? category.description
         }
     }
 
-    private func color(for status: ZoneStatus) -> Color {
-        switch status {
-        case .inZone: return theme.success
-        case .warning: return theme.warning
-        case .outOfZone: return theme.error
+    private var insightColor: Color {
+        switch category.status {
+        case .inZone: return theme.textTertiary
+        case .warning, .outOfZone: return theme.textSecondary
         }
     }
 
@@ -1978,14 +2075,6 @@ struct ReportCategoryRow: View {
         case .inZone: return theme.success
         case .warning: return theme.warning
         case .outOfZone: return theme.error
-        }
-    }
-
-    private var zoneBgColor: Color {
-        switch category.status {
-        case .inZone: return theme.success.opacity(0.08)
-        case .warning: return theme.warning.opacity(0.08)
-        case .outOfZone: return theme.error.opacity(0.07)
         }
     }
 }
@@ -2080,8 +2169,9 @@ struct ProComparisonSheetView: View {
                 ForEach(proService.availablePros(for: strokeType)) { pro in
                     Button(action: { selectedPro = pro }) {
                         VStack(spacing: 4) {
-                            Text(pro.icon)
-                                .font(.system(size: 24))
+                            Image(systemName: pro.icon)
+                                .font(.system(size: 20))
+                                .foregroundStyle(theme.accent)
                                 .frame(width: 48, height: 48)
                                 .background(
                                     Circle()
