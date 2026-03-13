@@ -45,7 +45,7 @@ body { font-family: 'Inter', -apple-system, system-ui, sans-serif; background: v
   .phone { min-height: 852px; height: 852px; border-radius: 40px; box-shadow: 0 0 0 12px #1a1a1a, 0 0 0 14px #333; overflow-y: auto; }
 }
 
-/* ═══ NAV BAR ═══ */
+/* NAV BAR */
 .nav-bar {
   display: flex; align-items: center; padding: 48px 16px 10px;
   background: var(--bg); position: sticky; top: 0; z-index: 50;
@@ -54,20 +54,7 @@ body { font-family: 'Inter', -apple-system, system-ui, sans-serif; background: v
 .nav-title { flex: 1; text-align: center; font-size: 0.85rem; font-weight: 500; color: var(--text); }
 .nav-action { font-size: 0.9rem; color: var(--accent); cursor: pointer; }
 
-/* View selector */
-.view-selector {
-  display: flex; gap: 0; padding: 8px 16px 0; background: var(--bg);
-  border-bottom: 1px solid var(--border);
-}
-.view-tab {
-  flex: 1; padding: 10px 0; text-align: center;
-  font-size: 0.78rem; font-weight: 600; color: var(--text-muted);
-  border: none; background: none; cursor: pointer;
-  border-bottom: 2.5px solid transparent; transition: all 0.2s;
-}
-.view-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-
-/* ═══ VIDEO PLAYER (PRESERVED) ═══ */
+/* VIDEO PLAYER */
 .video-player {
   position: relative; background: #1a2e24;
   aspect-ratio: 9/14; max-height: 440px; overflow: hidden;
@@ -80,15 +67,11 @@ body { font-family: 'Inter', -apple-system, system-ui, sans-serif; background: v
   content: ''; position: absolute; bottom: 0; left: 0; right: 0;
   height: 40%; background: linear-gradient(to top, rgba(0,0,0,0.4), transparent);
 }
-
 .video-overlay { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
-
 .skel { stroke: var(--skeleton); stroke-width: 2.5; stroke-linecap: round; filter: drop-shadow(0 0 4px var(--skeleton-glow)); }
 .jnt { fill: rgba(100,160,200,0.9); filter: drop-shadow(0 0 3px var(--skeleton-glow)); }
-
 .swing-path { fill: none; stroke: var(--success); stroke-width: 3; stroke-linecap: round; filter: drop-shadow(0 0 6px rgba(94,142,107,0.5)); }
 .swing-plane { fill: none; stroke: rgba(255,255,255,0.12); stroke-width: 1.5; stroke-dasharray: 6 4; }
-
 @keyframes drawPath { to { stroke-dashoffset: 0; } }
 
 .vid-badge {
@@ -99,8 +82,6 @@ body { font-family: 'Inter', -apple-system, system-ui, sans-serif; background: v
 }
 .vid-badge.good { background: rgba(94,142,107,0.82); color: white; }
 .vid-badge.warn { background: rgba(191,161,74,0.82); color: white; }
-.vid-badge .ico { font-size: 0.55rem; }
-
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 .vid-controls {
@@ -109,13 +90,11 @@ body { font-family: 'Inter', -apple-system, system-ui, sans-serif; background: v
   background: linear-gradient(to top, rgba(0,0,0,0.5), transparent);
   display: flex; align-items: center; gap: 8px;
 }
-
 .play-btn {
   width: 34px; height: 34px; border-radius: 50%; border: none;
   background: var(--accent); color: white; display: flex;
-  align-items: center; justify-content: center; cursor: pointer; font-size: 0.75rem;
+  align-items: center; justify-content: center; cursor: pointer;
 }
-
 .speed-pills {
   display: flex; gap: 0; padding: 2px; background: rgba(0,0,0,0.35);
   border-radius: 14px; backdrop-filter: blur(4px);
@@ -127,7 +106,6 @@ body { font-family: 'Inter', -apple-system, system-ui, sans-serif; background: v
   min-height: 44px; min-width: 44px; display: flex; align-items: center; justify-content: center;
 }
 .spd.active { background: var(--accent); color: white; }
-
 .ctrl-toggle {
   display: flex; align-items: center; gap: 4px;
   padding: 4px 10px; border-radius: 14px; border: none; cursor: pointer;
@@ -138,9 +116,7 @@ body { font-family: 'Inter', -apple-system, system-ui, sans-serif; background: v
 .ctrl-toggle.off { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.7); }
 .ctrl-toggle.new-feature { background: var(--accent-light); color: white; }
 .ctrl-toggle.new-feature.off { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.7); }
-
 .ctrl-spacer { flex: 1; }
-
 .live-tag {
   position: absolute; top: 10px; left: 10px; z-index: 5;
   display: none; align-items: center; gap: 5px;
@@ -150,7 +126,6 @@ body { font-family: 'Inter', -apple-system, system-ui, sans-serif; background: v
 }
 .live-tag.on { display: flex; }
 .live-tag .ldot { width: 5px; height: 5px; border-radius: 50%; background: white; animation: pulse 1.5s infinite; }
-
 .live-cue {
   position: absolute; bottom: 52px; left: 50%; transform: translateX(-50%); z-index: 5;
   display: none; padding: 6px 14px; border-radius: 16px;
@@ -160,23 +135,18 @@ body { font-family: 'Inter', -apple-system, system-ui, sans-serif; background: v
 }
 .live-cue.on { display: block; }
 
-/* ═══ STROKE TIMELINE ═══ */
+/* STROKE TIMELINE */
 .stroke-timeline {
   display: flex; gap: 8px; padding: 12px 16px;
-  overflow-x: auto; scrollbar-width: none;
-  background: var(--bg);
-  position: relative;
+  overflow-x: auto; scrollbar-width: none; background: var(--bg);
 }
 .stroke-timeline::-webkit-scrollbar { display: none; }
-.stroke-timeline-wrap {
-  position: relative;
-}
+.stroke-timeline-wrap { position: relative; }
 .stroke-timeline-wrap::after {
   content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 40px;
   background: linear-gradient(to right, transparent, var(--bg));
   pointer-events: none; z-index: 2;
 }
-
 .stroke-chip {
   flex-shrink: 0; display: flex; align-items: center; gap: 8px;
   padding: 0 16px; height: 40px; border-radius: 20px; cursor: pointer;
@@ -193,47 +163,69 @@ body { font-family: 'Inter', -apple-system, system-ui, sans-serif; background: v
 .stroke-chip-grade.d { color: var(--error); }
 .stroke-chip.active .stroke-chip-grade { color: rgba(255,255,255,0.85); }
 
-/* ═══ PHASE BREAKDOWN ═══ */
-.phase-strip {
-  padding: 16px 16px 8px; background: var(--bg);
+/* HERO INSIGHT CARD */
+.hero-insight {
+  margin: 12px 16px 0; padding: 20px 16px 16px;
+  background: var(--bg); border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
+.hero-insight-label {
+  font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--accent); margin-bottom: 16px;
+}
+.hero-insight-row {
+  margin-bottom: 16px;
+}
+.hero-insight-row:last-child { margin-bottom: 0; }
+.hero-insight-visual {
+  width: 100%; height: 160px; border-radius: 10px;
+  background: var(--surface); overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 10px;
+}
+.hero-insight-title {
+  font-size: 0.875rem; font-weight: 700; color: var(--text); margin-bottom: 3px;
+}
+.hero-insight-detail {
+  font-size: 0.75rem; color: var(--text-muted); line-height: 1.45; margin-bottom: 6px;
+}
+.hero-impact-pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 10px;
+  background: var(--accent-bg); color: var(--accent);
+  font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* PHASE BREAKDOWN */
+.phase-strip { padding: 16px 16px 8px; background: var(--bg); }
 .phase-strip-label {
   font-size: 0.65rem; font-weight: 600; text-transform: uppercase;
-  letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 14px;
-  padding-left: 2px;
+  letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 14px; padding-left: 2px;
 }
-
 .phase-row { display: flex; position: relative; padding: 0 4px; }
-
 .phase-row::before {
   content: ''; position: absolute; top: 14px; left: 24px; right: 24px;
   height: 1.5px; background: var(--border); z-index: 0;
 }
-
 .phase-node {
   flex: 1; display: flex; flex-direction: column; align-items: center;
-  gap: 6px; cursor: pointer; position: relative; z-index: 1;
-  min-height: 44px;
+  gap: 6px; cursor: pointer; position: relative; z-index: 1; min-height: 44px;
 }
-
 .phase-dot {
   width: 28px; height: 28px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   font-size: 0.6rem; font-weight: 700; color: var(--accent);
-  background: var(--bg);
-  transition: all 0.2s;
+  background: var(--bg); transition: all 0.2s;
 }
 .phase-dot.good { border: 2px solid var(--success); }
 .phase-dot.warn { border: 2px solid var(--warning); }
 .phase-dot.bad { border: 2px solid var(--error); }
-
 .phase-node.sel .phase-dot {
-  width: 32px; height: 32px;
-  background: var(--accent); color: white;
-  border-color: var(--accent);
-  box-shadow: 0 2px 8px rgba(27,67,50,0.2);
+  width: 32px; height: 32px; background: var(--accent); color: white;
+  border-color: var(--accent); box-shadow: 0 2px 8px rgba(27,67,50,0.2);
 }
-
 .phase-name {
   font-size: 0.5rem; font-weight: 500; color: var(--text-muted);
   text-align: center; line-height: 1.15; max-width: 50px;
@@ -249,97 +241,75 @@ body { font-family: 'Inter', -apple-system, system-ui, sans-serif; background: v
   display: none;
 }
 .phase-detail.open { display: block; }
-
 .pd-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
 .pd-title { font-size: 1rem; font-weight: 700; color: var(--text); }
 .pd-sub { font-size: 0.72rem; color: var(--text-secondary); margin-top: 2px; }
-
 .pd-score {
   font-size: 0.85rem; font-weight: 700;
   width: 36px; height: 36px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
 .pd-score.good { background: var(--success-bg); color: var(--success); }
 .pd-score.warn { background: var(--warning-bg); color: var(--warning); }
 .pd-score.bad { background: var(--error-bg); color: var(--error); }
 
-.pd-angles { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
-.ang {
-  display: flex; align-items: center; gap: 5px;
-  padding: 4px 10px; border-radius: 12px; font-size: 0.68rem; font-weight: 500;
+.pd-visual {
+  width: 100%; height: 140px; border-radius: 10px;
+  background: var(--surface); overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 12px;
 }
-.ang.good { background: var(--success-bg); color: var(--success); }
-.ang.warn { background: var(--warning-bg); color: var(--warning); }
-.ang .dot { width: 5px; height: 5px; border-radius: 50%; }
-.ang.good .dot { background: var(--success); }
-.ang.warn .dot { background: var(--warning); }
 
 .pd-cue {
   padding: 12px 14px; background: var(--accent-bg);
-  border-radius: 8px; border-left: 3px solid var(--accent);
+  border-radius: 8px;
   font-size: 0.78rem; color: var(--text); line-height: 1.5;
   display: flex; align-items: flex-start; gap: 8px;
 }
 .pd-cue-icon { flex-shrink: 0; margin-top: 1px; }
 .pd-cue-icon svg { width: 16px; height: 16px; }
 
-/* ═══ SESSION SUMMARY ═══ */
+/* SESSION SUMMARY */
 .summary-section {
-  margin: 16px 16px 0; padding: 24px 20px;
+  margin: 12px 16px 0; padding: 20px;
   background: var(--bg); border: 1px solid var(--border);
   border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
-
-/* Score Ring */
-.score-ring-container {
-  display: flex; flex-direction: column; align-items: center;
-  margin-bottom: 16px;
+.score-row {
+  display: flex; align-items: center; gap: 16px;
 }
 .score-ring-wrap {
-  position: relative; width: 120px; height: 120px;
+  position: relative; width: 80px; height: 80px; flex-shrink: 0;
 }
 .score-ring-svg { transform: rotate(-90deg); }
-.score-ring-track {
-  fill: none; stroke: var(--border-light); stroke-width: 8;
-}
+.score-ring-track { fill: none; stroke: var(--border-light); stroke-width: 7; }
 .score-ring-fill {
-  fill: none; stroke: var(--accent); stroke-width: 8;
-  stroke-linecap: round;
-  transition: stroke-dashoffset 1s ease;
+  fill: none; stroke: var(--accent); stroke-width: 7;
+  stroke-linecap: round; transition: stroke-dashoffset 1s ease;
 }
 .score-ring-value {
   position: absolute; inset: 0;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  display: flex; align-items: center; justify-content: center;
 }
-.score-ring-number { font-size: 2rem; font-weight: 700; color: var(--text); line-height: 1; }
-.score-ring-label { font-size: 0.65rem; font-weight: 500; color: var(--text-muted); margin-top: 6px; text-transform: uppercase; letter-spacing: 0.06em; }
-.score-ring-grade {
+.score-ring-number { font-size: 1.25rem; font-weight: 700; color: var(--text); line-height: 1; }
+.score-right { flex: 1; }
+.score-right-top { display: flex; align-items: baseline; gap: 8px; margin-bottom: 2px; }
+.score-right-number { font-size: 1.75rem; font-weight: 700; color: var(--text); line-height: 1; }
+.score-right-grade {
   display: inline-flex; align-items: center; justify-content: center;
-  margin-top: 8px; padding: 2px 12px; border-radius: 10px;
-  font-size: 0.7rem; font-weight: 700;
+  padding: 2px 10px; border-radius: 8px;
+  font-size: 0.68rem; font-weight: 700;
   background: var(--success-bg); color: var(--success);
 }
-.score-meta {
-  font-size: 0.75rem; color: var(--text-muted); text-align: center; margin-top: 4px;
+.score-trend {
+  font-size: 0.72rem; font-weight: 600; color: var(--success); margin-bottom: 6px;
+}
+.score-sparkline { margin-top: 2px; }
+.score-subtitle {
+  font-size: 0.75rem; color: var(--text-muted); margin-top: 12px;
 }
 
-/* Priority Card */
-.priority-card {
-  margin-top: 16px; padding: 12px 14px;
-  border-radius: 8px; background: var(--bg);
-  border-left: 3px solid var(--accent);
-  border-top: 1px solid var(--border-light);
-  border-right: 1px solid var(--border-light);
-  border-bottom: 1px solid var(--border-light);
-}
-.priority-label {
-  font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 0.08em; color: var(--accent); margin-bottom: 4px;
-}
-.priority-text { font-size: 0.8rem; color: var(--text); line-height: 1.45; }
-
-/* ═══ SWING ANALYSIS ═══ */
+/* SWING ANALYSIS */
 .swing-analysis {
   margin: 12px 16px 0; padding: 16px;
   background: var(--bg); border: 1px solid var(--border);
@@ -349,47 +319,41 @@ body { font-family: 'Inter', -apple-system, system-ui, sans-serif; background: v
   font-size: 0.65rem; font-weight: 600; text-transform: uppercase;
   letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 12px;
 }
-
 .sa-row {
-  display: flex; align-items: center; gap: 12px;
+  display: flex; align-items: center; gap: 10px;
   padding: 10px 0; border-bottom: 1px solid var(--border-light);
-  min-height: 56px;
+  min-height: 56px; position: relative;
 }
 .sa-row:last-child { border-bottom: none; }
-
+.sa-status-dot {
+  width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+}
+.sa-status-dot.green { background: var(--success); }
+.sa-status-dot.amber { background: var(--warning); }
+.sa-status-dot.red { background: var(--error); }
 .sa-icon {
   width: 32px; height: 32px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  background: var(--accent-bg);
 }
-.sa-icon.good { background: var(--success-bg); }
-.sa-icon.warn { background: var(--warning-bg); }
-.sa-icon.bad { background: var(--error-bg); }
 .sa-icon svg { width: 16px; height: 16px; }
-
 .sa-info { flex: 1; min-width: 0; }
 .sa-name { font-size: 0.8rem; font-weight: 600; color: var(--text); }
-.sa-desc { font-size: 0.68rem; color: var(--text-muted); margin-top: 1px; }
-
-.sa-badge {
-  padding: 4px 10px; border-radius: 10px; font-size: 0.62rem; font-weight: 600;
-  white-space: nowrap; display: flex; align-items: center; gap: 4px;
-  min-height: 44px;
+.sa-insight { font-size: 0.72rem; color: var(--text-muted); margin-top: 1px; line-height: 1.35; }
+.sa-insight.needs-work { color: var(--text-secondary); }
+.sa-chevron {
+  flex-shrink: 0; color: var(--text-muted); font-size: 1rem;
+  display: flex; align-items: center;
 }
-.sa-badge.good { background: var(--success-bg); color: var(--success); }
-.sa-badge.warn { background: var(--warning-bg); color: var(--warning); }
-.sa-badge.bad { background: var(--error-bg); color: var(--error); }
-.sa-badge-indicator { font-size: 0.6rem; font-weight: 700; }
 
-/* ═══ COACHING CARDS ═══ */
+/* COACHING CARDS */
 .coaching-card {
   margin: 12px 16px 0; padding: 0;
   background: var(--bg); border: 1px solid var(--border);
-  border-radius: 12px; cursor: pointer; transition: all 0.2s;
-  overflow: hidden;
+  border-radius: 12px; cursor: pointer; transition: all 0.2s; overflow: hidden;
 }
 .coaching-card:hover { border-color: var(--accent-light); }
 .coaching-card.open { border-color: var(--accent); }
-
 .cc-header {
   display: flex; align-items: center; gap: 10px;
   padding: 14px 16px; min-height: 48px;
@@ -405,49 +369,79 @@ body { font-family: 'Inter', -apple-system, system-ui, sans-serif; background: v
 }
 .cc-chev svg { width: 16px; height: 16px; }
 .coaching-card.open .cc-chev { transform: rotate(180deg); }
-
 .cc-body {
   display: none; padding: 0 16px 16px;
   border-top: 1px solid var(--border-light);
 }
 .coaching-card.open .cc-body { display: block; padding-top: 14px; }
 
+/* Key Frame Visual */
+.cc-keyframe {
+  width: 100%; height: 180px; border-radius: 10px;
+  background: var(--surface); overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 14px;
+}
+
+/* What to Fix */
 .cc-section-label {
   font-size: 0.62rem; font-weight: 600; text-transform: uppercase;
-  letter-spacing: 0.06em; color: var(--accent); margin: 12px 0 6px;
+  letter-spacing: 0.06em; color: var(--accent); margin: 14px 0 8px;
 }
 .cc-section-label:first-child { margin-top: 0; }
-.cc-text { font-size: 0.8rem; color: var(--text); line-height: 1.6; }
-.cc-text strong { font-weight: 700; }
+.cc-fix-list { list-style: none; padding: 0; }
+.cc-fix-list li {
+  font-size: 0.8rem; color: var(--text); line-height: 1.55;
+  padding: 4px 0 4px 12px; position: relative;
+}
+.cc-fix-list li::before {
+  content: ''; position: absolute; left: 0; top: 11px;
+  width: 5px; height: 5px; border-radius: 50%; background: var(--warning);
+}
 
-.cc-plan { list-style: none; counter-reset: plan-step; }
-.cc-plan li {
-  counter-increment: plan-step;
-  font-size: 0.8rem; color: var(--text); line-height: 1.5;
-  padding: 6px 0; border-bottom: 1px solid var(--border-light);
-  display: flex; gap: 10px;
+/* Drill Card */
+.cc-drill-card {
+  background: var(--accent-bg); border-radius: 10px; padding: 14px;
+  margin-top: 6px;
 }
-.cc-plan li:last-child { border-bottom: none; }
-.cc-plan li::before {
-  content: counter(plan-step);
-  flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%;
-  background: var(--accent-bg); color: var(--accent);
-  font-size: 0.68rem; font-weight: 700;
+.cc-drill-header {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 2px;
+}
+.cc-drill-name { font-size: 0.85rem; font-weight: 700; color: var(--text); }
+.cc-drill-duration { font-size: 0.72rem; color: var(--text-muted); margin-bottom: 10px; }
+.cc-drill-steps { list-style: none; padding: 0; }
+.cc-drill-steps li {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 0; border-bottom: 1px solid rgba(27,67,50,0.08);
+  font-size: 0.78rem; color: var(--text);
+}
+.cc-drill-steps li:last-child { border-bottom: none; }
+.cc-drill-step-num {
+  width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0;
+  background: var(--accent); color: white;
+  font-size: 0.65rem; font-weight: 700;
   display: flex; align-items: center; justify-content: center;
-  margin-top: 1px;
 }
-.cc-plan .plan-time {
+.cc-drill-step-text { flex: 1; }
+.cc-drill-step-time {
   font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
   color: var(--text-muted); white-space: nowrap;
 }
+.cc-watch-demo {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%; padding: 10px; margin-top: 12px;
+  border: none; border-radius: 10px; cursor: pointer;
+  background: var(--accent); color: white;
+  font-family: 'Inter', sans-serif; font-size: 0.8rem; font-weight: 600;
+  min-height: 44px;
+}
+.cc-watch-demo svg { width: 14px; height: 14px; }
 
 .cc-divider { height: 1px; background: var(--border-light); margin: 14px 0; }
 
-/* ═══ UTILITIES ═══ */
+/* UTILITIES */
 .section-gap { height: 8px; }
-
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-
 ::-webkit-scrollbar { display: none; }
 </style>
 </head>
@@ -467,15 +461,11 @@ body { font-family: 'Inter', -apple-system, system-ui, sans-serif; background: v
     </span>
   </div>
 
-  <!-- ═══════════════════════════════════
-       VIDEO PLAYER (PRESERVED — no changes)
-       ═══════════════════════════════════ -->
+  <!-- VIDEO PLAYER (PRESERVED) -->
   <div class="video-player" id="videoPlayer">
     <div class="video-bg"></div>
-
     <div class="live-tag" id="liveTag"><span class="ldot"></span>LIVE</div>
     <div class="live-cue" id="liveCue">Great contact point!</div>
-
     <svg class="video-overlay" viewBox="0 0 393 612" preserveAspectRatio="xMidYMid slice">
       <line class="skel" x1="197" y1="220" x2="170" y2="280"/><line class="skel" x1="197" y1="220" x2="224" y2="280"/>
       <line class="skel" x1="170" y1="280" x2="145" y2="340"/><line class="skel" x1="224" y1="280" x2="280" y2="310"/>
@@ -486,7 +476,6 @@ body { font-family: 'Inter', -apple-system, system-ui, sans-serif; background: v
       <circle class="jnt" cx="170" cy="280" r="4"/><circle class="jnt" cx="224" cy="280" r="4"/>
       <circle class="jnt" cx="145" cy="340" r="4"/><circle class="jnt" cx="280" cy="310" r="5"/>
       <circle class="jnt" cx="310" cy="260" r="5"/><circle class="jnt" cx="197" cy="350" r="4"/>
-
       <g id="swingPathGroup">
         <line class="swing-plane" x1="100" y1="520" x2="320" y2="120"/>
         <path class="swing-path" d="M 140 420 Q 160 380 180 340 Q 200 300 240 270 Q 270 250 310 260 Q 340 270 350 240" style="stroke-dasharray:400;stroke-dashoffset:400;animation:drawPath 1.5s ease forwards 0.3s;"/>
@@ -496,7 +485,6 @@ body { font-family: 'Inter', -apple-system, system-ui, sans-serif; background: v
         </circle>
       </g>
     </svg>
-
     <div id="swingBadges">
       <div class="vid-badge good" style="top:36%;right:8%;animation-delay:0.6s;">
         <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -511,7 +499,6 @@ body { font-family: 'Inter', -apple-system, system-ui, sans-serif; background: v
         Wrist Open
       </div>
     </div>
-
     <div class="vid-controls">
       <button class="play-btn">
         <svg width="12" height="14" viewBox="0 0 12 14" fill="none"><path d="M1 1.5v11l10-5.5L1 1.5z" fill="white"/></svg>
@@ -533,7 +520,7 @@ body { font-family: 'Inter', -apple-system, system-ui, sans-serif; background: v
     </div>
   </div>
 
-  <!-- ═══ STROKE TIMELINE ═══ -->
+  <!-- STROKE TIMELINE -->
   <div class="stroke-timeline-wrap">
     <div class="stroke-timeline">
       <div class="stroke-chip active">
@@ -555,7 +542,148 @@ body { font-family: 'Inter', -apple-system, system-ui, sans-serif; background: v
     </div>
   </div>
 
-  <!-- ═══ PHASE BREAKDOWN ═══ -->
+  <!-- HERO INSIGHT CARD -->
+  <div class="hero-insight">
+    <div class="hero-insight-label">Your Top Priorities</div>
+
+    <!-- Insight 1: Posture at Impact -->
+    <div class="hero-insight-row">
+      <div class="hero-insight-visual">
+        <svg width="320" height="160" viewBox="0 0 320 160">
+          <!-- Ground line -->
+          <line x1="40" y1="140" x2="280" y2="140" stroke="#E5E7EB" stroke-width="1"/>
+          <!-- Current: leaning back stick figure -->
+          <g opacity="0.85">
+            <!-- Head -->
+            <circle cx="120" cy="30" r="10" fill="none" stroke="#DC2626" stroke-width="2"/>
+            <!-- Spine (tilted back 12 deg) -->
+            <line x1="120" y1="40" x2="128" y2="85" stroke="#DC2626" stroke-width="2.5" stroke-linecap="round"/>
+            <!-- Hips -->
+            <line x1="116" y1="85" x2="140" y2="85" stroke="#DC2626" stroke-width="2" stroke-linecap="round"/>
+            <!-- Left leg -->
+            <line x1="118" y1="85" x2="110" y2="115" stroke="#DC2626" stroke-width="2" stroke-linecap="round"/>
+            <line x1="110" y1="115" x2="105" y2="140" stroke="#DC2626" stroke-width="2" stroke-linecap="round"/>
+            <!-- Right leg -->
+            <line x1="138" y1="85" x2="145" y2="115" stroke="#DC2626" stroke-width="2" stroke-linecap="round"/>
+            <line x1="145" y1="115" x2="150" y2="140" stroke="#DC2626" stroke-width="2" stroke-linecap="round"/>
+            <!-- Left arm -->
+            <line x1="122" y1="48" x2="100" y2="62" stroke="#DC2626" stroke-width="2" stroke-linecap="round"/>
+            <!-- Right arm (racket arm extended) -->
+            <line x1="126" y1="48" x2="160" y2="55" stroke="#DC2626" stroke-width="2" stroke-linecap="round"/>
+            <line x1="160" y1="55" x2="185" y2="40" stroke="#DC2626" stroke-width="2" stroke-linecap="round"/>
+            <!-- Lean-back angle arc -->
+            <path d="M128 85 L128 60" stroke="#DC2626" stroke-width="1" stroke-dasharray="3 2" opacity="0.6"/>
+            <!-- Label -->
+            <text x="87" y="70" font-family="Inter, sans-serif" font-size="9" font-weight="600" fill="#DC2626">You: 12&#xB0; back</text>
+          </g>
+          <!-- Ideal: upright stick figure -->
+          <g opacity="0.85">
+            <!-- Head -->
+            <circle cx="220" cy="24" r="10" fill="none" stroke="#16A34A" stroke-width="2"/>
+            <!-- Spine (upright) -->
+            <line x1="220" y1="34" x2="220" y2="85" stroke="#16A34A" stroke-width="2.5" stroke-linecap="round"/>
+            <!-- Hips -->
+            <line x1="208" y1="85" x2="232" y2="85" stroke="#16A34A" stroke-width="2" stroke-linecap="round"/>
+            <!-- Left leg -->
+            <line x1="210" y1="85" x2="205" y2="115" stroke="#16A34A" stroke-width="2" stroke-linecap="round"/>
+            <line x1="205" y1="115" x2="200" y2="140" stroke="#16A34A" stroke-width="2" stroke-linecap="round"/>
+            <!-- Right leg -->
+            <line x1="230" y1="85" x2="235" y2="115" stroke="#16A34A" stroke-width="2" stroke-linecap="round"/>
+            <line x1="235" y1="115" x2="240" y2="140" stroke="#16A34A" stroke-width="2" stroke-linecap="round"/>
+            <!-- Left arm -->
+            <line x1="220" y1="45" x2="198" y2="58" stroke="#16A34A" stroke-width="2" stroke-linecap="round"/>
+            <!-- Right arm -->
+            <line x1="220" y1="45" x2="252" y2="48" stroke="#16A34A" stroke-width="2" stroke-linecap="round"/>
+            <line x1="252" y1="48" x2="275" y2="32" stroke="#16A34A" stroke-width="2" stroke-linecap="round"/>
+            <!-- Upright line -->
+            <line x1="220" y1="85" x2="220" y2="60" stroke="#16A34A" stroke-width="1" stroke-dasharray="3 2" opacity="0.6"/>
+            <!-- Label -->
+            <text x="230" y="70" font-family="Inter, sans-serif" font-size="9" font-weight="600" fill="#16A34A">Ideal: upright</text>
+          </g>
+          <!-- Correction arrow between figures -->
+          <path d="M150 50 C165 42 180 38 200 34" fill="none" stroke="#1B4332" stroke-width="1.5" stroke-dasharray="4 3"/>
+          <polygon points="200,31 195,38 203,37" fill="#1B4332"/>
+          <!-- Labels -->
+          <text x="60" y="155" font-family="Inter, sans-serif" font-size="8" fill="#9CA3AF">CURRENT</text>
+          <text x="205" y="155" font-family="Inter, sans-serif" font-size="8" fill="#9CA3AF">IDEAL</text>
+        </svg>
+      </div>
+      <div class="hero-insight-title">Stay balanced through contact</div>
+      <div class="hero-insight-detail">You're leaning back 12 degrees at impact -- shift your weight forward and keep your head over the contact point.</div>
+      <span class="hero-impact-pill">
+        <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M4 1v4M2.5 3.5L4 5l1.5-1.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        High Impact
+      </span>
+    </div>
+
+    <!-- Insight 2: Backswing -->
+    <div class="hero-insight-row">
+      <div class="hero-insight-visual">
+        <svg width="320" height="160" viewBox="0 0 320 160">
+          <!-- Current: shallow take-back -->
+          <g opacity="0.85">
+            <circle cx="110" cy="35" r="10" fill="none" stroke="#D97706" stroke-width="2"/>
+            <line x1="110" y1="45" x2="110" y2="90" stroke="#D97706" stroke-width="2.5" stroke-linecap="round"/>
+            <!-- Shoulders -->
+            <line x1="95" y1="55" x2="125" y2="55" stroke="#D97706" stroke-width="2" stroke-linecap="round"/>
+            <!-- Left arm (non-racket) -->
+            <line x1="95" y1="55" x2="80" y2="75" stroke="#D97706" stroke-width="2" stroke-linecap="round"/>
+            <!-- Right arm (racket arm - shallow backswing) -->
+            <line x1="125" y1="55" x2="148" y2="42" stroke="#D97706" stroke-width="2" stroke-linecap="round"/>
+            <line x1="148" y1="42" x2="162" y2="28" stroke="#D97706" stroke-width="2" stroke-linecap="round"/>
+            <!-- Racket -->
+            <line x1="162" y1="28" x2="172" y2="15" stroke="#D97706" stroke-width="1.5" stroke-linecap="round"/>
+            <!-- Angle arc (current - amber) -->
+            <path d="M125 55 Q140 35 148 42" fill="none" stroke="#D97706" stroke-width="1.5" stroke-dasharray="3 2"/>
+            <text x="133" y="30" font-family="Inter, sans-serif" font-size="9" font-weight="600" fill="#D97706">You: 142&#xB0;</text>
+            <!-- Hips + legs -->
+            <line x1="100" y1="90" x2="120" y2="90" stroke="#D97706" stroke-width="2" stroke-linecap="round"/>
+            <line x1="102" y1="90" x2="97" y2="120" stroke="#D97706" stroke-width="2" stroke-linecap="round"/>
+            <line x1="97" y1="120" x2="93" y2="140" stroke="#D97706" stroke-width="2" stroke-linecap="round"/>
+            <line x1="118" y1="90" x2="123" y2="120" stroke="#D97706" stroke-width="2" stroke-linecap="round"/>
+            <line x1="123" y1="120" x2="128" y2="140" stroke="#D97706" stroke-width="2" stroke-linecap="round"/>
+          </g>
+          <!-- Ideal: deeper take-back -->
+          <g opacity="0.85">
+            <circle cx="230" cy="35" r="10" fill="none" stroke="#16A34A" stroke-width="2"/>
+            <line x1="230" y1="45" x2="230" y2="90" stroke="#16A34A" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="215" y1="55" x2="245" y2="55" stroke="#16A34A" stroke-width="2" stroke-linecap="round"/>
+            <!-- Left arm -->
+            <line x1="215" y1="55" x2="200" y2="75" stroke="#16A34A" stroke-width="2" stroke-linecap="round"/>
+            <!-- Right arm (deeper backswing - more bend) -->
+            <line x1="245" y1="55" x2="258" y2="38" stroke="#16A34A" stroke-width="2" stroke-linecap="round"/>
+            <line x1="258" y1="38" x2="255" y2="20" stroke="#16A34A" stroke-width="2" stroke-linecap="round"/>
+            <!-- Racket (pointing more up/back) -->
+            <line x1="255" y1="20" x2="248" y2="6" stroke="#16A34A" stroke-width="1.5" stroke-linecap="round"/>
+            <!-- Angle arc (ideal - green) -->
+            <path d="M245 55 Q260 32 258 38" fill="none" stroke="#16A34A" stroke-width="1.5"/>
+            <text x="260" y="30" font-family="Inter, sans-serif" font-size="9" font-weight="600" fill="#16A34A">Ideal: 90-110&#xB0;</text>
+            <!-- Hips + legs -->
+            <line x1="220" y1="90" x2="240" y2="90" stroke="#16A34A" stroke-width="2" stroke-linecap="round"/>
+            <line x1="222" y1="90" x2="217" y2="120" stroke="#16A34A" stroke-width="2" stroke-linecap="round"/>
+            <line x1="217" y1="120" x2="213" y2="140" stroke="#16A34A" stroke-width="2" stroke-linecap="round"/>
+            <line x1="238" y1="90" x2="243" y2="120" stroke="#16A34A" stroke-width="2" stroke-linecap="round"/>
+            <line x1="243" y1="120" x2="248" y2="140" stroke="#16A34A" stroke-width="2" stroke-linecap="round"/>
+          </g>
+          <!-- Correction arrow -->
+          <path d="M170 25 C185 15 200 12 240 12" fill="none" stroke="#1B4332" stroke-width="1.5" stroke-dasharray="4 3"/>
+          <polygon points="240,9 234,16 242,15" fill="#1B4332"/>
+          <!-- Ground -->
+          <line x1="40" y1="140" x2="280" y2="140" stroke="#E5E7EB" stroke-width="1"/>
+          <text x="60" y="155" font-family="Inter, sans-serif" font-size="8" fill="#9CA3AF">CURRENT</text>
+          <text x="215" y="155" font-family="Inter, sans-serif" font-size="8" fill="#9CA3AF">IDEAL</text>
+        </svg>
+      </div>
+      <div class="hero-insight-title">Loop the racket higher on take-back</div>
+      <div class="hero-insight-detail">Your elbow angle is 142 degrees during backswing -- bend it to 90-110 degrees for a tighter, more powerful loop.</div>
+      <span class="hero-impact-pill">
+        <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M4 1v4M2.5 3.5L4 5l1.5-1.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        High Impact
+      </span>
+    </div>
+  </div>
+
+  <!-- PHASE BREAKDOWN -->
   <div class="phase-strip">
     <div class="phase-strip-label">Phase Breakdown</div>
     <div class="phase-row">
@@ -578,117 +706,215 @@ body { font-family: 'Inter', -apple-system, system-ui, sans-serif; background: v
       </div>
       <div class="pd-score warn">5</div>
     </div>
-    <div class="pd-angles">
-      <span class="ang warn"><span class="dot"></span>Elbow: 142&deg;</span>
-      <span class="ang good"><span class="dot"></span>Shoulder: 88&deg;</span>
-      <span class="ang warn"><span class="dot"></span>Racket Drop</span>
+    <!-- Visual correction diagram -->
+    <div class="pd-visual">
+      <svg width="330" height="140" viewBox="0 0 330 140">
+        <!-- Stick figure torso (centered) -->
+        <circle cx="165" cy="18" r="9" fill="none" stroke="#1B4332" stroke-width="1.8"/>
+        <line x1="165" y1="27" x2="165" y2="72" stroke="#1B4332" stroke-width="2" stroke-linecap="round"/>
+        <!-- Shoulders -->
+        <line x1="148" y1="38" x2="182" y2="38" stroke="#1B4332" stroke-width="1.8" stroke-linecap="round"/>
+        <!-- Left arm (non-racket) -->
+        <line x1="148" y1="38" x2="132" y2="58" stroke="#1B4332" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="132" y1="58" x2="128" y2="72" stroke="#1B4332" stroke-width="1.8" stroke-linecap="round"/>
+
+        <!-- CURRENT arm path (amber, dashed) -->
+        <line x1="182" y1="38" x2="210" y2="22" stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-dasharray="4 2"/>
+        <line x1="210" y1="22" x2="228" y2="10" stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-dasharray="4 2"/>
+        <!-- Current angle arc -->
+        <path d="M192 38 A14 14 0 0 0 198 26" fill="none" stroke="#D97706" stroke-width="1.5" stroke-dasharray="3 2"/>
+        <text x="202" y="52" font-family="Inter, sans-serif" font-size="9" font-weight="600" fill="#D97706">You: 142&#xB0;</text>
+
+        <!-- IDEAL arm path (green, solid) -->
+        <line x1="182" y1="38" x2="200" y2="18" stroke="#16A34A" stroke-width="2" stroke-linecap="round"/>
+        <line x1="200" y1="18" x2="196" y2="2" stroke="#16A34A" stroke-width="2" stroke-linecap="round"/>
+        <!-- Ideal angle arc -->
+        <path d="M192 38 A14 14 0 0 0 194 22" fill="none" stroke="#16A34A" stroke-width="1.5"/>
+        <text x="82" y="22" font-family="Inter, sans-serif" font-size="9" font-weight="600" fill="#16A34A">Ideal: 90-110&#xB0;</text>
+        <!-- Arrow from ideal label to arc -->
+        <path d="M120 20 L146 25" fill="none" stroke="#16A34A" stroke-width="1" opacity="0.5"/>
+
+        <!-- Correction arrow (curved, from current to ideal) -->
+        <path d="M225 14 C218 -2 204 -4 198 4" fill="none" stroke="#1B4332" stroke-width="1.5"/>
+        <polygon points="198,4 194,10 201,8" fill="#1B4332"/>
+
+        <!-- Hips + legs simplified -->
+        <line x1="155" y1="72" x2="175" y2="72" stroke="#1B4332" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="157" y1="72" x2="150" y2="105" stroke="#1B4332" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="150" y1="105" x2="145" y2="130" stroke="#1B4332" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="173" y1="72" x2="180" y2="105" stroke="#1B4332" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="180" y1="105" x2="185" y2="130" stroke="#1B4332" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="100" y1="130" x2="230" y2="130" stroke="#E5E7EB" stroke-width="1"/>
+
+        <!-- Legend -->
+        <line x1="250" y1="60" x2="270" y2="60" stroke="#D97706" stroke-width="2" stroke-dasharray="4 2"/>
+        <text x="274" y="63" font-family="Inter, sans-serif" font-size="8" fill="#D97706">Current</text>
+        <line x1="250" y1="76" x2="270" y2="76" stroke="#16A34A" stroke-width="2"/>
+        <text x="274" y="79" font-family="Inter, sans-serif" font-size="8" fill="#16A34A">Ideal</text>
+      </svg>
     </div>
     <div class="pd-cue">
       <span class="pd-cue-icon">
-        <svg viewBox="0 0 16 16" fill="none"><path d="M8 1a5 5 0 00-5 5v2a2 2 0 002 2h1v-3H5V6a3 3 0 016 0v1h-1v3h1a2 2 0 002-2V6a5 5 0 00-5-5z" fill="var(--accent)" opacity="0.7"/><rect x="5.5" y="12" width="5" height="2" rx="1" fill="var(--accent)" opacity="0.7"/></svg>
+        <svg viewBox="0 0 16 16" fill="none"><path d="M8 1C5.5 1 4 3 4 5c0 1.5.8 2.5 1.5 3.2.5.5.5.8.5 1.3V10h4v-.5c0-.5 0-.8.5-1.3C11.2 7.5 12 6.5 12 5c0-2-1.5-4-4-4z" stroke="#1B4332" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><line x1="6" y1="12" x2="10" y2="12" stroke="#1B4332" stroke-width="1.2" stroke-linecap="round"/><line x1="6.5" y1="14" x2="9.5" y2="14" stroke="#1B4332" stroke-width="1.2" stroke-linecap="round"/></svg>
       </span>
-      <span>Keep racket head at wrist level during take-back &mdash; imagine setting a tray on a shelf behind you.</span>
+      <span>Bend your elbow more during take-back. Think: setting a tray on a shelf behind you.</span>
     </div>
   </div>
 
-  <!-- ═══ SESSION SUMMARY ═══ -->
+  <!-- SESSION SUMMARY (Redesigned) -->
   <div class="summary-section">
-    <!-- Score Ring -->
-    <div class="score-ring-container">
+    <div class="score-row">
       <div class="score-ring-wrap">
-        <svg class="score-ring-svg" width="120" height="120" viewBox="0 0 120 120">
-          <circle class="score-ring-track" cx="60" cy="60" r="52"/>
-          <circle class="score-ring-fill" cx="60" cy="60" r="52"
-            stroke-dasharray="326.73"
-            stroke-dashoffset="89.85"/>
+        <svg class="score-ring-svg" width="80" height="80" viewBox="0 0 80 80">
+          <circle class="score-ring-track" cx="40" cy="40" r="34"/>
+          <circle class="score-ring-fill" cx="40" cy="40" r="34"
+            stroke-dasharray="213.63"
+            stroke-dashoffset="58.75"/>
         </svg>
         <div class="score-ring-value">
           <span class="score-ring-number">72.5</span>
         </div>
       </div>
-      <span class="score-ring-label">Overall Score</span>
-      <span class="score-ring-grade">B</span>
-      <div class="score-meta">4 strokes &middot; 2:35 session</div>
+      <div class="score-right">
+        <div class="score-right-top">
+          <span class="score-right-number">72.5</span>
+          <span class="score-right-grade">B</span>
+        </div>
+        <div class="score-trend">&#8593; from 68.3 last session</div>
+        <div class="score-sparkline">
+          <svg width="160" height="60" viewBox="0 0 160 60">
+            <!-- Sparkline: [58, 62, 60, 65, 68, 66, 68.3, 72.5] -->
+            <!-- Map range 55-75 to y 55-5 -->
+            <!-- 58->y46.5, 62->y32.5, 60->y39.5, 65->y20, 68->y9.5, 66->y16.5, 68.3->y8.5, 72.5->y-6 -->
+            <!-- Remap: min=55, max=75, range=20. y = 55 - ((val-55)/20)*50 -->
+            <!-- 58: 55-((3)/20)*50 = 55-7.5 = 47.5 -->
+            <!-- 62: 55-((7)/20)*50 = 55-17.5 = 37.5 -->
+            <!-- 60: 55-((5)/20)*50 = 55-12.5 = 42.5 -->
+            <!-- 65: 55-((10)/20)*50 = 55-25 = 30 -->
+            <!-- 68: 55-((13)/20)*50 = 55-32.5 = 22.5 -->
+            <!-- 66: 55-((11)/20)*50 = 55-27.5 = 27.5 -->
+            <!-- 68.3: 55-((13.3)/20)*50 = 55-33.25 = 21.75 -->
+            <!-- 72.5: 55-((17.5)/20)*50 = 55-43.75 = 11.25 -->
+            <polyline
+              points="5,47.5 27,37.5 49,42.5 72,30 94,22.5 116,27.5 138,21.75 155,11.25"
+              fill="none" stroke="#E5E7EB" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+            <!-- Dots -->
+            <circle cx="5" cy="47.5" r="2.5" fill="#9CA3AF"/>
+            <circle cx="27" cy="37.5" r="2.5" fill="#9CA3AF"/>
+            <circle cx="49" cy="42.5" r="2.5" fill="#9CA3AF"/>
+            <circle cx="72" cy="30" r="2.5" fill="#9CA3AF"/>
+            <circle cx="94" cy="22.5" r="2.5" fill="#9CA3AF"/>
+            <circle cx="116" cy="27.5" r="2.5" fill="#9CA3AF"/>
+            <circle cx="138" cy="21.75" r="2.5" fill="#9CA3AF"/>
+            <!-- Last point highlighted -->
+            <circle cx="155" cy="11.25" r="4" fill="#16A34A"/>
+            <circle cx="155" cy="11.25" r="7" fill="none" stroke="#16A34A" stroke-width="1" opacity="0.3"/>
+          </svg>
+        </div>
+      </div>
     </div>
-
-    <!-- Priority -->
-    <div class="priority-card">
-      <div class="priority-label">Priority</div>
-      <div class="priority-text">Deepen your unit turn on the forehand backswing to unlock more rotation-based power.</div>
-    </div>
+    <div class="score-subtitle">2 things to work on this session</div>
   </div>
 
-  <!-- ═══ SWING ANALYSIS ═══ -->
+  <!-- SWING ANALYSIS (Redesigned) -->
   <div class="swing-analysis">
     <div class="sa-label">Swing Analysis</div>
 
-    <!-- Setup Posture -->
+    <!-- Setup Posture (green) -->
     <div class="sa-row">
-      <div class="sa-icon good">
-        <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="3.5" r="2" stroke="#16A34A" stroke-width="1.5"/><path d="M5 8h6v1a3 3 0 01-6 0V8z" stroke="#16A34A" stroke-width="1.5"/><line x1="8" y1="10" x2="8" y2="14" stroke="#16A34A" stroke-width="1.5"/><line x1="5" y1="14" x2="11" y2="14" stroke="#16A34A" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <div class="sa-status-dot green"></div>
+      <div class="sa-icon">
+        <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="3.5" r="2" stroke="#1B4332" stroke-width="1.5"/><path d="M5 8h6v1a3 3 0 01-6 0V8z" stroke="#1B4332" stroke-width="1.5"/><line x1="8" y1="10" x2="8" y2="14" stroke="#1B4332" stroke-width="1.5"/><line x1="5" y1="14" x2="11" y2="14" stroke="#1B4332" stroke-width="1.5" stroke-linecap="round"/></svg>
       </div>
-      <div class="sa-info"><div class="sa-name">Setup Posture</div><div class="sa-desc">Ready position &amp; stance</div></div>
-      <span class="sa-badge good"><span class="sa-badge-indicator">&#10003;</span> In Zone</span>
+      <div class="sa-info">
+        <div class="sa-name">Setup Posture</div>
+        <div class="sa-insight">Looks great -- balanced and ready</div>
+      </div>
+      <span class="sa-chevron">&#8250;</span>
     </div>
 
-    <!-- Swing Path -->
+    <!-- Swing Path (amber) -->
     <div class="sa-row">
-      <div class="sa-icon warn">
-        <svg viewBox="0 0 16 16" fill="none"><path d="M2 12C4 6 7 3 14 3" stroke="#D97706" stroke-width="1.5" stroke-linecap="round"/><path d="M11 1l3 2-3 2" stroke="#D97706" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div class="sa-status-dot amber"></div>
+      <div class="sa-icon">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M2 12C4 6 7 3 14 3" stroke="#1B4332" stroke-width="1.5" stroke-linecap="round"/><path d="M11 1l3 2-3 2" stroke="#1B4332" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
-      <div class="sa-info"><div class="sa-name">Swing Path</div><div class="sa-desc">Take-back through contact</div></div>
-      <span class="sa-badge warn"><span class="sa-badge-indicator">&ndash;</span> Adjust</span>
+      <div class="sa-info">
+        <div class="sa-name">Swing Path</div>
+        <div class="sa-insight needs-work">Take-back stops 15 degrees short -- loop the racket higher</div>
+      </div>
+      <span class="sa-chevron">&#8250;</span>
     </div>
 
-    <!-- Footwork -->
+    <!-- Footwork (green) -->
     <div class="sa-row">
-      <div class="sa-icon good">
-        <svg viewBox="0 0 16 16" fill="none"><path d="M5 2c0 2-1 4-1 6s1 3 2 3 1.5-1 1.5-2.5S7 6 6 4s-1-2-1-2z" stroke="#16A34A" stroke-width="1.2"/><path d="M11 4c0 2-1 3.5-1 5.5s1 2.5 2 2.5 1.5-1 1.5-2S13 8 12 6s-1-2-1-2z" stroke="#16A34A" stroke-width="1.2"/></svg>
+      <div class="sa-status-dot green"></div>
+      <div class="sa-icon">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M5 2c0 2-1 4-1 6s1 3 2 3 1.5-1 1.5-2.5S7 6 6 4s-1-2-1-2z" stroke="#1B4332" stroke-width="1.2"/><path d="M11 4c0 2-1 3.5-1 5.5s1 2.5 2 2.5 1.5-1 1.5-2S13 8 12 6s-1-2-1-2z" stroke="#1B4332" stroke-width="1.2"/></svg>
       </div>
-      <div class="sa-info"><div class="sa-name">Footwork</div><div class="sa-desc">Split step &amp; positioning</div></div>
-      <span class="sa-badge good"><span class="sa-badge-indicator">&#10003;</span> In Zone</span>
+      <div class="sa-info">
+        <div class="sa-name">Footwork</div>
+        <div class="sa-insight">Looks great -- good split step timing</div>
+      </div>
+      <span class="sa-chevron">&#8250;</span>
     </div>
 
-    <!-- Contact Zone -->
+    <!-- Contact Zone (green) -->
     <div class="sa-row">
-      <div class="sa-icon good">
-        <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="#16A34A" stroke-width="1.2"/><circle cx="8" cy="8" r="3" stroke="#16A34A" stroke-width="1.2"/><circle cx="8" cy="8" r="0.8" fill="#16A34A"/></svg>
+      <div class="sa-status-dot green"></div>
+      <div class="sa-icon">
+        <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="#1B4332" stroke-width="1.2"/><circle cx="8" cy="8" r="3" stroke="#1B4332" stroke-width="1.2"/><circle cx="8" cy="8" r="0.8" fill="#1B4332"/></svg>
       </div>
-      <div class="sa-info"><div class="sa-name">Contact Zone</div><div class="sa-desc">Strike position &amp; extension</div></div>
-      <span class="sa-badge good"><span class="sa-badge-indicator">&#10003;</span> In Zone</span>
+      <div class="sa-info">
+        <div class="sa-name">Contact Zone</div>
+        <div class="sa-insight">Looks great -- clean extension</div>
+      </div>
+      <span class="sa-chevron">&#8250;</span>
     </div>
 
-    <!-- Follow-Through -->
+    <!-- Follow-Through (amber) -->
     <div class="sa-row">
-      <div class="sa-icon warn">
-        <svg viewBox="0 0 16 16" fill="none"><path d="M3 13C5 9 8 5 13 3" stroke="#D97706" stroke-width="1.5" stroke-linecap="round"/><path d="M10 2l3 1-1 3" stroke="#D97706" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="3" cy="13" r="1.5" stroke="#D97706" stroke-width="1.2"/></svg>
+      <div class="sa-status-dot amber"></div>
+      <div class="sa-icon">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M3 13C5 9 8 5 13 3" stroke="#1B4332" stroke-width="1.5" stroke-linecap="round"/><path d="M10 2l3 1-1 3" stroke="#1B4332" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="3" cy="13" r="1.5" stroke="#1B4332" stroke-width="1.2"/></svg>
       </div>
-      <div class="sa-info"><div class="sa-name">Follow-Through</div><div class="sa-desc">Finish &amp; deceleration</div></div>
-      <span class="sa-badge warn"><span class="sa-badge-indicator">&ndash;</span> Adjust</span>
+      <div class="sa-info">
+        <div class="sa-name">Follow-Through</div>
+        <div class="sa-insight needs-work">Finish 8 degrees lower than ideal -- extend over left shoulder</div>
+      </div>
+      <span class="sa-chevron">&#8250;</span>
     </div>
 
-    <!-- Spine Stability -->
+    <!-- Spine Stability (green) -->
     <div class="sa-row">
-      <div class="sa-icon good">
-        <svg viewBox="0 0 16 16" fill="none"><line x1="8" y1="2" x2="8" y2="14" stroke="#16A34A" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="4" r="1" fill="#16A34A"/><circle cx="8" cy="7" r="1" fill="#16A34A"/><circle cx="8" cy="10" r="1" fill="#16A34A"/><circle cx="8" cy="13" r="1" fill="#16A34A"/></svg>
+      <div class="sa-status-dot green"></div>
+      <div class="sa-icon">
+        <svg viewBox="0 0 16 16" fill="none"><line x1="8" y1="2" x2="8" y2="14" stroke="#1B4332" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="4" r="1" fill="#1B4332"/><circle cx="8" cy="7" r="1" fill="#1B4332"/><circle cx="8" cy="10" r="1" fill="#1B4332"/><circle cx="8" cy="13" r="1" fill="#1B4332"/></svg>
       </div>
-      <div class="sa-info"><div class="sa-name">Spine Stability</div><div class="sa-desc">Core rotation &amp; posture</div></div>
-      <span class="sa-badge good"><span class="sa-badge-indicator">&#10003;</span> In Zone</span>
+      <div class="sa-info">
+        <div class="sa-name">Spine Stability</div>
+        <div class="sa-insight">Looks great -- solid core rotation</div>
+      </div>
+      <span class="sa-chevron">&#8250;</span>
     </div>
 
-    <!-- Posture at Impact -->
+    <!-- Posture at Impact (red) -->
     <div class="sa-row">
-      <div class="sa-icon bad">
-        <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="3.5" r="2" stroke="#DC2626" stroke-width="1.3"/><line x1="8" y1="5.5" x2="8" y2="10" stroke="#DC2626" stroke-width="1.5"/><line x1="4" y1="7" x2="12" y2="7" stroke="#DC2626" stroke-width="1.5" stroke-linecap="round"/><line x1="6" y1="10" x2="4" y2="14" stroke="#DC2626" stroke-width="1.5" stroke-linecap="round"/><line x1="10" y1="10" x2="12" y2="14" stroke="#DC2626" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <div class="sa-status-dot red"></div>
+      <div class="sa-icon">
+        <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="3.5" r="2" stroke="#1B4332" stroke-width="1.3"/><line x1="8" y1="5.5" x2="8" y2="10" stroke="#1B4332" stroke-width="1.5"/><line x1="4" y1="7" x2="12" y2="7" stroke="#1B4332" stroke-width="1.5" stroke-linecap="round"/><line x1="6" y1="10" x2="4" y2="14" stroke="#1B4332" stroke-width="1.5" stroke-linecap="round"/><line x1="10" y1="10" x2="12" y2="14" stroke="#1B4332" stroke-width="1.5" stroke-linecap="round"/></svg>
       </div>
-      <div class="sa-info"><div class="sa-name">Posture at Impact</div><div class="sa-desc">Body alignment at contact</div></div>
-      <span class="sa-badge bad"><span class="sa-badge-indicator">&#10005;</span> Out of Zone</span>
+      <div class="sa-info">
+        <div class="sa-name">Posture at Impact</div>
+        <div class="sa-insight needs-work">Leaning back 12 degrees -- stay balanced through contact</div>
+      </div>
+      <span class="sa-chevron">&#8250;</span>
     </div>
   </div>
 
   <div class="section-gap"></div>
 
-  <!-- ═══ COACHING CARDS ═══ -->
+  <!-- COACHING CARDS (Redesigned) -->
   <div class="coaching-card open" onclick="this.classList.toggle('open')">
     <div class="cc-header">
       <span class="cc-type">Forehand #1</span>
@@ -699,17 +925,94 @@ body { font-family: 'Inter', -apple-system, system-ui, sans-serif; background: v
       </span>
     </div>
     <div class="cc-body">
-      <div class="cc-section-label">Grade Rationale</div>
-      <div class="cc-text">This forehand earns a B because the contact point was slightly behind ideal &mdash; the unit turn was incomplete at <strong>~60&deg;</strong> vs the ideal <strong>90&deg;+</strong>. Follow-through was clean with good racket-head acceleration.</div>
+      <!-- Key Frame -->
+      <div class="cc-keyframe">
+        <svg width="340" height="180" viewBox="0 0 340 180">
+          <!-- Stick figure at contact moment -->
+          <circle cx="170" cy="28" r="12" fill="none" stroke="#1B4332" stroke-width="2"/>
+          <!-- Spine -->
+          <line x1="170" y1="40" x2="173" y2="95" stroke="#1B4332" stroke-width="2.5" stroke-linecap="round"/>
+          <!-- Shoulders -->
+          <line x1="150" y1="52" x2="190" y2="52" stroke="#1B4332" stroke-width="2" stroke-linecap="round"/>
+          <!-- Left arm -->
+          <line x1="150" y1="52" x2="130" y2="72" stroke="#1B4332" stroke-width="2" stroke-linecap="round"/>
+          <line x1="130" y1="72" x2="120" y2="85" stroke="#1B4332" stroke-width="2" stroke-linecap="round"/>
+          <!-- Right arm (racket arm at contact) -->
+          <line x1="190" y1="52" x2="218" y2="48" stroke="#1B4332" stroke-width="2" stroke-linecap="round"/>
+          <line x1="218" y1="48" x2="242" y2="38" stroke="#1B4332" stroke-width="2" stroke-linecap="round"/>
+          <!-- Racket -->
+          <line x1="242" y1="38" x2="260" y2="22" stroke="#1B4332" stroke-width="1.5" stroke-linecap="round"/>
+          <ellipse cx="268" cy="16" rx="12" ry="8" fill="none" stroke="#1B4332" stroke-width="1.2" transform="rotate(-30, 268, 16)"/>
+
+          <!-- Unit turn highlight (amber - incomplete) -->
+          <path d="M158 95 A20 20 0 0 1 188 95" fill="none" stroke="#D97706" stroke-width="2.5" stroke-linecap="round"/>
+          <text x="148" y="115" font-family="Inter, sans-serif" font-size="9" font-weight="600" fill="#D97706">~60 degrees rotation</text>
+          <!-- Arrow showing need for more rotation -->
+          <path d="M188 92 L198 88" stroke="#D97706" stroke-width="1.5" stroke-linecap="round"/>
+          <polygon points="198,85 194,92 201,90" fill="#D97706"/>
+
+          <!-- Contact point highlight (amber) -->
+          <circle cx="242" cy="38" r="8" fill="none" stroke="#D97706" stroke-width="1.5" stroke-dasharray="3 2"/>
+          <text x="244" y="56" font-family="Inter, sans-serif" font-size="8" font-weight="600" fill="#D97706">Behind ideal</text>
+          <!-- Arrow forward -->
+          <path d="M258 38 L278 34" stroke="#16A34A" stroke-width="1.5"/>
+          <polygon points="278,31 273,38 280,36" fill="#16A34A"/>
+          <text x="262" y="28" font-family="Inter, sans-serif" font-size="8" font-weight="600" fill="#16A34A">+6 in.</text>
+
+          <!-- Follow-through (green - good) -->
+          <path d="M242 38 Q230 20 210 15" fill="none" stroke="#16A34A" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.5"/>
+          <text x="196" y="12" font-family="Inter, sans-serif" font-size="8" fill="#16A34A">Good acceleration</text>
+
+          <!-- Hips + legs -->
+          <line x1="160" y1="95" x2="186" y2="95" stroke="#1B4332" stroke-width="2" stroke-linecap="round"/>
+          <line x1="162" y1="95" x2="155" y2="130" stroke="#1B4332" stroke-width="2" stroke-linecap="round"/>
+          <line x1="155" y1="130" x2="148" y2="158" stroke="#1B4332" stroke-width="2" stroke-linecap="round"/>
+          <line x1="184" y1="95" x2="192" y2="130" stroke="#1B4332" stroke-width="2" stroke-linecap="round"/>
+          <line x1="192" y1="130" x2="198" y2="158" stroke="#1B4332" stroke-width="2" stroke-linecap="round"/>
+          <!-- Ground -->
+          <line x1="80" y1="160" x2="280" y2="160" stroke="#E5E7EB" stroke-width="1"/>
+        </svg>
+      </div>
+
+      <!-- What to Fix -->
+      <div class="cc-section-label">What to Fix</div>
+      <ul class="cc-fix-list">
+        <li>Unit turn incomplete at <strong>~60 degrees</strong> -- rotate to <strong>90+ degrees</strong> before forward swing</li>
+        <li>Contact point slightly behind ideal -- meet the ball <strong>6 inches further forward</strong></li>
+      </ul>
 
       <div class="cc-divider"></div>
 
-      <div class="cc-section-label">Improvement Plan</div>
-      <ol class="cc-plan">
-        <li>Shadow swings &mdash; full unit turn <span class="plan-time">5 min</span></li>
-        <li>Drop-feed forehands &mdash; contact in front of lead hip <span class="plan-time">10 min</span></li>
-        <li>Cross-court rally with target <span class="plan-time">5 min</span></li>
-      </ol>
+      <!-- Drill -->
+      <div class="cc-section-label" style="display:flex;align-items:center;gap:6px;">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1a5 5 0 100 10A5 5 0 006 1z" stroke="#1B4332" stroke-width="1.2"/><path d="M5 4l3 2-3 2V4z" fill="#1B4332"/></svg>
+        Practice Drill
+      </div>
+      <div class="cc-drill-card">
+        <div class="cc-drill-name">Unit Turn Power Drill</div>
+        <div class="cc-drill-duration">20 min total</div>
+        <ul class="cc-drill-steps">
+          <li>
+            <span class="cc-drill-step-num">1</span>
+            <span class="cc-drill-step-text">Shadow swings -- focus on full unit turn</span>
+            <span class="cc-drill-step-time">5 min</span>
+          </li>
+          <li>
+            <span class="cc-drill-step-num">2</span>
+            <span class="cc-drill-step-text">Drop-feed forehands -- contact in front of lead hip</span>
+            <span class="cc-drill-step-time">10 min</span>
+          </li>
+          <li>
+            <span class="cc-drill-step-num">3</span>
+            <span class="cc-drill-step-text">Cross-court rally with target</span>
+            <span class="cc-drill-step-time">5 min</span>
+          </li>
+        </ul>
+        <button class="cc-watch-demo" onclick="event.stopPropagation();">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1a6 6 0 100 12A6 6 0 007 1z" stroke="white" stroke-width="1.2"/><path d="M5.5 4.5l4 2.5-4 2.5V4.5z" fill="white"/></svg>
+          Watch Demo
+        </button>
+      </div>
     </div>
   </div>
 
@@ -723,16 +1026,75 @@ body { font-family: 'Inter', -apple-system, system-ui, sans-serif; background: v
       </span>
     </div>
     <div class="cc-body">
-      <div class="cc-section-label">Grade Rationale</div>
-      <div class="cc-text">Improved unit turn on this stroke. Contact point was further forward. Follow-through finished high over the opposite shoulder.</div>
+      <!-- Key Frame -->
+      <div class="cc-keyframe">
+        <svg width="340" height="180" viewBox="0 0 340 180">
+          <!-- Improved forehand stick figure -->
+          <circle cx="170" cy="28" r="12" fill="none" stroke="#1B4332" stroke-width="2"/>
+          <line x1="170" y1="40" x2="170" y2="95" stroke="#1B4332" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="150" y1="52" x2="190" y2="52" stroke="#1B4332" stroke-width="2" stroke-linecap="round"/>
+          <line x1="150" y1="52" x2="130" y2="72" stroke="#1B4332" stroke-width="2" stroke-linecap="round"/>
+          <line x1="130" y1="72" x2="120" y2="85" stroke="#1B4332" stroke-width="2" stroke-linecap="round"/>
+          <line x1="190" y1="52" x2="222" y2="42" stroke="#1B4332" stroke-width="2" stroke-linecap="round"/>
+          <line x1="222" y1="42" x2="250" y2="30" stroke="#1B4332" stroke-width="2" stroke-linecap="round"/>
+          <line x1="250" y1="30" x2="268" y2="18" stroke="#1B4332" stroke-width="1.5" stroke-linecap="round"/>
+          <ellipse cx="276" cy="12" rx="12" ry="8" fill="none" stroke="#1B4332" stroke-width="1.2" transform="rotate(-30, 276, 12)"/>
+
+          <!-- Better unit turn (green) -->
+          <path d="M155 95 A24 24 0 0 1 192 95" fill="none" stroke="#16A34A" stroke-width="2.5" stroke-linecap="round"/>
+          <text x="145" y="115" font-family="Inter, sans-serif" font-size="9" font-weight="600" fill="#16A34A">~80 degrees -- improving</text>
+
+          <!-- Better contact point (green) -->
+          <circle cx="250" cy="30" r="8" fill="none" stroke="#16A34A" stroke-width="1.5"/>
+          <text x="256" y="46" font-family="Inter, sans-serif" font-size="8" font-weight="600" fill="#16A34A">Further forward</text>
+
+          <!-- Follow-through over shoulder (green) -->
+          <path d="M250 30 Q220 10 190 18" fill="none" stroke="#16A34A" stroke-width="1.5" stroke-dasharray="4 3"/>
+          <text x="190" y="12" font-family="Inter, sans-serif" font-size="8" fill="#16A34A">High finish</text>
+
+          <!-- Legs -->
+          <line x1="158" y1="95" x2="184" y2="95" stroke="#1B4332" stroke-width="2" stroke-linecap="round"/>
+          <line x1="160" y1="95" x2="153" y2="130" stroke="#1B4332" stroke-width="2" stroke-linecap="round"/>
+          <line x1="153" y1="130" x2="148" y2="158" stroke="#1B4332" stroke-width="2" stroke-linecap="round"/>
+          <line x1="182" y1="95" x2="190" y2="130" stroke="#1B4332" stroke-width="2" stroke-linecap="round"/>
+          <line x1="190" y1="130" x2="196" y2="158" stroke="#1B4332" stroke-width="2" stroke-linecap="round"/>
+          <line x1="80" y1="160" x2="280" y2="160" stroke="#E5E7EB" stroke-width="1"/>
+        </svg>
+      </div>
+
+      <!-- What to Fix -->
+      <div class="cc-section-label">What to Fix</div>
+      <ul class="cc-fix-list">
+        <li>Unit turn improved to <strong>~80 degrees</strong> -- keep pushing toward <strong>90+ degrees</strong></li>
+        <li>Contact point moved forward -- maintain this through longer rallies</li>
+      </ul>
 
       <div class="cc-divider"></div>
 
-      <div class="cc-section-label">Improvement Plan</div>
-      <ol class="cc-plan">
-        <li>Continue unit turn focus &mdash; aim for 90&deg;+ rotation <span class="plan-time">5 min</span></li>
-        <li>Rally with emphasis on contact in front of body <span class="plan-time">10 min</span></li>
-      </ol>
+      <div class="cc-section-label" style="display:flex;align-items:center;gap:6px;">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1a5 5 0 100 10A5 5 0 006 1z" stroke="#1B4332" stroke-width="1.2"/><path d="M5 4l3 2-3 2V4z" fill="#1B4332"/></svg>
+        Practice Drill
+      </div>
+      <div class="cc-drill-card">
+        <div class="cc-drill-name">Rally Consistency Drill</div>
+        <div class="cc-drill-duration">15 min total</div>
+        <ul class="cc-drill-steps">
+          <li>
+            <span class="cc-drill-step-num">1</span>
+            <span class="cc-drill-step-text">Shadow swings -- aim for 90+ degree rotation</span>
+            <span class="cc-drill-step-time">5 min</span>
+          </li>
+          <li>
+            <span class="cc-drill-step-num">2</span>
+            <span class="cc-drill-step-text">Rally with emphasis on contact in front of body</span>
+            <span class="cc-drill-step-time">10 min</span>
+          </li>
+        </ul>
+        <button class="cc-watch-demo" onclick="event.stopPropagation();">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1a6 6 0 100 12A6 6 0 007 1z" stroke="white" stroke-width="1.2"/><path d="M5.5 4.5l4 2.5-4 2.5V4.5z" fill="white"/></svg>
+          Watch Demo
+        </button>
+      </div>
     </div>
   </div>
 
