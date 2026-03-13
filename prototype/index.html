@@ -3,40 +3,37 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Tennis Coach AI — Integrated Feature Preview</title>
+<title>Tennique — AI Tennis Coach</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,800;1,9..144,400&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #FAF8F5;
-  --surface: #FFFFFF;
-  --surface-dim: #F3EFE8;
-  --surface-alt: #EDE8DF;
-  --accent: #2D5F45;
-  --accent-secondary: #BFA14A;
-  --accent-muted: rgba(45,95,69,0.06);
-  --text: #1F2421;
-  --text-dim: #5A6058;
-  --text-muted: #8E9189;
-  --border: #E8E4DC;
-  --border-light: #F0ECE4;
-  --success: #5E8E6B;
-  --success-light: rgba(94,142,107,0.08);
-  --warning: #BFA14A;
-  --warning-light: rgba(191,161,74,0.08);
-  --error: #C4876B;
-  --error-light: rgba(196,135,107,0.07);
-  --skeleton: rgba(100,160,200,0.7);
-  --skeleton-glow: rgba(100,160,200,0.4);
-  --pro-gold: rgba(191,161,74,0.7);
-  --pro-gold-glow: rgba(191,161,74,0.4);
+  --bg: #FFFFFF;
+  --surface: #F8F9FA;
+  --surface-hover: #F0F2F4;
+  --text: #1A1A1A;
+  --text-secondary: #6B7280;
+  --text-muted: #9CA3AF;
+  --accent: #1B4332;
+  --accent-light: #2D6A4F;
+  --accent-bg: rgba(27,67,50,0.06);
+  --accent-bg-strong: rgba(27,67,50,0.12);
+  --success: #16A34A;
+  --success-bg: rgba(22,163,74,0.08);
+  --warning: #D97706;
+  --warning-bg: rgba(217,119,6,0.08);
+  --error: #DC2626;
+  --error-bg: rgba(220,38,38,0.08);
+  --border: #E5E7EB;
+  --border-light: #F3F4F6;
+  --skeleton: rgba(100,180,220,0.7);
+  --skeleton-glow: rgba(100,180,220,0.3);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
-.fraunces { font-family: 'Fraunces', Georgia, serif; }
-.mono { font-family: 'JetBrains Mono', monospace; }
+body { font-family: 'Inter', -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
+.mono { font-family: 'JetBrains Mono', 'SF Mono', monospace; }
 
 .phone {
   width: 393px; max-width: 100vw; margin: 0 auto;
@@ -44,11 +41,11 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
 }
 
 @media (min-width: 500px) {
-  body { background: #2D5F45; display: flex; align-items: flex-start; justify-content: center; padding: 2rem 0; }
+  body { background: #F0F2F4; display: flex; align-items: flex-start; justify-content: center; padding: 2rem 0; }
   .phone { min-height: 852px; height: 852px; border-radius: 40px; box-shadow: 0 0 0 12px #1a1a1a, 0 0 0 14px #333; overflow-y: auto; }
 }
 
-/* ═══ NAV BAR (mimics iOS nav) ═══ */
+/* ═══ NAV BAR ═══ */
 .nav-bar {
   display: flex; align-items: center; padding: 48px 16px 10px;
   background: var(--bg); position: sticky; top: 0; z-index: 50;
@@ -57,7 +54,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
 .nav-title { flex: 1; text-align: center; font-size: 0.85rem; font-weight: 500; color: var(--text); }
 .nav-action { font-size: 0.9rem; color: var(--accent); cursor: pointer; }
 
-/* View selector at top */
+/* View selector */
 .view-selector {
   display: flex; gap: 0; padding: 8px 16px 0; background: var(--bg);
   border-bottom: 1px solid var(--border);
@@ -70,7 +67,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
 }
 .view-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 
-/* ═══ VIDEO PLAYER ═══ */
+/* ═══ VIDEO PLAYER (PRESERVED) ═══ */
 .video-player {
   position: relative; background: #1a2e24;
   aspect-ratio: 9/14; max-height: 440px; overflow: hidden;
@@ -86,17 +83,14 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
 
 .video-overlay { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
 
-/* Skeleton */
 .skel { stroke: var(--skeleton); stroke-width: 2.5; stroke-linecap: round; filter: drop-shadow(0 0 4px var(--skeleton-glow)); }
 .jnt { fill: rgba(100,160,200,0.9); filter: drop-shadow(0 0 3px var(--skeleton-glow)); }
 
-/* Swing path */
 .swing-path { fill: none; stroke: var(--success); stroke-width: 3; stroke-linecap: round; filter: drop-shadow(0 0 6px rgba(94,142,107,0.5)); }
 .swing-plane { fill: none; stroke: rgba(255,255,255,0.12); stroke-width: 1.5; stroke-dasharray: 6 4; }
 
-.swing-path-hidden { display: none; }
+@keyframes drawPath { to { stroke-dashoffset: 0; } }
 
-/* Annotation badges on video */
 .vid-badge {
   position: absolute; z-index: 5; display: flex; align-items: center; gap: 4px;
   padding: 4px 9px; border-radius: 16px; font-size: 0.62rem; font-weight: 600;
@@ -109,7 +103,6 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-/* Video controls bar (matches existing app) */
 .vid-controls {
   position: absolute; bottom: 0; left: 0; right: 0; z-index: 10;
   padding: 10px 12px 12px;
@@ -131,6 +124,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
   padding: 4px 7px; border: none; border-radius: 12px; cursor: pointer;
   font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 600;
   color: rgba(255,255,255,0.7); background: transparent; transition: all 0.2s;
+  min-height: 44px; min-width: 44px; display: flex; align-items: center; justify-content: center;
 }
 .spd.active { background: var(--accent); color: white; }
 
@@ -142,298 +136,11 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
 }
 .ctrl-toggle.on { background: var(--accent); color: white; }
 .ctrl-toggle.off { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.7); }
-.ctrl-toggle.new-feature { background: var(--accent-secondary); color: white; }
+.ctrl-toggle.new-feature { background: var(--accent-light); color: white; }
 .ctrl-toggle.new-feature.off { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.7); }
 
 .ctrl-spacer { flex: 1; }
 
-/* ═══ STROKE TIMELINE (existing) ═══ */
-.stroke-timeline {
-  display: flex; gap: 8px; padding: 12px 16px;
-  overflow-x: auto; scrollbar-width: none;
-  border-bottom: 1px solid var(--border);
-}
-.stroke-timeline::-webkit-scrollbar { display: none; }
-
-.stroke-chip {
-  flex-shrink: 0; display: flex; align-items: center; gap: 6px;
-  padding: 8px 14px; border-radius: 12px; cursor: pointer;
-  border: 1px solid var(--border); background: var(--surface); transition: all 0.2s;
-}
-.stroke-chip.active { border-color: var(--accent); background: var(--accent-muted); }
-.stroke-chip-icon { font-size: 0.75rem; color: var(--text-muted); }
-.stroke-chip-label { font-size: 0.75rem; font-weight: 600; color: var(--text); }
-.stroke-chip-grade {
-  font-family: 'Fraunces', serif; font-size: 0.7rem; font-weight: 700;
-  padding: 2px 6px; border-radius: 6px;
-}
-.stroke-chip-grade.a { background: var(--success-light); color: var(--success); }
-.stroke-chip-grade.b { background: var(--success-light); color: var(--success); }
-.stroke-chip-grade.c { background: var(--warning-light); color: var(--warning); }
-
-/* ═══ PHASE TIMELINE (NEW — above coaching cards) ═══ */
-.phase-strip {
-  padding: 14px 12px; background: var(--surface);
-  border-bottom: 1px solid var(--border);
-}
-.phase-strip-label {
-  font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 0.1em; color: var(--accent); margin-bottom: 10px;
-  padding-left: 4px; display: flex; align-items: center; gap: 6px;
-}
-.phase-strip-label .new-tag {
-  font-size: 0.5rem; padding: 1px 5px; border-radius: 4px;
-  background: var(--accent); color: white; letter-spacing: 0.05em;
-}
-
-.phase-row { display: flex; position: relative; }
-
-.phase-row::before {
-  content: ''; position: absolute; top: 16px; left: 18px; right: 18px;
-  height: 2px; background: var(--border); z-index: 0;
-}
-
-.phase-node {
-  flex: 1; display: flex; flex-direction: column; align-items: center;
-  gap: 4px; cursor: pointer; position: relative; z-index: 1;
-}
-
-.phase-dot {
-  width: 32px; height: 32px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 0.6rem; font-weight: 700; color: white;
-  border: 2.5px solid var(--surface);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08); transition: all 0.2s;
-}
-.phase-dot.good { background: var(--success); }
-.phase-dot.warn { background: var(--warning); }
-.phase-dot.bad { background: var(--error); }
-
-.phase-node.sel .phase-dot {
-  transform: scale(1.15);
-  box-shadow: 0 0 0 3px var(--accent-muted), 0 2px 8px rgba(0,0,0,0.1);
-  border-color: var(--accent);
-}
-
-.phase-name { font-size: 0.5rem; font-weight: 600; color: var(--text-muted); text-align: center; line-height: 1.15; max-width: 46px; }
-.phase-node.sel .phase-name { color: var(--accent); }
-
-/* Phase detail (expands below timeline when a phase is selected) */
-.phase-detail {
-  margin: 0 16px 0; padding: 14px 16px;
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-  display: none;
-}
-.phase-detail.open { display: block; margin-bottom: 8px; }
-
-.pd-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-.pd-title { font-family: 'Fraunces', serif; font-size: 0.95rem; font-weight: 700; color: var(--text); }
-.pd-sub { font-size: 0.72rem; color: var(--text-dim); margin-top: 2px; }
-
-.pd-score {
-  font-family: 'Fraunces', serif; font-size: 1.1rem; font-weight: 800;
-  width: 38px; height: 38px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-}
-.pd-score.good { background: var(--success-light); color: var(--success); }
-.pd-score.warn { background: var(--warning-light); color: var(--warning); }
-.pd-score.bad { background: var(--error-light); color: var(--error); }
-
-.pd-angles { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
-.ang {
-  display: flex; align-items: center; gap: 4px;
-  padding: 3px 8px; border-radius: 12px; font-size: 0.65rem; font-weight: 600;
-}
-.ang.good { background: var(--success-light); color: var(--success); }
-.ang.warn { background: var(--warning-light); color: var(--warning); }
-.ang .dot { width: 5px; height: 5px; border-radius: 50%; }
-.ang.good .dot { background: var(--success); }
-.ang.warn .dot { background: var(--warning); }
-
-.pd-cue {
-  padding: 10px 12px; background: var(--accent-muted);
-  border-radius: 8px; border-left: 3px solid var(--accent);
-  font-size: 0.75rem; color: var(--text); line-height: 1.45;
-}
-.pd-cue-label { font-size: 0.58rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); margin-bottom: 3px; }
-
-/* ═══ SESSION SUMMARY CARD (existing + report card expansion) ═══ */
-.summary-card {
-  margin: 12px 16px; padding: 16px;
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: 14px;
-}
-
-.sc-top { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
-
-.sc-grade {
-  font-family: 'Fraunces', serif; font-size: 2rem; font-weight: 800;
-  width: 56px; height: 56px; border-radius: 14px;
-  display: flex; align-items: center; justify-content: center;
-  background: var(--success-light); color: var(--success);
-}
-
-.sc-meta { flex: 1; }
-.sc-meta-line { font-size: 0.78rem; color: var(--text-dim); }
-.sc-meta-line strong { color: var(--text); }
-
-.sc-priority {
-  padding: 10px 12px; border-radius: 8px;
-  background: var(--accent-muted); border-left: 3px solid var(--accent);
-  font-size: 0.78rem; color: var(--text); line-height: 1.4;
-  margin-bottom: 14px;
-}
-.sc-priority-label { font-size: 0.58rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); margin-bottom: 3px; }
-
-/* Report card categories (NEW — inside summary card) */
-.rc-label {
-  font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 0.1em; color: var(--accent); margin-bottom: 8px;
-  display: flex; align-items: center; gap: 6px;
-}
-.rc-label .new-tag { font-size: 0.5rem; padding: 1px 5px; border-radius: 4px; background: var(--accent); color: white; }
-
-.rc-row {
-  display: flex; align-items: center; gap: 10px;
-  padding: 9px 0; border-bottom: 1px solid var(--border-light); cursor: pointer;
-}
-.rc-row:last-child { border-bottom: none; }
-
-.rc-icon {
-  width: 32px; height: 32px; border-radius: 8px;
-  display: flex; align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink: 0;
-}
-.rc-icon.good { background: var(--success-light); }
-.rc-icon.warn { background: var(--warning-light); }
-.rc-icon.bad { background: var(--error-light); }
-
-.rc-info { flex: 1; min-width: 0; }
-.rc-name { font-size: 0.78rem; font-weight: 600; color: var(--text); }
-.rc-desc { font-size: 0.62rem; color: var(--text-muted); }
-
-.rc-badge {
-  padding: 3px 8px; border-radius: 10px; font-size: 0.58rem; font-weight: 700; white-space: nowrap;
-}
-.rc-badge.good { background: var(--success-light); color: var(--success); }
-.rc-badge.warn { background: var(--warning-light); color: var(--warning); }
-.rc-badge.bad { background: var(--error-light); color: var(--error); }
-
-/* ═══ COACHING CARD (existing) ═══ */
-.coaching-card {
-  margin: 0 16px 8px; padding: 14px 16px;
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: 14px; cursor: pointer; transition: all 0.2s;
-}
-.coaching-card:hover { border-color: var(--accent); }
-.coaching-card.open { border-color: var(--accent); }
-
-.cc-header { display: flex; align-items: center; gap: 10px; }
-.cc-type { font-size: 0.82rem; font-weight: 600; color: var(--text); flex: 1; }
-.cc-time { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: var(--text-muted); }
-.cc-grade { font-family: 'Fraunces', serif; font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: 6px; }
-.cc-grade.b { background: var(--success-light); color: var(--success); }
-.cc-chev { color: var(--text-muted); font-size: 0.7rem; transition: transform 0.2s; margin-left: 4px; }
-.coaching-card.open .cc-chev { transform: rotate(180deg); }
-
-.cc-body { display: none; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-light); }
-.coaching-card.open .cc-body { display: block; }
-
-.cc-section-label { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); margin: 10px 0 6px; }
-.cc-text { font-size: 0.78rem; color: var(--text); line-height: 1.5; }
-
-/* ═══ PRO COMPARE BUTTON ═══ */
-.pro-compare-btn {
-  margin: 8px 16px; padding: 12px 16px;
-  background: var(--surface); border: 1px solid var(--accent-secondary);
-  border-radius: 12px; display: flex; align-items: center; gap: 10px;
-  cursor: pointer; transition: all 0.2s;
-}
-.pro-compare-btn:hover { background: var(--warning-light); }
-.pro-compare-btn .pcb-icon {
-  width: 36px; height: 36px; border-radius: 10px;
-  background: var(--warning-light); display: flex;
-  align-items: center; justify-content: center; font-size: 1rem;
-}
-.pro-compare-btn .pcb-text { flex: 1; }
-.pro-compare-btn .pcb-title { font-size: 0.82rem; font-weight: 700; color: var(--text); }
-.pro-compare-btn .pcb-sub { font-size: 0.65rem; color: var(--text-dim); }
-.pro-compare-btn .pcb-arrow { color: var(--accent-secondary); font-size: 0.9rem; }
-
-/* ═══ BOTTOM SHEET (Pro Compare Option C) ═══ */
-.sheet-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; }
-.sheet-overlay.open { display: block; }
-
-.sheet {
-  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
-  width: 393px; max-width: 100vw; max-height: 85vh;
-  background: var(--bg); border-radius: 20px 20px 0 0;
-  z-index: 201; overflow-y: auto; padding-bottom: 30px;
-  box-shadow: 0 -8px 40px rgba(0,0,0,0.15);
-}
-
-.sheet-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--border); margin: 10px auto 6px; }
-
-.sheet-title {
-  font-family: 'Fraunces', serif; font-size: 1.1rem; font-weight: 700;
-  padding: 8px 20px 14px; color: var(--text);
-}
-
-/* Pro selector row */
-.pro-row { display: flex; gap: 10px; padding: 0 20px 14px; overflow-x: auto; scrollbar-width: none; }
-.pro-row::-webkit-scrollbar { display: none; }
-
-.pro-av { flex-shrink: 0; text-align: center; cursor: pointer; }
-.pro-av-img {
-  width: 48px; height: 48px; border-radius: 50%; border: 2.5px solid var(--border);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.2rem; background: var(--surface-dim); transition: all 0.2s;
-}
-.pro-av.sel .pro-av-img { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-muted); }
-.pro-av-name { font-size: 0.6rem; font-weight: 600; color: var(--text-muted); margin-top: 4px; }
-.pro-av.sel .pro-av-name { color: var(--accent); }
-
-/* Split comparison in sheet */
-.split-comp {
-  margin: 0 20px; border-radius: 12px; overflow: hidden;
-  background: #1a2e24; aspect-ratio: 16/10; position: relative;
-}
-.split-side {
-  position: absolute; top: 0; bottom: 0; width: 50%;
-  display: flex; align-items: center; justify-content: center;
-}
-.split-side.left { left: 0; background: linear-gradient(135deg, #162822, #264a38); }
-.split-side.right { right: 0; background: linear-gradient(135deg, #264a38, #162822); border-left: 1px solid rgba(255,255,255,0.1); }
-
-.split-label {
-  position: absolute; top: 6px; left: 50%; transform: translateX(-50%);
-  padding: 2px 8px; border-radius: 8px; font-size: 0.5rem; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 0.06em;
-}
-.split-label.you { background: rgba(100,160,200,0.2); color: rgba(100,160,200,0.9); }
-.split-label.pro { background: rgba(191,161,74,0.2); color: var(--accent-secondary); }
-
-/* Alignment bars in sheet */
-.align-section { padding: 14px 20px; }
-.align-label { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 8px; }
-
-.align-row {
-  display: flex; align-items: center; gap: 8px;
-  padding: 7px 0; border-bottom: 1px solid var(--border-light);
-}
-.align-row:last-child { border-bottom: none; }
-.align-name { font-size: 0.75rem; font-weight: 500; color: var(--text); flex: 1; }
-.align-bar { width: 80px; height: 5px; border-radius: 3px; background: var(--border-light); overflow: hidden; }
-.align-fill { height: 100%; border-radius: 3px; }
-.align-fill.hi { background: var(--success); }
-.align-fill.mid { background: var(--warning); }
-.align-fill.lo { background: var(--error); }
-.align-pct { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; font-weight: 600; min-width: 30px; text-align: right; }
-.align-pct.hi { color: var(--success); }
-.align-pct.mid { color: var(--warning); }
-.align-pct.lo { color: var(--error); }
-
-/* ═══ LIVE MODE (record screen toggle) ═══ */
 .live-tag {
   position: absolute; top: 10px; left: 10px; z-index: 5;
   display: none; align-items: center; gap: 5px;
@@ -453,10 +160,295 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
 }
 .live-cue.on { display: block; }
 
-/* ═══ SECTION DIVIDER ═══ */
-.divider { height: 6px; background: var(--surface-dim); }
+/* ═══ STROKE TIMELINE ═══ */
+.stroke-timeline {
+  display: flex; gap: 8px; padding: 12px 16px;
+  overflow-x: auto; scrollbar-width: none;
+  background: var(--bg);
+  position: relative;
+}
+.stroke-timeline::-webkit-scrollbar { display: none; }
+.stroke-timeline-wrap {
+  position: relative;
+}
+.stroke-timeline-wrap::after {
+  content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 40px;
+  background: linear-gradient(to right, transparent, var(--bg));
+  pointer-events: none; z-index: 2;
+}
 
+.stroke-chip {
+  flex-shrink: 0; display: flex; align-items: center; gap: 8px;
+  padding: 0 16px; height: 40px; border-radius: 20px; cursor: pointer;
+  border: 1px solid var(--border); background: var(--bg); transition: all 0.2s;
+  min-height: 44px;
+}
+.stroke-chip.active { border-color: var(--accent); background: var(--accent); }
+.stroke-chip-label { font-size: 0.8rem; font-weight: 500; color: var(--text); white-space: nowrap; }
+.stroke-chip.active .stroke-chip-label { color: white; }
+.stroke-chip-grade { font-size: 0.72rem; font-weight: 700; }
+.stroke-chip-grade.a { color: var(--success); }
+.stroke-chip-grade.b { color: var(--success); }
+.stroke-chip-grade.c { color: var(--warning); }
+.stroke-chip-grade.d { color: var(--error); }
+.stroke-chip.active .stroke-chip-grade { color: rgba(255,255,255,0.85); }
+
+/* ═══ PHASE BREAKDOWN ═══ */
+.phase-strip {
+  padding: 16px 16px 8px; background: var(--bg);
+}
+.phase-strip-label {
+  font-size: 0.65rem; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 14px;
+  padding-left: 2px;
+}
+
+.phase-row { display: flex; position: relative; padding: 0 4px; }
+
+.phase-row::before {
+  content: ''; position: absolute; top: 14px; left: 24px; right: 24px;
+  height: 1.5px; background: var(--border); z-index: 0;
+}
+
+.phase-node {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  gap: 6px; cursor: pointer; position: relative; z-index: 1;
+  min-height: 44px;
+}
+
+.phase-dot {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.6rem; font-weight: 700; color: var(--accent);
+  background: var(--bg);
+  transition: all 0.2s;
+}
+.phase-dot.good { border: 2px solid var(--success); }
+.phase-dot.warn { border: 2px solid var(--warning); }
+.phase-dot.bad { border: 2px solid var(--error); }
+
+.phase-node.sel .phase-dot {
+  width: 32px; height: 32px;
+  background: var(--accent); color: white;
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(27,67,50,0.2);
+}
+
+.phase-name {
+  font-size: 0.5rem; font-weight: 500; color: var(--text-muted);
+  text-align: center; line-height: 1.15; max-width: 50px;
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+.phase-node.sel .phase-name { color: var(--accent); font-weight: 600; }
+
+/* Phase detail card */
+.phase-detail {
+  margin: 8px 16px 0; padding: 16px;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  display: none;
+}
+.phase-detail.open { display: block; }
+
+.pd-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+.pd-title { font-size: 1rem; font-weight: 700; color: var(--text); }
+.pd-sub { font-size: 0.72rem; color: var(--text-secondary); margin-top: 2px; }
+
+.pd-score {
+  font-size: 0.85rem; font-weight: 700;
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.pd-score.good { background: var(--success-bg); color: var(--success); }
+.pd-score.warn { background: var(--warning-bg); color: var(--warning); }
+.pd-score.bad { background: var(--error-bg); color: var(--error); }
+
+.pd-angles { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.ang {
+  display: flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 12px; font-size: 0.68rem; font-weight: 500;
+}
+.ang.good { background: var(--success-bg); color: var(--success); }
+.ang.warn { background: var(--warning-bg); color: var(--warning); }
+.ang .dot { width: 5px; height: 5px; border-radius: 50%; }
+.ang.good .dot { background: var(--success); }
+.ang.warn .dot { background: var(--warning); }
+
+.pd-cue {
+  padding: 12px 14px; background: var(--accent-bg);
+  border-radius: 8px; border-left: 3px solid var(--accent);
+  font-size: 0.78rem; color: var(--text); line-height: 1.5;
+  display: flex; align-items: flex-start; gap: 8px;
+}
+.pd-cue-icon { flex-shrink: 0; margin-top: 1px; }
+.pd-cue-icon svg { width: 16px; height: 16px; }
+
+/* ═══ SESSION SUMMARY ═══ */
+.summary-section {
+  margin: 16px 16px 0; padding: 24px 20px;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+/* Score Ring */
+.score-ring-container {
+  display: flex; flex-direction: column; align-items: center;
+  margin-bottom: 16px;
+}
+.score-ring-wrap {
+  position: relative; width: 120px; height: 120px;
+}
+.score-ring-svg { transform: rotate(-90deg); }
+.score-ring-track {
+  fill: none; stroke: var(--border-light); stroke-width: 8;
+}
+.score-ring-fill {
+  fill: none; stroke: var(--accent); stroke-width: 8;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s ease;
+}
+.score-ring-value {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.score-ring-number { font-size: 2rem; font-weight: 700; color: var(--text); line-height: 1; }
+.score-ring-label { font-size: 0.65rem; font-weight: 500; color: var(--text-muted); margin-top: 6px; text-transform: uppercase; letter-spacing: 0.06em; }
+.score-ring-grade {
+  display: inline-flex; align-items: center; justify-content: center;
+  margin-top: 8px; padding: 2px 12px; border-radius: 10px;
+  font-size: 0.7rem; font-weight: 700;
+  background: var(--success-bg); color: var(--success);
+}
+.score-meta {
+  font-size: 0.75rem; color: var(--text-muted); text-align: center; margin-top: 4px;
+}
+
+/* Priority Card */
+.priority-card {
+  margin-top: 16px; padding: 12px 14px;
+  border-radius: 8px; background: var(--bg);
+  border-left: 3px solid var(--accent);
+  border-top: 1px solid var(--border-light);
+  border-right: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--border-light);
+}
+.priority-label {
+  font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--accent); margin-bottom: 4px;
+}
+.priority-text { font-size: 0.8rem; color: var(--text); line-height: 1.45; }
+
+/* ═══ SWING ANALYSIS ═══ */
+.swing-analysis {
+  margin: 12px 16px 0; padding: 16px;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.sa-label {
+  font-size: 0.65rem; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 12px;
+}
+
+.sa-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 0; border-bottom: 1px solid var(--border-light);
+  min-height: 56px;
+}
+.sa-row:last-child { border-bottom: none; }
+
+.sa-icon {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.sa-icon.good { background: var(--success-bg); }
+.sa-icon.warn { background: var(--warning-bg); }
+.sa-icon.bad { background: var(--error-bg); }
+.sa-icon svg { width: 16px; height: 16px; }
+
+.sa-info { flex: 1; min-width: 0; }
+.sa-name { font-size: 0.8rem; font-weight: 600; color: var(--text); }
+.sa-desc { font-size: 0.68rem; color: var(--text-muted); margin-top: 1px; }
+
+.sa-badge {
+  padding: 4px 10px; border-radius: 10px; font-size: 0.62rem; font-weight: 600;
+  white-space: nowrap; display: flex; align-items: center; gap: 4px;
+  min-height: 44px;
+}
+.sa-badge.good { background: var(--success-bg); color: var(--success); }
+.sa-badge.warn { background: var(--warning-bg); color: var(--warning); }
+.sa-badge.bad { background: var(--error-bg); color: var(--error); }
+.sa-badge-indicator { font-size: 0.6rem; font-weight: 700; }
+
+/* ═══ COACHING CARDS ═══ */
+.coaching-card {
+  margin: 12px 16px 0; padding: 0;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 12px; cursor: pointer; transition: all 0.2s;
+  overflow: hidden;
+}
+.coaching-card:hover { border-color: var(--accent-light); }
+.coaching-card.open { border-color: var(--accent); }
+
+.cc-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 16px; min-height: 48px;
+}
+.cc-type { font-size: 0.85rem; font-weight: 600; color: var(--text); flex: 1; }
+.cc-time { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: var(--text-muted); }
+.cc-grade { font-size: 0.75rem; font-weight: 700; }
+.cc-grade.a { color: var(--success); }
+.cc-grade.b { color: var(--success); }
+.cc-grade.c { color: var(--warning); }
+.cc-chev {
+  color: var(--text-muted); transition: transform 0.2s; display: flex; align-items: center;
+}
+.cc-chev svg { width: 16px; height: 16px; }
+.coaching-card.open .cc-chev { transform: rotate(180deg); }
+
+.cc-body {
+  display: none; padding: 0 16px 16px;
+  border-top: 1px solid var(--border-light);
+}
+.coaching-card.open .cc-body { display: block; padding-top: 14px; }
+
+.cc-section-label {
+  font-size: 0.62rem; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--accent); margin: 12px 0 6px;
+}
+.cc-section-label:first-child { margin-top: 0; }
+.cc-text { font-size: 0.8rem; color: var(--text); line-height: 1.6; }
+.cc-text strong { font-weight: 700; }
+
+.cc-plan { list-style: none; counter-reset: plan-step; }
+.cc-plan li {
+  counter-increment: plan-step;
+  font-size: 0.8rem; color: var(--text); line-height: 1.5;
+  padding: 6px 0; border-bottom: 1px solid var(--border-light);
+  display: flex; gap: 10px;
+}
+.cc-plan li:last-child { border-bottom: none; }
+.cc-plan li::before {
+  content: counter(plan-step);
+  flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%;
+  background: var(--accent-bg); color: var(--accent);
+  font-size: 0.68rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  margin-top: 1px;
+}
+.cc-plan .plan-time {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
+  color: var(--text-muted); white-space: nowrap;
+}
+
+.cc-divider { height: 1px; background: var(--border-light); margin: 14px 0; }
+
+/* ═══ UTILITIES ═══ */
 .section-gap { height: 8px; }
+
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+::-webkit-scrollbar { display: none; }
 </style>
 </head>
 <body>
@@ -465,22 +457,25 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
 
   <!-- iOS Nav Bar -->
   <div class="nav-bar">
-    <span class="nav-back">&#8249; Sessions</span>
+    <span class="nav-back">
+      <svg width="10" height="16" viewBox="0 0 10 16" fill="none"><path d="M8.5 1L1.5 8L8.5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Sessions
+    </span>
     <span class="nav-title">Feb 23, 2:35 PM</span>
-    <span class="nav-action">&#9776;</span>
+    <span class="nav-action">
+      <svg width="18" height="14" viewBox="0 0 18 14" fill="none"><path d="M1 1h16M1 7h16M1 13h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </span>
   </div>
 
   <!-- ═══════════════════════════════════
-       VIDEO PLAYER (existing + swing path toggle)
+       VIDEO PLAYER (PRESERVED — no changes)
        ═══════════════════════════════════ -->
   <div class="video-player" id="videoPlayer">
     <div class="video-bg"></div>
 
-    <!-- Live mode indicators (hidden by default) -->
     <div class="live-tag" id="liveTag"><span class="ldot"></span>LIVE</div>
-    <div class="live-cue" id="liveCue">&#128264; "Great contact point!"</div>
+    <div class="live-cue" id="liveCue">Great contact point!</div>
 
-    <!-- Skeleton overlay (always visible) -->
     <svg class="video-overlay" viewBox="0 0 393 612" preserveAspectRatio="xMidYMid slice">
       <line class="skel" x1="197" y1="220" x2="170" y2="280"/><line class="skel" x1="197" y1="220" x2="224" y2="280"/>
       <line class="skel" x1="170" y1="280" x2="145" y2="340"/><line class="skel" x1="224" y1="280" x2="280" y2="310"/>
@@ -492,7 +487,6 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
       <circle class="jnt" cx="145" cy="340" r="4"/><circle class="jnt" cx="280" cy="310" r="5"/>
       <circle class="jnt" cx="310" cy="260" r="5"/><circle class="jnt" cx="197" cy="350" r="4"/>
 
-      <!-- Swing path (toggleable) -->
       <g id="swingPathGroup">
         <line class="swing-plane" x1="100" y1="520" x2="320" y2="120"/>
         <path class="swing-path" d="M 140 420 Q 160 380 180 340 Q 200 300 240 270 Q 270 250 310 260 Q 340 270 350 240" style="stroke-dasharray:400;stroke-dashoffset:400;animation:drawPath 1.5s ease forwards 0.3s;"/>
@@ -503,71 +497,84 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
       </g>
     </svg>
 
-    <!-- Swing path badges (toggleable) -->
     <div id="swingBadges">
-      <div class="vid-badge good" style="top:36%;right:8%;animation-delay:0.6s;"><span class="ico">&#10003;</span> On Plane at Contact</div>
-      <div class="vid-badge good" style="top:52%;left:6%;animation-delay:0.9s;"><span class="ico">&#10003;</span> Low to High</div>
-      <div class="vid-badge warn" style="bottom:28%;right:6%;animation-delay:1.2s;"><span class="ico">!</span> Wrist Open</div>
+      <div class="vid-badge good" style="top:36%;right:8%;animation-delay:0.6s;">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        On Plane at Contact
+      </div>
+      <div class="vid-badge good" style="top:52%;left:6%;animation-delay:0.9s;">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Low to High
+      </div>
+      <div class="vid-badge warn" style="bottom:28%;right:6%;animation-delay:1.2s;">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="3" r="1" fill="white"/><line x1="5" y1="5" x2="5" y2="8" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Wrist Open
+      </div>
     </div>
 
-    <!-- Video controls -->
     <div class="vid-controls">
-      <button class="play-btn">&#9654;</button>
+      <button class="play-btn">
+        <svg width="12" height="14" viewBox="0 0 12 14" fill="none"><path d="M1 1.5v11l10-5.5L1 1.5z" fill="white"/></svg>
+      </button>
       <div class="speed-pills">
         <button class="spd">.25x</button>
         <button class="spd">.5x</button>
         <button class="spd active">1x</button>
       </div>
       <div class="ctrl-spacer"></div>
-      <button class="ctrl-toggle on" id="overlayToggle" onclick="this.classList.toggle('on');this.classList.toggle('off');">&#128065; Overlay</button>
-      <button class="ctrl-toggle new-feature" id="pathToggle" onclick="toggleSwingPath()">&#10137; Path</button>
+      <button class="ctrl-toggle on" id="overlayToggle" onclick="this.classList.toggle('on');this.classList.toggle('off');">
+        <svg width="14" height="10" viewBox="0 0 14 10" fill="none"><path d="M7 1C3.5 1 1 5 1 5s2.5 4 6 4 6-4 6-4-2.5-4-6-4z" stroke="currentColor" stroke-width="1.2"/><circle cx="7" cy="5" r="2" stroke="currentColor" stroke-width="1.2"/></svg>
+        Overlay
+      </button>
+      <button class="ctrl-toggle new-feature" id="pathToggle" onclick="toggleSwingPath()">
+        <svg width="14" height="10" viewBox="0 0 14 10" fill="none"><path d="M1 9C3 3 6 1 13 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Path
+      </button>
     </div>
   </div>
 
-  <!-- ═══ STROKE TIMELINE (existing) ═══ -->
-  <div class="stroke-timeline">
-    <div class="stroke-chip active">
-      <span class="stroke-chip-icon">&#10140;</span>
-      <span class="stroke-chip-label">Forehand</span>
-      <span class="stroke-chip-grade b">B</span>
-    </div>
-    <div class="stroke-chip">
-      <span class="stroke-chip-icon">&#10140;</span>
-      <span class="stroke-chip-label">Forehand</span>
-      <span class="stroke-chip-grade b">B+</span>
-    </div>
-    <div class="stroke-chip">
-      <span class="stroke-chip-icon">&#8592;</span>
-      <span class="stroke-chip-label">Backhand</span>
-      <span class="stroke-chip-grade c">C+</span>
-    </div>
-    <div class="stroke-chip">
-      <span class="stroke-chip-icon">&#8593;</span>
-      <span class="stroke-chip-label">Serve</span>
-      <span class="stroke-chip-grade a">A-</span>
+  <!-- ═══ STROKE TIMELINE ═══ -->
+  <div class="stroke-timeline-wrap">
+    <div class="stroke-timeline">
+      <div class="stroke-chip active">
+        <span class="stroke-chip-label">Forehand 1</span>
+        <span class="stroke-chip-grade b">B</span>
+      </div>
+      <div class="stroke-chip">
+        <span class="stroke-chip-label">Forehand 2</span>
+        <span class="stroke-chip-grade b">B+</span>
+      </div>
+      <div class="stroke-chip">
+        <span class="stroke-chip-label">Backhand 1</span>
+        <span class="stroke-chip-grade c">C+</span>
+      </div>
+      <div class="stroke-chip">
+        <span class="stroke-chip-label">Serve 1</span>
+        <span class="stroke-chip-grade a">A-</span>
+      </div>
     </div>
   </div>
 
-  <!-- ═══ PHASE TIMELINE (NEW — inserted above coaching content) ═══ -->
+  <!-- ═══ PHASE BREAKDOWN ═══ -->
   <div class="phase-strip">
-    <div class="phase-strip-label">Phase Breakdown <span class="new-tag">NEW</span></div>
+    <div class="phase-strip-label">Phase Breakdown</div>
     <div class="phase-row">
       <div class="phase-node" onclick="selectPhase(this,0)"><div class="phase-dot good">8</div><span class="phase-name">Split Step</span></div>
       <div class="phase-node" onclick="selectPhase(this,1)"><div class="phase-dot good">7</div><span class="phase-name">Unit Turn</span></div>
       <div class="phase-node sel" onclick="selectPhase(this,2)"><div class="phase-dot warn">5</div><span class="phase-name">Back-swing</span></div>
-      <div class="phase-node" onclick="selectPhase(this,3)"><div class="phase-dot good">8</div><span class="phase-name">Fwd Swing</span></div>
+      <div class="phase-node" onclick="selectPhase(this,3)"><div class="phase-dot good">8</div><span class="phase-name">Forward Swing</span></div>
       <div class="phase-node" onclick="selectPhase(this,4)"><div class="phase-dot good">9</div><span class="phase-name">Contact</span></div>
-      <div class="phase-node" onclick="selectPhase(this,5)"><div class="phase-dot warn">6</div><span class="phase-name">Follow Thru</span></div>
+      <div class="phase-node" onclick="selectPhase(this,5)"><div class="phase-dot warn">6</div><span class="phase-name">Follow-Through</span></div>
       <div class="phase-node" onclick="selectPhase(this,6)"><div class="phase-dot bad">4</div><span class="phase-name">Recovery</span></div>
     </div>
   </div>
 
-  <!-- Phase detail (expanded for selected phase) -->
+  <!-- Phase detail -->
   <div class="phase-detail open" id="phaseDetail">
     <div class="pd-header">
       <div>
         <div class="pd-title">Backswing</div>
-        <div class="pd-sub">Racket take-back &bull; t=0.42s</div>
+        <div class="pd-sub">Racket take-back &middot; t=0.42s</div>
       </div>
       <div class="pd-score warn">5</div>
     </div>
@@ -577,140 +584,159 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
       <span class="ang warn"><span class="dot"></span>Racket Drop</span>
     </div>
     <div class="pd-cue">
-      <div class="pd-cue-label">Coaching Cue</div>
-      Keep racket head at wrist level during take-back &mdash; imagine setting a tray on a shelf behind you.
+      <span class="pd-cue-icon">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M8 1a5 5 0 00-5 5v2a2 2 0 002 2h1v-3H5V6a3 3 0 016 0v1h-1v3h1a2 2 0 002-2V6a5 5 0 00-5-5z" fill="var(--accent)" opacity="0.7"/><rect x="5.5" y="12" width="5" height="2" rx="1" fill="var(--accent)" opacity="0.7"/></svg>
+      </span>
+      <span>Keep racket head at wrist level during take-back &mdash; imagine setting a tray on a shelf behind you.</span>
     </div>
   </div>
 
-  <!-- ═══ SESSION SUMMARY + REPORT CARD (expanded) ═══ -->
-  <div class="summary-card">
-    <div class="sc-top">
-      <div class="sc-grade">B</div>
-      <div class="sc-meta">
-        <div class="sc-meta-line"><strong>4 strokes</strong> &bull; 2:35 session</div>
-        <div class="sc-meta-line">Overall score: <strong>72.5</strong></div>
+  <!-- ═══ SESSION SUMMARY ═══ -->
+  <div class="summary-section">
+    <!-- Score Ring -->
+    <div class="score-ring-container">
+      <div class="score-ring-wrap">
+        <svg class="score-ring-svg" width="120" height="120" viewBox="0 0 120 120">
+          <circle class="score-ring-track" cx="60" cy="60" r="52"/>
+          <circle class="score-ring-fill" cx="60" cy="60" r="52"
+            stroke-dasharray="326.73"
+            stroke-dashoffset="89.85"/>
+        </svg>
+        <div class="score-ring-value">
+          <span class="score-ring-number">72.5</span>
+        </div>
       </div>
+      <span class="score-ring-label">Overall Score</span>
+      <span class="score-ring-grade">B</span>
+      <div class="score-meta">4 strokes &middot; 2:35 session</div>
     </div>
 
-    <div class="sc-priority">
-      <div class="sc-priority-label">Top Priority</div>
-      Deepen your unit turn on the forehand backswing to unlock more rotation-based power.
+    <!-- Priority -->
+    <div class="priority-card">
+      <div class="priority-label">Priority</div>
+      <div class="priority-text">Deepen your unit turn on the forehand backswing to unlock more rotation-based power.</div>
     </div>
-
-    <!-- Report card rows (NEW — integrated into summary card) -->
-    <div class="rc-label">Swing Analysis <span class="new-tag">NEW</span></div>
-
-    <div class="rc-row"><div class="rc-icon good">&#129495;</div><div class="rc-info"><div class="rc-name">Setup Posture</div><div class="rc-desc">Ready position &amp; stance</div></div><span class="rc-badge good">In Zone</span></div>
-    <div class="rc-row"><div class="rc-icon warn">&#127934;</div><div class="rc-info"><div class="rc-name">Swing Path</div><div class="rc-desc">Take-back through contact</div></div><span class="rc-badge warn">Adjust</span></div>
-    <div class="rc-row"><div class="rc-icon good">&#128095;</div><div class="rc-info"><div class="rc-name">Footwork</div><div class="rc-desc">Split step &amp; positioning</div></div><span class="rc-badge good">In Zone</span></div>
-    <div class="rc-row"><div class="rc-icon good">&#127919;</div><div class="rc-info"><div class="rc-name">Contact Zone</div><div class="rc-desc">Strike position &amp; extension</div></div><span class="rc-badge good">In Zone</span></div>
-    <div class="rc-row"><div class="rc-icon warn">&#128588;</div><div class="rc-info"><div class="rc-name">Follow-Through</div><div class="rc-desc">Finish &amp; deceleration</div></div><span class="rc-badge warn">Adjust</span></div>
-    <div class="rc-row"><div class="rc-icon good">&#129516;</div><div class="rc-info"><div class="rc-name">Spine Stability</div><div class="rc-desc">Core rotation &amp; posture</div></div><span class="rc-badge good">In Zone</span></div>
-    <div class="rc-row"><div class="rc-icon bad">&#128170;</div><div class="rc-info"><div class="rc-name">Posture at Impact</div><div class="rc-desc">Body alignment at contact</div></div><span class="rc-badge bad">Out of Zone</span></div>
   </div>
 
-  <!-- ═══ PRO COMPARE BUTTON ═══ -->
-  <div class="pro-compare-btn" onclick="openSheet()">
-    <div class="pcb-icon">&#127942;</div>
-    <div class="pcb-text">
-      <div class="pcb-title">Compare to Pro</div>
-      <div class="pcb-sub">See how your forehand stacks up against Federer</div>
+  <!-- ═══ SWING ANALYSIS ═══ -->
+  <div class="swing-analysis">
+    <div class="sa-label">Swing Analysis</div>
+
+    <!-- Setup Posture -->
+    <div class="sa-row">
+      <div class="sa-icon good">
+        <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="3.5" r="2" stroke="#16A34A" stroke-width="1.5"/><path d="M5 8h6v1a3 3 0 01-6 0V8z" stroke="#16A34A" stroke-width="1.5"/><line x1="8" y1="10" x2="8" y2="14" stroke="#16A34A" stroke-width="1.5"/><line x1="5" y1="14" x2="11" y2="14" stroke="#16A34A" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <div class="sa-info"><div class="sa-name">Setup Posture</div><div class="sa-desc">Ready position &amp; stance</div></div>
+      <span class="sa-badge good"><span class="sa-badge-indicator">&#10003;</span> In Zone</span>
     </div>
-    <span class="pcb-arrow">&#8250;</span>
+
+    <!-- Swing Path -->
+    <div class="sa-row">
+      <div class="sa-icon warn">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M2 12C4 6 7 3 14 3" stroke="#D97706" stroke-width="1.5" stroke-linecap="round"/><path d="M11 1l3 2-3 2" stroke="#D97706" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="sa-info"><div class="sa-name">Swing Path</div><div class="sa-desc">Take-back through contact</div></div>
+      <span class="sa-badge warn"><span class="sa-badge-indicator">&ndash;</span> Adjust</span>
+    </div>
+
+    <!-- Footwork -->
+    <div class="sa-row">
+      <div class="sa-icon good">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M5 2c0 2-1 4-1 6s1 3 2 3 1.5-1 1.5-2.5S7 6 6 4s-1-2-1-2z" stroke="#16A34A" stroke-width="1.2"/><path d="M11 4c0 2-1 3.5-1 5.5s1 2.5 2 2.5 1.5-1 1.5-2S13 8 12 6s-1-2-1-2z" stroke="#16A34A" stroke-width="1.2"/></svg>
+      </div>
+      <div class="sa-info"><div class="sa-name">Footwork</div><div class="sa-desc">Split step &amp; positioning</div></div>
+      <span class="sa-badge good"><span class="sa-badge-indicator">&#10003;</span> In Zone</span>
+    </div>
+
+    <!-- Contact Zone -->
+    <div class="sa-row">
+      <div class="sa-icon good">
+        <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="#16A34A" stroke-width="1.2"/><circle cx="8" cy="8" r="3" stroke="#16A34A" stroke-width="1.2"/><circle cx="8" cy="8" r="0.8" fill="#16A34A"/></svg>
+      </div>
+      <div class="sa-info"><div class="sa-name">Contact Zone</div><div class="sa-desc">Strike position &amp; extension</div></div>
+      <span class="sa-badge good"><span class="sa-badge-indicator">&#10003;</span> In Zone</span>
+    </div>
+
+    <!-- Follow-Through -->
+    <div class="sa-row">
+      <div class="sa-icon warn">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M3 13C5 9 8 5 13 3" stroke="#D97706" stroke-width="1.5" stroke-linecap="round"/><path d="M10 2l3 1-1 3" stroke="#D97706" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="3" cy="13" r="1.5" stroke="#D97706" stroke-width="1.2"/></svg>
+      </div>
+      <div class="sa-info"><div class="sa-name">Follow-Through</div><div class="sa-desc">Finish &amp; deceleration</div></div>
+      <span class="sa-badge warn"><span class="sa-badge-indicator">&ndash;</span> Adjust</span>
+    </div>
+
+    <!-- Spine Stability -->
+    <div class="sa-row">
+      <div class="sa-icon good">
+        <svg viewBox="0 0 16 16" fill="none"><line x1="8" y1="2" x2="8" y2="14" stroke="#16A34A" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="4" r="1" fill="#16A34A"/><circle cx="8" cy="7" r="1" fill="#16A34A"/><circle cx="8" cy="10" r="1" fill="#16A34A"/><circle cx="8" cy="13" r="1" fill="#16A34A"/></svg>
+      </div>
+      <div class="sa-info"><div class="sa-name">Spine Stability</div><div class="sa-desc">Core rotation &amp; posture</div></div>
+      <span class="sa-badge good"><span class="sa-badge-indicator">&#10003;</span> In Zone</span>
+    </div>
+
+    <!-- Posture at Impact -->
+    <div class="sa-row">
+      <div class="sa-icon bad">
+        <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="3.5" r="2" stroke="#DC2626" stroke-width="1.3"/><line x1="8" y1="5.5" x2="8" y2="10" stroke="#DC2626" stroke-width="1.5"/><line x1="4" y1="7" x2="12" y2="7" stroke="#DC2626" stroke-width="1.5" stroke-linecap="round"/><line x1="6" y1="10" x2="4" y2="14" stroke="#DC2626" stroke-width="1.5" stroke-linecap="round"/><line x1="10" y1="10" x2="12" y2="14" stroke="#DC2626" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <div class="sa-info"><div class="sa-name">Posture at Impact</div><div class="sa-desc">Body alignment at contact</div></div>
+      <span class="sa-badge bad"><span class="sa-badge-indicator">&#10005;</span> Out of Zone</span>
+    </div>
   </div>
 
   <div class="section-gap"></div>
 
-  <!-- ═══ COACHING CARDS (existing) ═══ -->
+  <!-- ═══ COACHING CARDS ═══ -->
   <div class="coaching-card open" onclick="this.classList.toggle('open')">
     <div class="cc-header">
-      <span class="cc-type">&#10140; Forehand #1</span>
+      <span class="cc-type">Forehand #1</span>
       <span class="cc-time mono">t=34.2s</span>
       <span class="cc-grade b">B</span>
-      <span class="cc-chev">&#9660;</span>
+      <span class="cc-chev">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
     </div>
     <div class="cc-body">
       <div class="cc-section-label">Grade Rationale</div>
-      <div class="cc-text">This forehand earns a B because the contact point was slightly behind ideal &mdash; the unit turn was incomplete at ~60&deg; vs the ideal 90&deg;+. Follow-through was clean with good racket-head acceleration.</div>
+      <div class="cc-text">This forehand earns a B because the contact point was slightly behind ideal &mdash; the unit turn was incomplete at <strong>~60&deg;</strong> vs the ideal <strong>90&deg;+</strong>. Follow-through was clean with good racket-head acceleration.</div>
+
+      <div class="cc-divider"></div>
 
       <div class="cc-section-label">Improvement Plan</div>
-      <div class="cc-text">Phase 1 (5 min): Shadow swings focusing on full unit turn. Phase 2 (10 min): Drop-feed forehands contacting in front of lead hip. Phase 3 (5 min): Cross-court rally with target.</div>
+      <ol class="cc-plan">
+        <li>Shadow swings &mdash; full unit turn <span class="plan-time">5 min</span></li>
+        <li>Drop-feed forehands &mdash; contact in front of lead hip <span class="plan-time">10 min</span></li>
+        <li>Cross-court rally with target <span class="plan-time">5 min</span></li>
+      </ol>
     </div>
   </div>
 
   <div class="coaching-card" onclick="this.classList.toggle('open')">
     <div class="cc-header">
-      <span class="cc-type">&#10140; Forehand #2</span>
+      <span class="cc-type">Forehand #2</span>
       <span class="cc-time mono">t=41.8s</span>
       <span class="cc-grade b">B+</span>
-      <span class="cc-chev">&#9660;</span>
+      <span class="cc-chev">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
     </div>
     <div class="cc-body">
       <div class="cc-section-label">Grade Rationale</div>
       <div class="cc-text">Improved unit turn on this stroke. Contact point was further forward. Follow-through finished high over the opposite shoulder.</div>
+
+      <div class="cc-divider"></div>
+
+      <div class="cc-section-label">Improvement Plan</div>
+      <ol class="cc-plan">
+        <li>Continue unit turn focus &mdash; aim for 90&deg;+ rotation <span class="plan-time">5 min</span></li>
+        <li>Rally with emphasis on contact in front of body <span class="plan-time">10 min</span></li>
+      </ol>
     </div>
   </div>
 
   <div style="height: 60px;"></div>
-</div>
-
-<!-- ═══ PRO COMPARISON BOTTOM SHEET ═══ -->
-<div class="sheet-overlay" id="sheetOverlay" onclick="closeSheet()"></div>
-<div class="sheet" id="sheet" style="display:none;">
-  <div class="sheet-handle"></div>
-  <div class="sheet-title">Compare to <span style="color:var(--accent-secondary)">Pro</span></div>
-
-  <div class="pro-row">
-    <div class="pro-av sel" onclick="selectPro(this)"><div class="pro-av-img">&#127934;</div><div class="pro-av-name">Federer</div></div>
-    <div class="pro-av" onclick="selectPro(this)"><div class="pro-av-img">&#127947;</div><div class="pro-av-name">Djokovic</div></div>
-    <div class="pro-av" onclick="selectPro(this)"><div class="pro-av-img">&#9889;</div><div class="pro-av-name">Serena</div></div>
-    <div class="pro-av" onclick="selectPro(this)"><div class="pro-av-img">&#128170;</div><div class="pro-av-name">Nadal</div></div>
-    <div class="pro-av" onclick="selectPro(this)"><div class="pro-av-img">&#11088;</div><div class="pro-av-name">Sinner</div></div>
-  </div>
-
-  <!-- Side-by-side split -->
-  <div class="split-comp">
-    <div class="split-side left">
-      <div class="split-label you">You</div>
-      <svg width="90" height="180" viewBox="0 0 90 180" style="z-index:2;">
-        <circle cx="45" cy="14" r="6" fill="rgba(100,160,200,0.8)"/>
-        <line x1="45" y1="20" x2="45" y2="70" stroke="var(--skeleton)" stroke-width="2"/>
-        <line x1="45" y1="32" x2="22" y2="56" stroke="var(--skeleton)" stroke-width="2"/>
-        <line x1="22" y1="56" x2="10" y2="84" stroke="var(--skeleton)" stroke-width="2"/>
-        <line x1="45" y1="32" x2="66" y2="52" stroke="var(--skeleton)" stroke-width="2"/>
-        <line x1="66" y1="52" x2="78" y2="36" stroke="var(--skeleton)" stroke-width="2"/>
-        <line x1="45" y1="70" x2="34" y2="120" stroke="var(--skeleton)" stroke-width="2"/>
-        <line x1="45" y1="70" x2="56" y2="120" stroke="var(--skeleton)" stroke-width="2"/>
-        <line x1="34" y1="120" x2="30" y2="168" stroke="var(--skeleton)" stroke-width="2"/>
-        <line x1="56" y1="120" x2="60" y2="168" stroke="var(--skeleton)" stroke-width="2"/>
-      </svg>
-    </div>
-    <div class="split-side right">
-      <div class="split-label pro">Federer</div>
-      <svg width="90" height="180" viewBox="0 0 90 180" style="z-index:2;">
-        <circle cx="45" cy="14" r="6" fill="rgba(191,161,74,0.8)"/>
-        <line x1="45" y1="20" x2="45" y2="70" stroke="var(--pro-gold)" stroke-width="2"/>
-        <line x1="45" y1="32" x2="20" y2="54" stroke="var(--pro-gold)" stroke-width="2"/>
-        <line x1="20" y1="54" x2="6" y2="80" stroke="var(--pro-gold)" stroke-width="2"/>
-        <line x1="45" y1="32" x2="68" y2="48" stroke="var(--pro-gold)" stroke-width="2"/>
-        <line x1="68" y1="48" x2="82" y2="30" stroke="var(--pro-gold)" stroke-width="2"/>
-        <line x1="45" y1="70" x2="32" y2="118" stroke="var(--pro-gold)" stroke-width="2"/>
-        <line x1="45" y1="70" x2="58" y2="118" stroke="var(--pro-gold)" stroke-width="2"/>
-        <line x1="32" y1="118" x2="28" y2="168" stroke="var(--pro-gold)" stroke-width="2"/>
-        <line x1="58" y1="118" x2="62" y2="168" stroke="var(--pro-gold)" stroke-width="2"/>
-      </svg>
-    </div>
-  </div>
-
-  <div class="align-section">
-    <div class="align-label">Alignment Match</div>
-    <div class="align-row"><span class="align-name">Shoulder Rotation</span><div class="align-bar"><div class="align-fill hi" style="width:88%"></div></div><span class="align-pct hi">88%</span></div>
-    <div class="align-row"><span class="align-name">Hip Position</span><div class="align-bar"><div class="align-fill hi" style="width:82%"></div></div><span class="align-pct hi">82%</span></div>
-    <div class="align-row"><span class="align-name">Racket Prep</span><div class="align-bar"><div class="align-fill mid" style="width:64%"></div></div><span class="align-pct mid">64%</span></div>
-    <div class="align-row"><span class="align-name">Contact Extension</span><div class="align-bar"><div class="align-fill hi" style="width:91%"></div></div><span class="align-pct hi">91%</span></div>
-    <div class="align-row"><span class="align-name">Follow-Through</span><div class="align-bar"><div class="align-fill mid" style="width:58%"></div></div><span class="align-pct mid">58%</span></div>
-    <div class="align-row"><span class="align-name">Knee Bend</span><div class="align-bar"><div class="align-fill lo" style="width:42%"></div></div><span class="align-pct lo">42%</span></div>
-  </div>
 </div>
 
 <script>
@@ -729,21 +755,6 @@ function selectPhase(el, idx) {
   document.querySelectorAll('.phase-node').forEach(n => n.classList.remove('sel'));
   el.classList.add('sel');
   document.getElementById('phaseDetail').classList.add('open');
-}
-
-function openSheet() {
-  document.getElementById('sheetOverlay').classList.add('open');
-  document.getElementById('sheet').style.display = 'block';
-}
-
-function closeSheet() {
-  document.getElementById('sheetOverlay').classList.remove('open');
-  document.getElementById('sheet').style.display = 'none';
-}
-
-function selectPro(el) {
-  document.querySelectorAll('.pro-av').forEach(a => a.classList.remove('sel'));
-  el.classList.add('sel');
 }
 
 document.querySelectorAll('.stroke-chip').forEach(chip => {
