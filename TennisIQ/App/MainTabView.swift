@@ -20,64 +20,48 @@ struct MainTabView: View {
     }
 
     var body: some View {
-        ZStack(alignment: .bottom) {
-            // Full-screen background
-            DesignSystem.current.background
-                .ignoresSafeArea()
-
-            // Content fills entire screen
-            Group {
-                switch selectedTab {
-                case .record:
-                    NavigationStack {
-                        RecordView(switchToSessions: { selectedTab = .sessions })
-                    }
-                case .sessions:
-                    SessionsListView()
-                case .progress:
-                    NavigationStack {
-                        ProgressDashboardView()
-                    }
-                case .profile:
-                    NavigationStack {
-                        ProfileView()
-                    }
+        Group {
+            switch selectedTab {
+            case .record:
+                NavigationStack {
+                    RecordView(switchToSessions: { selectedTab = .sessions })
+                }
+            case .sessions:
+                SessionsListView()
+            case .progress:
+                NavigationStack {
+                    ProgressDashboardView()
+                }
+            case .profile:
+                NavigationStack {
+                    ProfileView()
                 }
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .ignoresSafeArea(edges: .top)
-
-            // Custom compact tab bar pinned to bottom
-            VStack(spacing: 0) {
-                Color.white.opacity(0.1)
-                    .frame(height: 0.5)
-
-                HStack(spacing: 0) {
-                    ForEach(Tab.allCases, id: \.self) { tab in
-                        Button {
-                            selectedTab = tab
-                        } label: {
-                            Image(systemName: tab.icon)
-                                .font(.system(size: 16, weight: .medium))
-                                .foregroundStyle(.white.opacity(selectedTab == tab ? 1.0 : 0.4))
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 36)
-                        }
-                    }
-                }
-            }
-            .background(DesignSystem.current.navBackground)
-            .padding(.bottom, safeAreaBottom)
-            .background(DesignSystem.current.navBackground.ignoresSafeArea(edges: .bottom))
         }
-        .ignoresSafeArea(.keyboard)
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            compactTabBar
+        }
     }
 
-    /// Bottom safe area inset for home indicator
-    private var safeAreaBottom: CGFloat {
-        guard let scene = UIApplication.shared.connectedScenes
-            .compactMap({ $0 as? UIWindowScene }).first,
-              let window = scene.windows.first else { return 0 }
-        return window.safeAreaInsets.bottom
+    private var compactTabBar: some View {
+        VStack(spacing: 0) {
+            Color.white.opacity(0.1)
+                .frame(height: 0.5)
+
+            HStack(spacing: 0) {
+                ForEach(Tab.allCases, id: \.self) { tab in
+                    Button {
+                        selectedTab = tab
+                    } label: {
+                        Image(systemName: tab.icon)
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundStyle(.white.opacity(selectedTab == tab ? 1.0 : 0.4))
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 36)
+                    }
+                }
+            }
+        }
+        .background(DesignSystem.current.navBackground)
     }
 }
