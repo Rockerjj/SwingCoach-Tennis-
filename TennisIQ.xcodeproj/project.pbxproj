@@ -25,6 +25,8 @@
 		2814EE0217286EDB5E3CEF82 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9765FE60DBE1E3F218E7DF9 /* Constants.swift */; };
 		2C329E9AB45FC19844B30E78 /* LiveSwingAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF770FB15B1BCAD9680A0591 /* LiveSwingAnalyzer.swift */; };
 		2F4FFB9E53BF743B503E98C2 /* GrandSlamTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59075BA16CA9C10AE0674DD1 /* GrandSlamTheme.swift */; };
+		EDE6F0F9E2E0AD3C904B26E2 /* TenniqueNightTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 766F448B2E1211173BDBAB26 /* TenniqueNightTheme.swift */; };
+		171B7C1EB67B91B7B7D75ED7 /* PhaseFrameCaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71C6B8C08DD7E528EF6C33D6 /* PhaseFrameCaptureView.swift */; };
 		364EA3880607432FD36673A7 /* AnalysisResultsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 527389EFF23211D098DE73C7 /* AnalysisResultsView.swift */; };
 		37C0E6125F35BD8D965FCDD0 /* LiveFeedbackOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 590FC9F3405246D6A0A375A4 /* LiveFeedbackOverlayView.swift */; };
 		4FFE162779A31A539C8B403E /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9B3A1A3CF5E4B315EE77A91 /* DesignSystem.swift */; };
@@ -84,8 +86,10 @@
 		509263CA2F409EC043774E40 /* TennisIQ.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TennisIQ.entitlements; sourceTree = "<group>"; };
 		527389EFF23211D098DE73C7 /* AnalysisResultsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisResultsView.swift; sourceTree = "<group>"; };
 		52B20C486E4DDFFAB3786FAD /* StrokeAnalysisModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StrokeAnalysisModel.swift; sourceTree = "<group>"; };
-		5610F855E169537F79B3D956 /* TennisIQ.storekit */ = {isa = PBXFileReference; path = TennisIQ.storekit; sourceTree = "<group>"; };
+		5610F855E169537F79B3D956 /* TennisIQ.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = TennisIQ.storekit; sourceTree = "<group>"; };
 		59075BA16CA9C10AE0674DD1 /* GrandSlamTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GrandSlamTheme.swift; sourceTree = "<group>"; };
+		766F448B2E1211173BDBAB26 /* TenniqueNightTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TenniqueNightTheme.swift; sourceTree = "<group>"; };
+		71C6B8C08DD7E528EF6C33D6 /* PhaseFrameCaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhaseFrameCaptureView.swift; sourceTree = "<group>"; };
 		590FC9F3405246D6A0A375A4 /* LiveFeedbackOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveFeedbackOverlayView.swift; sourceTree = "<group>"; };
 		5A1C5318D1BA8F08711D6E58 /* RecordViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordViewModel.swift; sourceTree = "<group>"; };
 		5A26A9FDB6E77B1219856BE0 /* AnalysisAPIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisAPIService.swift; sourceTree = "<group>"; };
@@ -112,10 +116,10 @@
 		D9765FE60DBE1E3F218E7DF9 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		D9B3A1A3CF5E4B315EE77A91 /* DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystem.swift; sourceTree = "<group>"; };
 		DEF7D7ADF16853A1D96535BC /* ScoreSparklineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScoreSparklineView.swift; sourceTree = "<group>"; };
-		DEF9AFAE8D6C8A12B5120558 /* TennisIQ.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = TennisIQ.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		DEF9AFAE8D6C8A12B5120558 /* TennisIQ.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TennisIQ.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0936ABE30EF28A2BF3B4294 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		E46A42D98AB9BC3C04C6B062 /* CameraService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraService.swift; sourceTree = "<group>"; };
-		E4E8C4AF0A8E42144F03FC73 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		E4E8C4AF0A8E42144F03FC73 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		E6A5536E2F240904D190FC57 /* RallyTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RallyTheme.swift; sourceTree = "<group>"; };
 		F3CDD641DA3F46B6758D70C3 /* UserProfileModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileModel.swift; sourceTree = "<group>"; };
 		F69C954894BA2C837EF0C9BC /* ZoneIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoneIndicator.swift; sourceTree = "<group>"; };
@@ -213,6 +217,7 @@
 				9A24F290A8A8FDD57A8E52CF /* FeedbackPromptView.swift */,
 				B62CF863477F0A539F5EF6C9 /* HeroInsightCard.swift */,
 				69320059865F2A9BBF43BB00 /* PhaseDetailCard.swift */,
+				71C6B8C08DD7E528EF6C33D6 /* PhaseFrameCaptureView.swift */,
 				BEC6740F72DC1CDE05F546C0 /* PhaseTimelineView.swift */,
 				BD7C05C154F82A804E8D1347 /* ProComparisonView.swift */,
 				DEF7D7ADF16853A1D96535BC /* ScoreSparklineView.swift */,
@@ -303,6 +308,7 @@
 				C2A7805BE6A73CD099C3A19A /* CourtVisionTheme.swift */,
 				D9B3A1A3CF5E4B315EE77A91 /* DesignSystem.swift */,
 				59075BA16CA9C10AE0674DD1 /* GrandSlamTheme.swift */,
+				766F448B2E1211173BDBAB26 /* TenniqueNightTheme.swift */,
 				E6A5536E2F240904D190FC57 /* RallyTheme.swift */,
 			);
 			path = Design;
@@ -426,6 +432,8 @@
 				AB07C80EEC70FA3F7FEA855A /* FeedbackPromptView.swift in Sources */,
 				F01D4278751F2DFBB2621892 /* FeedbackService.swift in Sources */,
 				2F4FFB9E53BF743B503E98C2 /* GrandSlamTheme.swift in Sources */,
+				EDE6F0F9E2E0AD3C904B26E2 /* TenniqueNightTheme.swift in Sources */,
+				171B7C1EB67B91B7B7D75ED7 /* PhaseFrameCaptureView.swift in Sources */,
 				094C8A26FEBAA5FBAB468E80 /* HeroInsightCard.swift in Sources */,
 				37C0E6125F35BD8D965FCDD0 /* LiveFeedbackOverlayView.swift in Sources */,
 				2C329E9AB45FC19844B30E78 /* LiveSwingAnalyzer.swift in Sources */,
@@ -600,6 +608,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = J898LJ34V9;
 				INFOPLIST_FILE = TennisIQ/Resources/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -620,6 +629,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = J898LJ34V9;
 				INFOPLIST_FILE = TennisIQ/Resources/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

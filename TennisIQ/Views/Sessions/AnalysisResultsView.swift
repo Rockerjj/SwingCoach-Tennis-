@@ -279,6 +279,14 @@ struct AnalysisResultsView: View {
     private let theme = DesignSystem.current
     private let analytics = AnalyticsService.shared
 
+    /// Resolved video URL for passing to child views
+    private var resolvedVideoURL: URL? {
+        guard let filename = session.videoLocalURL else { return nil }
+        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        let fileURL = docs.appendingPathComponent(filename)
+        return FileManager.default.fileExists(atPath: fileURL.path) ? fileURL : nil
+    }
+
     init(session: SessionModel) {
         self.session = session
         _viewModel = StateObject(wrappedValue: AnalysisViewModel(session: session))
@@ -309,6 +317,9 @@ struct AnalysisResultsView: View {
             }
         }
         .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(TenniqueNightTheme.navBackground, for: .navigationBar)
+        .toolbarBackground(.visible, for: .navigationBar)
+        .toolbarColorScheme(.dark, for: .navigationBar)
         .toolbar {
             ToolbarItem(placement: .principal) {
                 Text(session.recordedAt.formatted(date: .abbreviated, time: .shortened))
@@ -444,6 +455,7 @@ struct AnalysisResultsView: View {
                         .allowsHitTesting(false)
                     }
                 }
+                .background(TenniqueNightTheme.navBackground)
                 .ignoresSafeArea(edges: .top)
                 .clipped()
 
@@ -458,6 +470,9 @@ struct AnalysisResultsView: View {
                         } else if let stroke = selectedStroke {
                             playback.selectStroke(stroke)
                         }
+                    },
+                    onJumpToTimestamp: { timestamp in
+                        playback.seekTo(timestamp: timestamp)
                     }
                 )
 
@@ -472,7 +487,11 @@ struct AnalysisResultsView: View {
 
                 // Hero Insight Card — top priorities above phase timeline
                 if let stroke = selectedStroke {
-                    HeroInsightCard(stroke: stroke)
+                    HeroInsightCard(
+                        stroke: stroke,
+                        videoURL: resolvedVideoURL,
+                        poseFrames: session.poseFrames
+                    )
                 }
 
                 if let stroke = selectedStroke, let breakdown = stroke.phaseBreakdown {
@@ -483,7 +502,9 @@ struct AnalysisResultsView: View {
                             if let detail = breakdown.detail(for: phase) {
                                 playback.seekTo(timestamp: detail.timestamp)
                             }
-                        }
+                        },
+                        videoURL: resolvedVideoURL,
+                        poseFrames: session.poseFrames
                     )
                 }
 
@@ -878,6 +899,7 @@ struct VideoFocusInsightCard: View {
     let selectedStroke: StrokeAnalysisModel?
     let selectedPhase: SwingPhase?
     let onJumpToFocus: () -> Void
+    var onJumpToTimestamp: ((Double) -> Void)? = nil
     private let theme = DesignSystem.current
 
     var body: some View {
@@ -902,8 +924,8 @@ struct VideoFocusInsightCard: View {
                 .font(AppFont.body(size: 20, weight: .semibold))
                 .foregroundStyle(theme.textPrimary)
 
-            if let subtitle {
-                Text(subtitle)
+            if let text = truncatedSubtitle {
+                Text(text)
                     .font(AppFont.body(size: 14))
                     .foregroundStyle(theme.textSecondary)
                     .lineSpacing(2)
@@ -920,6 +942,42 @@ struct VideoFocusInsightCard: View {
                             .background(
                                 Capsule().fill(theme.accentMuted)
                             )
+                    }
+                }
+            }
+
+            // KEY MOMENTS strip
+            if !keyMoments.isEmpty {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    Text("KEY MOMENTS")
+                        .font(AppFont.body(size: 10, weight: .bold))
+                        .foregroundStyle(theme.textTertiary)
+                        .tracking(0.8)
+
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: Spacing.xs) {
+                            ForEach(Array(keyMoments.enumerated()), id: \.offset) { _, moment in
+                                Button(action: {
+                                    onJumpToTimestamp?(moment.timestamp)
+                                }) {
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(moment.metric)
+                                            .font(AppFont.mono(size: 11, weight: .semibold))
+                                            .foregroundStyle(theme.accent)
+                                        Text(String(format: "@ %.1fs", moment.timestamp))
+                                            .font(AppFont.mono(size: 9))
+                                            .foregroundStyle(theme.textTertiary)
+                                    }
+                                    .padding(.horizontal, Spacing.sm)
+                                    .padding(.vertical, Spacing.xs)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: Radius.sm)
+                                            .fill(theme.surfaceSecondary)
+                                    )
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
                     }
                 }
             }
@@ -943,7 +1001,17 @@ struct VideoFocusInsightCard: View {
         return "Select a rep to see the main coaching focus"
     }
 
-    private var subtitle: String? {
+    /// Truncate subtitle to 2-3 sentences max
+    private var truncatedSubtitle: String? {
+        guard let text = rawSubtitle, !text.isEmpty else { return nil }
+        let sentences = text.components(separatedBy: ". ")
+        if sentences.count <= 3 {
+            return text
+        }
+        return sentences.prefix(3).joined(separator: ". ") + "..."
+    }
+
+    private var rawSubtitle: String? {
         if let phase = selectedPhase,
            let stroke = selectedStroke,
            let detail = stroke.phaseBreakdown?.detail(for: phase) {
@@ -959,6 +1027,39 @@ struct VideoFocusInsightCard: View {
             return detail.keyAngles
         }
         return selectedStroke?.overlayInstructions?.anglesToHighlight ?? []
+    }
+
+    /// Key moments parsed from overlay instructions and phase timestamps
+    private var keyMoments: [(metric: String, timestamp: Double)] {
+        guard let stroke = selectedStroke else { return [] }
+        var moments: [(String, Double)] = []
+
+        // From anglesToHighlight + phase timestamps
+        if let angles = stroke.overlayInstructions?.anglesToHighlight,
+           let breakdown = stroke.phaseBreakdown {
+            for angle in angles {
+                // Find matching phase timestamp
+                let timestamp: Double = breakdown.allPhases.compactMap { (_, detail) in
+                    detail?.timestamp
+                }.first ?? stroke.timestamp
+
+                moments.append((angle, timestamp))
+            }
+        }
+
+        // If we got angles from phases with specific timestamps
+        if let breakdown = stroke.phaseBreakdown {
+            for (_, detail) in breakdown.allPhases {
+                guard let d = detail, d.status != .inZone else { continue }
+                for angle in d.keyAngles {
+                    if !moments.contains(where: { $0.0 == angle }) {
+                        moments.append((angle, d.timestamp))
+                    }
+                }
+            }
+        }
+
+        return Array(moments.prefix(8))
     }
 }
 
@@ -1051,7 +1152,7 @@ struct StrokeTimelineMarker: View {
             )
             .overlay(
                 Capsule()
-                    .stroke(isSelected ? theme.accent : Color(hex: "E5E7EB"), lineWidth: 1)
+                    .stroke(isSelected ? theme.accent : theme.surfaceSecondary, lineWidth: 1)
             )
         }
         .buttonStyle(.plain)
@@ -1115,7 +1216,7 @@ struct SessionSummaryCard: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: Radius.md)
-                .stroke(Color(hex: "E5E7EB"), lineWidth: 1)
+                .stroke(theme.surfaceSecondary, lineWidth: 1)
         )
         .shadow(color: .black.opacity(0.04), radius: 3, y: 1)
         .padding(.horizontal, Spacing.md)
@@ -1175,7 +1276,7 @@ struct SessionSummaryCard: View {
 
         return ZStack {
             Circle()
-                .stroke(Color(hex: "F3F4F6"), lineWidth: 7)
+                .stroke(theme.surfaceSecondary, lineWidth: 7)
                 .frame(width: 80, height: 80)
 
             Circle()
@@ -1793,9 +1894,9 @@ private func gradeRankValue(_ grade: String) -> Int {
 private func semanticGradeColor(for grade: String, theme: AppTheme) -> Color {
     switch normalizedGrade(grade).prefix(1) {
     case "A": return theme.success
-    case "B": return Color(hex: "#84CC16")
+    case "B": return Color(hex: "84CC16")
     case "C": return theme.warning
-    case "D": return Color(hex: "#F97316")
+    case "D": return Color(hex: "F97316")
     case "F": return theme.error
     default: return theme.textTertiary
     }
@@ -1883,6 +1984,8 @@ struct PhaseTimelineStrip: View {
     let breakdown: PhaseBreakdown
     @Binding var selectedPhase: SwingPhase?
     var onPhaseSelected: ((SwingPhase) -> Void)? = nil
+    var videoURL: URL? = nil
+    var poseFrames: [FramePoseData] = []
     private let theme = DesignSystem.current
 
     var body: some View {
@@ -1905,7 +2008,7 @@ struct PhaseTimelineStrip: View {
             .background(theme.surfacePrimary)
 
             if let phase = selectedPhase, let detail = breakdown.detail(for: phase) {
-                PhaseDetailCard(phase: phase, detail: detail)
+                PhaseDetailCard(phase: phase, detail: detail, videoURL: videoURL, poseFrames: poseFrames)
                     .padding(.horizontal, Spacing.md)
                     .padding(.top, Spacing.xs)
                     .padding(.bottom, Spacing.sm)
@@ -1918,7 +2021,7 @@ struct PhaseTimelineStrip: View {
         ZStack(alignment: .top) {
             // Connecting line behind dots
             Rectangle()
-                .fill(Color(hex: "E5E7EB"))
+                .fill(theme.surfaceSecondary)
                 .frame(height: 1.5)
                 .padding(.horizontal, Spacing.lg)
                 .offset(y: 14)
@@ -1947,9 +2050,9 @@ struct PhaseTimelineStrip: View {
                 }
             }
         }) {
-            VStack(spacing: 6) {
+            VStack(spacing: Spacing.xxs) {
+                // Icon circle
                 ZStack {
-                    // White fill with colored border
                     Circle()
                         .fill(isSelected ? theme.accent : theme.surfacePrimary)
                         .frame(width: isSelected ? 32 : 28, height: isSelected ? 32 : 28)
@@ -1958,14 +2061,20 @@ struct PhaseTimelineStrip: View {
                         .stroke(isSelected ? theme.accent : borderColor(status), lineWidth: 2)
                         .frame(width: isSelected ? 32 : 28, height: isSelected ? 32 : 28)
 
-                    Text("\(score)")
-                        .font(AppFont.mono(size: isSelected ? 12 : 10, weight: .bold))
+                    Image(systemName: phase.icon)
+                        .font(.system(size: isSelected ? 13 : 11, weight: .semibold))
                         .foregroundStyle(isSelected ? .white : theme.accent)
                 }
                 .shadow(color: isSelected ? theme.accent.opacity(0.2) : .clear, radius: 8, y: 2)
 
+                // Score badge below circle
+                Text("\(score)")
+                    .font(AppFont.mono(size: 9, weight: .bold))
+                    .foregroundStyle(isSelected ? theme.accent : theme.textSecondary)
+
+                // Full phase name
                 Text(phase.displayName)
-                    .font(.system(size: 8.5, weight: .medium))
+                    .font(.system(size: 7, weight: .medium))
                     .foregroundStyle(isSelected ? theme.accent : theme.textTertiary)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
@@ -2034,7 +2143,7 @@ struct ReportCategoryRow: View {
         }
         .buttonStyle(.plain)
         .overlay(alignment: .bottom) {
-            Divider().foregroundStyle(Color(hex: "F3F4F6"))
+            Divider().foregroundStyle(theme.surfaceSecondary)
         }
     }
 

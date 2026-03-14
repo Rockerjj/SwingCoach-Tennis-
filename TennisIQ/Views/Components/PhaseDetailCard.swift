@@ -3,9 +3,18 @@ import SwiftUI
 struct PhaseDetailCard: View {
     let phase: SwingPhase
     let detail: PhaseDetail?
+    var videoURL: URL?
+    var poseFrames: [FramePoseData]
 
     @State private var isExpanded = true
     private let theme = DesignSystem.current
+
+    init(phase: SwingPhase, detail: PhaseDetail?, videoURL: URL? = nil, poseFrames: [FramePoseData] = []) {
+        self.phase = phase
+        self.detail = detail
+        self.videoURL = videoURL
+        self.poseFrames = poseFrames
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -20,7 +29,7 @@ struct PhaseDetailCard: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: Radius.md)
-                .stroke(Color(hex: "E5E7EB"), lineWidth: 1)
+                .stroke(theme.surfaceSecondary, lineWidth: 1)
         )
         .shadow(color: .black.opacity(0.04), radius: 3, y: 1)
     }
@@ -78,11 +87,13 @@ struct PhaseDetailCard: View {
         VStack(alignment: .leading, spacing: Spacing.md) {
             Divider().foregroundStyle(theme.surfaceSecondary)
 
-            // Visual correction diagram
-            AngleCorrectionDiagram(
-                phase: phase,
-                detail: detail,
-                height: 140
+            // Freeze frame with skeleton overlay
+            PhaseFrameCaptureView(
+                videoURL: videoURL,
+                timestamp: detail.timestamp,
+                poseFrames: poseFrames,
+                keyAngles: detail.keyAngles,
+                height: 200
             )
 
             if !detail.keyAngles.isEmpty {

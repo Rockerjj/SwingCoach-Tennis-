@@ -32,8 +32,8 @@ struct PhaseTimelineView: View {
             onPhaseSelected(phase)
         }) {
             VStack(spacing: Spacing.xxs) {
+                // Icon circle
                 ZStack {
-                    // White fill with colored border
                     Circle()
                         .fill(isSelected ? theme.accent : theme.surfacePrimary)
                         .frame(width: isSelected ? 32 : 28, height: isSelected ? 32 : 28)
@@ -42,14 +42,20 @@ struct PhaseTimelineView: View {
                         .stroke(isSelected ? theme.accent : borderColor(status), lineWidth: 2)
                         .frame(width: isSelected ? 32 : 28, height: isSelected ? 32 : 28)
 
-                    Text("\(score)")
-                        .font(AppFont.mono(size: isSelected ? 13 : 11, weight: .bold))
+                    Image(systemName: phase.icon)
+                        .font(.system(size: isSelected ? 13 : 11, weight: .semibold))
                         .foregroundStyle(isSelected ? .white : theme.accent)
                 }
                 .shadow(color: isSelected ? theme.accent.opacity(0.2) : .clear, radius: 8, y: 2)
 
+                // Score badge below circle
+                Text("\(score)")
+                    .font(AppFont.mono(size: 9, weight: .bold))
+                    .foregroundStyle(isSelected ? theme.accent : theme.textSecondary)
+
+                // Full phase name
                 Text(phase.displayName)
-                    .font(.system(size: 9, weight: .medium))
+                    .font(.system(size: 7, weight: .medium))
                     .foregroundStyle(isSelected ? theme.accent : theme.textTertiary)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
@@ -64,7 +70,7 @@ struct PhaseTimelineView: View {
 
     private var connectingLine: some View {
         Rectangle()
-            .fill(Color(hex: "E5E7EB"))
+            .fill(theme.surfaceSecondary)
             .frame(width: 16, height: 1.5)
     }
 

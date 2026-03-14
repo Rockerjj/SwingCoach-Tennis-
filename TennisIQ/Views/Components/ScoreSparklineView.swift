@@ -30,7 +30,7 @@ struct ScoreSparklineView: View {
             }
             context.stroke(
                 linePath,
-                with: .color(Color(hex: "E5E7EB")),
+                with: .color(theme.textTertiary),
                 style: StrokeStyle(lineWidth: 1.5, lineCap: .round, lineJoin: .round)
             )
 

@@ -45,7 +45,7 @@ protocol AppTheme {
 final class DesignSystem: ObservableObject {
     static let shared = DesignSystem()
 
-    @Published var currentTheme: AppTheme = GrandSlamTheme()
+    @Published var currentTheme: AppTheme = TenniqueNightTheme()
 
     static var current: AppTheme {
         shared.currentTheme
