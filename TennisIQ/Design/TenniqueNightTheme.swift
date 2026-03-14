@@ -6,7 +6,7 @@ struct TenniqueNightTheme: AppTheme {
     let name = "Tennique Night"
 
     // Backgrounds — deep emerald with charcoal cards
-    let background = Color(hex: "14532D")
+    let background = Color(hex: "0D2818")
     let surfacePrimary = Color(hex: "242424")
     let surfaceSecondary = Color(hex: "2E2E2E")
     let surfaceElevated = Color(hex: "303030")
