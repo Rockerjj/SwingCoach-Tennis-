@@ -423,6 +423,7 @@ struct AnalysisResultsView: View {
     private var analysisContent: some View {
         ScrollView {
             VStack(spacing: 0) {
+                // 1. Video player
                 ZStack {
                     LiveVideoPlayerSection(
                         playback: playback,
@@ -459,6 +460,41 @@ struct AnalysisResultsView: View {
                 .ignoresSafeArea(edges: .top)
                 .clipped()
 
+                // 2. Stroke selector pills
+                StrokeSelectorRow(
+                    strokes: session.strokeAnalyses,
+                    selectedStroke: $selectedStroke,
+                    onSelectStroke: { stroke in
+                        selectedStroke = stroke
+                        playback.selectStroke(stroke)
+                    }
+                )
+
+                // 3. Phase Breakdown
+                if let stroke = selectedStroke, let breakdown = stroke.phaseBreakdown {
+                    PhaseTimelineStrip(
+                        breakdown: breakdown,
+                        selectedPhase: $selectedPhase,
+                        onPhaseSelected: { phase in
+                            if let detail = breakdown.detail(for: phase) {
+                                playback.seekTo(timestamp: detail.timestamp)
+                            }
+                        },
+                        videoURL: resolvedVideoURL,
+                        poseFrames: session.poseFrames
+                    )
+                }
+
+                // 4. Top Priorities
+                if let stroke = selectedStroke {
+                    HeroInsightCard(
+                        stroke: stroke,
+                        videoURL: resolvedVideoURL,
+                        poseFrames: session.poseFrames
+                    )
+                }
+
+                // 5. Main Fix
                 VideoFocusInsightCard(
                     selectedStroke: selectedStroke,
                     selectedPhase: selectedPhase,
@@ -476,38 +512,7 @@ struct AnalysisResultsView: View {
                     }
                 )
 
-                StrokeTimelineStrip(
-                    strokes: session.strokeAnalyses,
-                    selectedStroke: $selectedStroke,
-                    onSelectStroke: { stroke in
-                        selectedStroke = stroke
-                        playback.selectStroke(stroke)
-                    }
-                )
-
-                // Hero Insight Card — top priorities above phase timeline
-                if let stroke = selectedStroke {
-                    HeroInsightCard(
-                        stroke: stroke,
-                        videoURL: resolvedVideoURL,
-                        poseFrames: session.poseFrames
-                    )
-                }
-
-                if let stroke = selectedStroke, let breakdown = stroke.phaseBreakdown {
-                    PhaseTimelineStrip(
-                        breakdown: breakdown,
-                        selectedPhase: $selectedPhase,
-                        onPhaseSelected: { phase in
-                            if let detail = breakdown.detail(for: phase) {
-                                playback.seekTo(timestamp: detail.timestamp)
-                            }
-                        },
-                        videoURL: resolvedVideoURL,
-                        poseFrames: session.poseFrames
-                    )
-                }
-
+                // 6. Session Summary
                 SessionSummaryCard(
                     session: session,
                     analysisCategories: selectedStroke?.analysisCategories,
@@ -524,12 +529,13 @@ struct AnalysisResultsView: View {
                     }
                 )
 
+                // 7. Coaching Cards
                 StrokeCardsSection(strokes: session.strokeAnalyses)
 
+                // 8. Tactical Notes
                 TacticalNotesCard(notes: session.tacticalNotes)
             }
         }
-        // Pro Comparison removed — not functional yet
     }
 
     private var selectedPhaseAngles: [String] {
@@ -1040,112 +1046,55 @@ struct VideoFocusInsightCard: View {
     }
 }
 
-// MARK: - Stroke Timeline Strip (Segmented Control)
+// MARK: - Stroke Selector Row (Pill Buttons)
 
-struct StrokeTimelineStrip: View {
+struct StrokeSelectorRow: View {
     let strokes: [StrokeAnalysisModel]
     @Binding var selectedStroke: StrokeAnalysisModel?
     let onSelectStroke: (StrokeAnalysisModel) -> Void
-    private let theme = DesignSystem.current
     private let haptic = UIImpactFeedbackGenerator(style: .light)
 
+    private let darkGreen = Color(red: 13/255, green: 40/255, blue: 24/255) // #0D2818
+
     var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.sm) {
-            HStack(alignment: .firstTextBaseline) {
-                Text("STROKE TIMELINE")
-                    .font(AppFont.body(size: 11, weight: .semibold))
-                    .foregroundStyle(theme.textTertiary)
+        ScrollViewReader { proxy in
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 10) {
+                    ForEach(strokes) { stroke in
+                        let isSelected = selectedStroke?.id == stroke.id
 
-                Spacer()
-
-                Text(summaryText)
-                    .font(AppFont.mono(size: 11, weight: .medium))
-                    .foregroundStyle(theme.textTertiary)
-            }
-            .padding(.horizontal, Spacing.md)
-
-            if strokes.count <= 4 {
-                // Fixed single row — equal width segments
-                segmentedRow
-                    .padding(.horizontal, Spacing.md)
-            } else {
-                // Scrollable connected segments
-                ScrollViewReader { proxy in
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        segmentedRow
-                            .padding(.horizontal, Spacing.md)
-                    }
-                    .onChange(of: selectedStroke?.id) { _, newID in
-                        guard let newID else { return }
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            proxy.scrollTo(newID, anchor: .center)
+                        Button {
+                            haptic.impactOccurred()
+                            onSelectStroke(stroke)
+                        } label: {
+                            Text("\(stroke.strokeType.displayName) \(normalizedGrade(stroke.grade))")
+                                .font(AppFont.body(size: 14, weight: .semibold))
+                                .foregroundStyle(isSelected ? darkGreen : .white)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                                .background(
+                                    Capsule()
+                                        .fill(isSelected ? Color.white : Color.clear)
+                                )
+                                .overlay(
+                                    Capsule()
+                                        .stroke(Color.white, lineWidth: 1)
+                                )
                         }
+                        .buttonStyle(.plain)
+                        .id(stroke.id)
                     }
+                }
+                .padding(.horizontal, Spacing.md)
+                .padding(.vertical, Spacing.sm)
+            }
+            .onChange(of: selectedStroke?.id) { _, newID in
+                guard let newID else { return }
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    proxy.scrollTo(newID, anchor: .center)
                 }
             }
         }
-        .padding(.vertical, Spacing.md)
-        .background(theme.surfacePrimary)
-    }
-
-    private var segmentedRow: some View {
-        HStack(spacing: 0) {
-            ForEach(Array(strokes.enumerated()), id: \.element.id) { index, stroke in
-                let isSelected = selectedStroke?.id == stroke.id
-
-                Button {
-                    haptic.impactOccurred()
-                    onSelectStroke(stroke)
-                } label: {
-                    HStack(spacing: 4) {
-                        Text(stroke.strokeType.displayName)
-                            .font(AppFont.body(size: 12, weight: .medium))
-                            .lineLimit(1)
-
-                        Text(normalizedGrade(stroke.grade))
-                            .font(AppFont.body(size: 11, weight: .bold))
-                    }
-                    .foregroundStyle(isSelected ? .white : theme.textSecondary)
-                    .frame(maxWidth: strokes.count <= 4 ? .infinity : nil)
-                    .padding(.horizontal, strokes.count > 4 ? Spacing.md : 0)
-                    .padding(.vertical, Spacing.sm)
-                    .background(
-                        isSelected
-                            ? AnyShapeStyle(theme.accent)
-                            : AnyShapeStyle(Color.clear)
-                    )
-                    .scaleEffect(isSelected ? 1.0 : 0.98)
-                    .animation(.easeInOut(duration: 0.15), value: isSelected)
-                }
-                .buttonStyle(.plain)
-                .id(stroke.id)
-
-                // Thin vertical divider between segments
-                if index < strokes.count - 1 {
-                    Rectangle()
-                        .fill(theme.surfaceSecondary)
-                        .frame(width: 1)
-                        .padding(.vertical, 6)
-                }
-            }
-        }
-        .background(
-            RoundedRectangle(cornerRadius: Radius.sm)
-                .fill(theme.surfaceSecondary.opacity(0.3))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: Radius.sm)
-                .stroke(theme.surfaceSecondary, lineWidth: 1)
-        )
-        .clipShape(RoundedRectangle(cornerRadius: Radius.sm))
-    }
-
-    private var summaryText: String {
-        guard !strokes.isEmpty else { return "0 strokes" }
-        let grades = strokes.map(\.grade)
-        let avg = dominantGrade(in: grades) ?? "--"
-        let best = grades.min { gradeRankValue($0) < gradeRankValue($1) } ?? "--"
-        return "\(strokes.count) strokes • Avg: \(coachVerdict(for: avg)) • Best: \(coachVerdict(for: best))"
     }
 }
 
@@ -1886,17 +1835,6 @@ private func semanticGradeColor(for grade: String, theme: AppTheme) -> Color {
     case "F": return theme.error
     default: return theme.textTertiary
     }
-}
-
-private func dominantGrade(in grades: [String]) -> String? {
-    guard !grades.isEmpty else { return nil }
-    let grouped = Dictionary(grouping: grades, by: { normalizedGrade($0) })
-    return grouped.max { lhs, rhs in
-        if lhs.value.count == rhs.value.count {
-            return gradeRankValue(lhs.key) > gradeRankValue(rhs.key)
-        }
-        return lhs.value.count < rhs.value.count
-    }?.key
 }
 
 private func coachVerdict(for grade: String) -> String {
