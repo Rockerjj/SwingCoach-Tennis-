@@ -893,7 +893,7 @@ struct StrokeWindowBadge: View {
     }
 }
 
-// MARK: - Focus Insight Card
+// MARK: - Focus Insight Card (Collapsible Main Fix)
 
 struct VideoFocusInsightCard: View {
     let selectedStroke: StrokeAnalysisModel?
@@ -902,87 +902,58 @@ struct VideoFocusInsightCard: View {
     var onJumpToTimestamp: ((Double) -> Void)? = nil
     private let theme = DesignSystem.current
 
+    @State private var isMainFixExpanded = false
+
     var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.sm) {
-            HStack {
-                Text("MAIN FIX")
-                    .font(AppFont.body(size: 11, weight: .semibold))
-                    .foregroundStyle(theme.textTertiary)
-                    .tracking(1.2)
-
-                Spacer()
-
-                Button(action: onJumpToFocus) {
-                    Text("Jump to focus")
+        VStack(alignment: .leading, spacing: 0) {
+            // Collapsible header
+            Button {
+                withAnimation(.easeInOut(duration: 0.25)) {
+                    isMainFixExpanded.toggle()
+                }
+            } label: {
+                HStack {
+                    Text("MAIN FIX")
                         .font(AppFont.body(size: 11, weight: .semibold))
-                        .foregroundStyle(theme.accent)
-                }
-                .buttonStyle(.plain)
-            }
-
-            Text(primaryTitle)
-                .font(AppFont.body(size: 20, weight: .semibold))
-                .foregroundStyle(theme.textPrimary)
-
-            if let text = truncatedSubtitle {
-                Text(text)
-                    .font(AppFont.body(size: 14))
-                    .foregroundStyle(theme.textSecondary)
-                    .lineSpacing(2)
-            }
-
-            if !focusMetrics.isEmpty {
-                HStack(spacing: Spacing.xs) {
-                    ForEach(focusMetrics.prefix(2), id: \.self) { metric in
-                        Text(metric)
-                            .font(AppFont.mono(size: 11, weight: .medium))
-                            .foregroundStyle(theme.accent)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 6)
-                            .background(
-                                Capsule().fill(theme.accentMuted)
-                            )
-                    }
-                }
-            }
-
-            // KEY MOMENTS strip
-            if !keyMoments.isEmpty {
-                VStack(alignment: .leading, spacing: Spacing.xs) {
-                    Text("KEY MOMENTS")
-                        .font(AppFont.body(size: 10, weight: .bold))
                         .foregroundStyle(theme.textTertiary)
-                        .tracking(0.8)
+                        .tracking(1.2)
 
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: Spacing.xs) {
-                            ForEach(Array(keyMoments.enumerated()), id: \.offset) { _, moment in
-                                Button(action: {
-                                    onJumpToTimestamp?(moment.timestamp)
-                                }) {
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(moment.metric)
-                                            .font(AppFont.mono(size: 11, weight: .semibold))
-                                            .foregroundStyle(theme.accent)
-                                        Text(String(format: "@ %.1fs", moment.timestamp))
-                                            .font(AppFont.mono(size: 9))
-                                            .foregroundStyle(theme.textTertiary)
-                                    }
-                                    .padding(.horizontal, Spacing.sm)
-                                    .padding(.vertical, Spacing.xs)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: Radius.sm)
-                                            .fill(theme.surfaceSecondary)
-                                    )
-                                }
-                                .buttonStyle(.plain)
-                            }
-                        }
+                    Text("—")
+                        .font(AppFont.body(size: 11))
+                        .foregroundStyle(theme.textTertiary)
+
+                    Text(primaryTitle)
+                        .font(AppFont.body(size: 13, weight: .semibold))
+                        .foregroundStyle(theme.textPrimary)
+                        .lineLimit(1)
+
+                    Spacer()
+
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(theme.textTertiary)
+                        .rotationEffect(.degrees(isMainFixExpanded ? 180 : 0))
+                }
+                .padding(Spacing.md)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
+            // Expanded content: full rationale with highlighted spans
+            if isMainFixExpanded {
+                VStack(alignment: .leading, spacing: Spacing.sm) {
+                    if let text = fullRationale, !text.isEmpty {
+                        buildAnnotatedText(text)
+                            .font(AppFont.body(size: 14))
+                            .foregroundStyle(theme.textSecondary)
+                            .lineSpacing(3)
                     }
                 }
+                .padding(.horizontal, Spacing.md)
+                .padding(.bottom, Spacing.md)
+                .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
-        .padding(Spacing.md)
         .background(
             RoundedRectangle(cornerRadius: Radius.md)
                 .fill(theme.surfacePrimary)
@@ -993,25 +964,15 @@ struct VideoFocusInsightCard: View {
 
     private var primaryTitle: String {
         if let phase = selectedPhase {
-            return phase.displayName
+            return phase.displayName + " Focus"
         }
         if let stroke = selectedStroke {
-            return stroke.strokeType.displayName + " focus"
+            return stroke.strokeType.displayName + " Focus"
         }
-        return "Select a rep to see the main coaching focus"
+        return "Select a rep"
     }
 
-    /// Truncate subtitle to 2-3 sentences max
-    private var truncatedSubtitle: String? {
-        guard let text = rawSubtitle, !text.isEmpty else { return nil }
-        let sentences = text.components(separatedBy: ". ")
-        if sentences.count <= 3 {
-            return text
-        }
-        return sentences.prefix(3).joined(separator: ". ") + "..."
-    }
-
-    private var rawSubtitle: String? {
+    private var fullRationale: String? {
         if let phase = selectedPhase,
            let stroke = selectedStroke,
            let detail = stroke.phaseBreakdown?.detail(for: phase) {
@@ -1020,56 +981,73 @@ struct VideoFocusInsightCard: View {
         return selectedStroke?.gradingRationale ?? selectedStroke?.nextRepsPlan
     }
 
-    private var focusMetrics: [String] {
-        if let phase = selectedPhase,
-           let stroke = selectedStroke,
-           let detail = stroke.phaseBreakdown?.detail(for: phase) {
-            return detail.keyAngles
+    // MARK: - Annotated text with highlighted timestamps and angles
+
+    /// Builds a Text view with timestamps and angle measurements highlighted
+    private func buildAnnotatedText(_ text: String) -> Text {
+        let pattern = #"(\d+\.?\d*)\s*(seconds?|s\b)|(\d+)\s*°|(\d+)\s*degrees"#
+        guard let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive) else {
+            return Text(text)
         }
-        return selectedStroke?.overlayInstructions?.anglesToHighlight ?? []
-    }
 
-    /// Key moments parsed from overlay instructions and phase timestamps
-    private var keyMoments: [(metric: String, timestamp: Double)] {
-        guard let stroke = selectedStroke else { return [] }
-        var moments: [(String, Double)] = []
+        let nsText = text as NSString
+        let matches = regex.matches(in: text, range: NSRange(location: 0, length: nsText.length))
 
-        // From anglesToHighlight + phase timestamps
-        if let angles = stroke.overlayInstructions?.anglesToHighlight,
-           let breakdown = stroke.phaseBreakdown {
-            for angle in angles {
-                // Find matching phase timestamp
-                let timestamp: Double = breakdown.allPhases.compactMap { (_, detail) in
-                    detail?.timestamp
-                }.first ?? stroke.timestamp
+        guard !matches.isEmpty else {
+            return Text(text)
+        }
 
-                moments.append((angle, timestamp))
+        var result = Text("")
+        var lastEnd = 0
+
+        for match in matches {
+            let matchRange = match.range
+
+            // Add plain text before this match
+            if matchRange.location > lastEnd {
+                let plainRange = NSRange(location: lastEnd, length: matchRange.location - lastEnd)
+                let plainText = nsText.substring(with: plainRange)
+                result = result + Text(plainText)
             }
-        }
 
-        // If we got angles from phases with specific timestamps
-        if let breakdown = stroke.phaseBreakdown {
-            for (_, detail) in breakdown.allPhases {
-                guard let d = detail, d.status != .inZone else { continue }
-                for angle in d.keyAngles {
-                    if !moments.contains(where: { $0.0 == angle }) {
-                        moments.append((angle, d.timestamp))
-                    }
-                }
+            let matchedText = nsText.substring(with: matchRange)
+
+            // Check if this is a timestamp (has seconds/s suffix)
+            let isTimestamp = match.range(at: 1).location != NSNotFound || match.range(at: 2).location != NSNotFound
+
+            if isTimestamp {
+                // Highlighted timestamp — white + underline
+                result = result + Text(matchedText)
+                    .foregroundColor(.white)
+                    .underline(true, color: .white.opacity(0.4))
+            } else {
+                // Angle measurement — accent color
+                result = result + Text(matchedText)
+                    .foregroundColor(theme.accent)
+                    .bold()
             }
+
+            lastEnd = matchRange.location + matchRange.length
         }
 
-        return Array(moments.prefix(8))
+        // Remaining text
+        if lastEnd < nsText.length {
+            let remaining = nsText.substring(from: lastEnd)
+            result = result + Text(remaining)
+        }
+
+        return result
     }
 }
 
-// MARK: - Stroke Timeline Strip
+// MARK: - Stroke Timeline Strip (Segmented Control)
 
 struct StrokeTimelineStrip: View {
     let strokes: [StrokeAnalysisModel]
     @Binding var selectedStroke: StrokeAnalysisModel?
     let onSelectStroke: (StrokeAnalysisModel) -> Void
     private let theme = DesignSystem.current
+    private let haptic = UIImpactFeedbackGenerator(style: .light)
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
@@ -1086,29 +1064,22 @@ struct StrokeTimelineStrip: View {
             }
             .padding(.horizontal, Spacing.md)
 
-            ScrollViewReader { proxy in
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: Spacing.xs) {
-                        ForEach(strokes) { stroke in
-                            StrokeTimelineMarker(
-                                stroke: stroke,
-                                isSelected: selectedStroke?.id == stroke.id,
-                                onTap: {
-                                    onSelectStroke(stroke)
-                                    withAnimation(.easeInOut(duration: 0.2)) {
-                                        proxy.scrollTo(stroke.id, anchor: .center)
-                                    }
-                                }
-                            )
-                            .id(stroke.id)
-                        }
-                    }
+            if strokes.count <= 4 {
+                // Fixed single row — equal width segments
+                segmentedRow
                     .padding(.horizontal, Spacing.md)
-                }
-                .onChange(of: selectedStroke?.id) { _, newID in
-                    guard let newID else { return }
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        proxy.scrollTo(newID, anchor: .center)
+            } else {
+                // Scrollable connected segments
+                ScrollViewReader { proxy in
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        segmentedRow
+                            .padding(.horizontal, Spacing.md)
+                    }
+                    .onChange(of: selectedStroke?.id) { _, newID in
+                        guard let newID else { return }
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            proxy.scrollTo(newID, anchor: .center)
+                        }
                     }
                 }
             }
@@ -1117,49 +1088,64 @@ struct StrokeTimelineStrip: View {
         .background(theme.surfacePrimary)
     }
 
+    private var segmentedRow: some View {
+        HStack(spacing: 0) {
+            ForEach(Array(strokes.enumerated()), id: \.element.id) { index, stroke in
+                let isSelected = selectedStroke?.id == stroke.id
+
+                Button {
+                    haptic.impactOccurred()
+                    onSelectStroke(stroke)
+                } label: {
+                    HStack(spacing: 4) {
+                        Text(stroke.strokeType.displayName)
+                            .font(AppFont.body(size: 12, weight: .medium))
+                            .lineLimit(1)
+
+                        Text(normalizedGrade(stroke.grade))
+                            .font(AppFont.body(size: 11, weight: .bold))
+                    }
+                    .foregroundStyle(isSelected ? .white : theme.textSecondary)
+                    .frame(maxWidth: strokes.count <= 4 ? .infinity : nil)
+                    .padding(.horizontal, strokes.count > 4 ? Spacing.md : 0)
+                    .padding(.vertical, Spacing.sm)
+                    .background(
+                        isSelected
+                            ? AnyShapeStyle(theme.accent)
+                            : AnyShapeStyle(Color.clear)
+                    )
+                    .scaleEffect(isSelected ? 1.0 : 0.98)
+                    .animation(.easeInOut(duration: 0.15), value: isSelected)
+                }
+                .buttonStyle(.plain)
+                .id(stroke.id)
+
+                // Thin vertical divider between segments
+                if index < strokes.count - 1 {
+                    Rectangle()
+                        .fill(theme.surfaceSecondary)
+                        .frame(width: 1)
+                        .padding(.vertical, 6)
+                }
+            }
+        }
+        .background(
+            RoundedRectangle(cornerRadius: Radius.sm)
+                .fill(theme.surfaceSecondary.opacity(0.3))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: Radius.sm)
+                .stroke(theme.surfaceSecondary, lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: Radius.sm))
+    }
+
     private var summaryText: String {
         guard !strokes.isEmpty else { return "0 strokes" }
         let grades = strokes.map(\.grade)
         let avg = dominantGrade(in: grades) ?? "--"
         let best = grades.min { gradeRankValue($0) < gradeRankValue($1) } ?? "--"
         return "\(strokes.count) strokes • Avg: \(coachVerdict(for: avg)) • Best: \(coachVerdict(for: best))"
-    }
-}
-
-struct StrokeTimelineMarker: View {
-    let stroke: StrokeAnalysisModel
-    let isSelected: Bool
-    let onTap: () -> Void
-    private let theme = DesignSystem.current
-
-    var body: some View {
-        Button(action: onTap) {
-            HStack(spacing: Spacing.xs) {
-                Text(stroke.strokeType.displayName)
-                    .font(AppFont.body(size: 13, weight: .medium))
-                    .foregroundStyle(isSelected ? .white : theme.textPrimary)
-                    .lineLimit(1)
-
-                Text(normalizedGrade(stroke.grade))
-                    .font(AppFont.body(size: 12, weight: .bold))
-                    .foregroundStyle(isSelected ? .white.opacity(0.85) : gradeColor)
-            }
-            .padding(.horizontal, Spacing.md)
-            .frame(height: 40)
-            .background(
-                Capsule()
-                    .fill(isSelected ? theme.accent : theme.surfacePrimary)
-            )
-            .overlay(
-                Capsule()
-                    .stroke(isSelected ? theme.accent : theme.surfaceSecondary, lineWidth: 1)
-            )
-        }
-        .buttonStyle(.plain)
-    }
-
-    private var gradeColor: Color {
-        semanticGradeColor(for: stroke.grade, theme: theme)
     }
 }
 

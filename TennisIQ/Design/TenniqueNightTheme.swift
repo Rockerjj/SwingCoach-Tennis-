@@ -5,8 +5,8 @@ import SwiftUI
 struct TenniqueNightTheme: AppTheme {
     let name = "Tennique Night"
 
-    // Backgrounds — dark charcoal
-    let background = Color(hex: "1A1A1A")
+    // Backgrounds — deep emerald with charcoal cards
+    let background = Color(hex: "14532D")
     let surfacePrimary = Color(hex: "242424")
     let surfaceSecondary = Color(hex: "2E2E2E")
     let surfaceElevated = Color(hex: "303030")
@@ -27,8 +27,8 @@ struct TenniqueNightTheme: AppTheme {
     let warning = Color(hex: "F59E0B")
     let error = Color(hex: "EF4444")
 
-    // Nav / video area
-    static let navBackground = Color(hex: "1B4332")
+    // Nav / video area — darker than emerald background for contrast
+    static let navBackground = Color(hex: "0D2818")
 
     // Overlay
     let skeletonStroke = Color.white.opacity(0.92)

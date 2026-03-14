@@ -20,59 +20,51 @@ struct MainTabView: View {
     }
 
     var body: some View {
-        TabView(selection: $selectedTab) {
-            RecordView(switchToSessions: { selectedTab = .sessions })
-                .tag(Tab.record)
-                .tabItem {
-                    Label(Tab.record.rawValue, systemImage: Tab.record.icon)
+        VStack(spacing: 0) {
+            // Content area
+            Group {
+                switch selectedTab {
+                case .record:
+                    NavigationStack {
+                        RecordView(switchToSessions: { selectedTab = .sessions })
+                    }
+                case .sessions:
+                    SessionsListView()
+                case .progress:
+                    NavigationStack {
+                        ProgressDashboardView()
+                    }
+                case .profile:
+                    NavigationStack {
+                        ProfileView()
+                    }
                 }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-            SessionsListView()
-                .tag(Tab.sessions)
-                .tabItem {
-                    Label(Tab.sessions.rawValue, systemImage: Tab.sessions.icon)
-                }
+            // Custom compact tab bar
+            VStack(spacing: 0) {
+                Color.white.opacity(0.1)
+                    .frame(height: 0.5)
 
-            ProgressDashboardView()
-                .tag(Tab.progress)
-                .tabItem {
-                    Label(Tab.progress.rawValue, systemImage: Tab.progress.icon)
+                HStack(spacing: 0) {
+                    ForEach(Tab.allCases, id: \.self) { tab in
+                        Button {
+                            selectedTab = tab
+                        } label: {
+                            Image(systemName: tab.icon)
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundStyle(.white.opacity(selectedTab == tab ? 1.0 : 0.4))
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 36)
+                        }
+                    }
                 }
-
-            ProfileView()
-                .tag(Tab.profile)
-                .tabItem {
-                    Label(Tab.profile.rawValue, systemImage: Tab.profile.icon)
-                }
+                .background(Color(hex: "0D2818"))
+            }
+            .background(Color(hex: "0D2818"))
         }
-        .tint(.white)
-        .onAppear {
-            let tabBarAppearance = UITabBarAppearance()
-            tabBarAppearance.configureWithOpaqueBackground()
-            tabBarAppearance.backgroundColor = UIColor(Color(hex: "1B4332"))
-
-            // Compact layout
-            let itemAppearance = UITabBarItemAppearance(style: .compactInline)
-            itemAppearance.normal.iconColor = UIColor.gray
-            itemAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor.gray, .font: UIFont.systemFont(ofSize: 10)]
-            itemAppearance.selected.iconColor = UIColor.white
-            itemAppearance.selected.titleTextAttributes = [.foregroundColor: UIColor.white, .font: UIFont.systemFont(ofSize: 10)]
-
-            let stackedAppearance = UITabBarItemAppearance(style: .stacked)
-            stackedAppearance.normal.iconColor = UIColor.gray
-            stackedAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor.gray, .font: UIFont.systemFont(ofSize: 10)]
-            stackedAppearance.selected.iconColor = UIColor.white
-            stackedAppearance.selected.titleTextAttributes = [.foregroundColor: UIColor.white, .font: UIFont.systemFont(ofSize: 10)]
-
-            tabBarAppearance.stackedLayoutAppearance = stackedAppearance
-            tabBarAppearance.compactInlineLayoutAppearance = itemAppearance
-            tabBarAppearance.inlineLayoutAppearance = itemAppearance
-
-            UITabBar.appearance().standardAppearance = tabBarAppearance
-            UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
-        }
-        .background(
-            Color(hex: "1A1A1A").ignoresSafeArea()
-        )
+        .ignoresSafeArea(.keyboard)
+        .background(Color(hex: "0D2818").ignoresSafeArea(edges: .bottom))
     }
 }

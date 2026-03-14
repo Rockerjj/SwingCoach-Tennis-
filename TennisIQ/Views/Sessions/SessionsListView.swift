@@ -21,7 +21,8 @@ struct SessionsListView: View {
                 }
             }
             .navigationTitle("Sessions")
-            .toolbarColorScheme(.light, for: .navigationBar)
+            .toolbarColorScheme(.dark, for: .navigationBar)
+            .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 if failedSessionsCount > 0 {
                     ToolbarItem(placement: .topBarTrailing) {
