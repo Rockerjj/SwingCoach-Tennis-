@@ -6,7 +6,7 @@ struct TenniqueNightTheme: AppTheme {
     let name = "Tennique Night"
 
     // Backgrounds — deep emerald with charcoal cards
-    let background = Color(hex: "0D2818")
+    let background = Color(hex: "141A16")
     let surfacePrimary = Color(hex: "242424")
     let surfaceSecondary = Color(hex: "2E2E2E")
     let surfaceElevated = Color(hex: "303030")
@@ -28,7 +28,7 @@ struct TenniqueNightTheme: AppTheme {
     let error = Color(hex: "EF4444")
 
     // Nav / video area — darker than emerald background for contrast
-    static let navBackground = Color(hex: "0D2818")
+    static let navBackground = Color(hex: "0F1411")
 
     // Overlay
     let skeletonStroke = Color.white.opacity(0.92)
