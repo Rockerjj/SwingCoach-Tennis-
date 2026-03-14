@@ -25,6 +25,7 @@ struct TennisIQApp: App {
     var body: some Scene {
         WindowGroup {
             RootView()
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                 .environmentObject(authService)
                 .environmentObject(subscriptionService)
                 .modelContainer(sharedModelContainer)

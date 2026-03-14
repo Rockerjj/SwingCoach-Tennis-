@@ -33,10 +33,16 @@ struct ProgressDashboardView: View {
                     }
                     .padding(Spacing.md)
                     .padding(.bottom, Spacing.xxl)
+                    .frame(maxWidth: .infinity, alignment: .topLeading)
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .navigationTitle("Progress")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(theme.background, for: .navigationBar)
+        .toolbarBackground(.visible, for: .navigationBar)
         .toolbarColorScheme(.dark, for: .navigationBar)
     }
 

@@ -316,22 +316,23 @@ struct AnalysisResultsView: View {
                 analysisContent
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .navigationBarTitleDisplayMode(.inline)
-        .toolbarBackground(.hidden, for: .navigationBar)
+        .toolbarBackground(theme.background, for: .navigationBar)
+        .toolbarBackground(.visible, for: .navigationBar)
         .toolbarColorScheme(.dark, for: .navigationBar)
         .toolbar {
             ToolbarItem(placement: .principal) {
                 Text(session.recordedAt.formatted(.dateTime.month(.wide).day()))
                     .font(AppFont.body(size: 13, weight: .medium))
-                    .foregroundStyle(.white.opacity(0.7))
-                    .shadow(color: .black.opacity(0.5), radius: 2, y: 1)
+                    .foregroundStyle(theme.textSecondary)
             }
             ToolbarItem(placement: .topBarTrailing) {
                 if session.status != .failed && !viewModel.isLoading {
                     Button(action: shareAnalysis) {
                         Image(systemName: "square.and.arrow.up")
                             .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(.white.opacity(0.7))
+                            .foregroundStyle(theme.textSecondary)
                     }
                 }
             }
@@ -455,7 +456,6 @@ struct AnalysisResultsView: View {
                 .frame(maxWidth: .infinity)
                 .frame(height: heroVideoHeight)
                 .background(DesignSystem.current.navBackground)
-                .ignoresSafeArea(edges: .top)
                 .clipped()
 
                 // 2. Stroke selector pills
@@ -533,7 +533,9 @@ struct AnalysisResultsView: View {
                 // 8. Tactical Notes
                 TacticalNotesCard(notes: session.tacticalNotes)
             }
+            .frame(maxWidth: .infinity, alignment: .topLeading)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 
     private var selectedPhaseAngles: [String] {
@@ -755,10 +757,10 @@ struct VideoControlsOverlay: View {
         Button(action: { showOverlay.toggle() }) {
             Text(showOverlay ? "Overlay On" : "Clean View")
                 .font(AppFont.body(size: 11, weight: .semibold))
-                .foregroundStyle(.white.opacity(showOverlay ? 0.95 : 0.72))
+                .foregroundStyle(showOverlay ? theme.textPrimary.opacity(0.95) : theme.textSecondary.opacity(0.9))
                 .padding(.horizontal, 10)
                 .padding(.vertical, 6)
-                .background(Color.black.opacity(0.18))
+                .background(theme.navBackground.opacity(0.82))
                 .clipShape(Capsule())
         }
         .buttonStyle(.plain)
@@ -772,10 +774,10 @@ struct VideoControlsOverlay: View {
         } label: {
             Text(speedLabel(playback.selectedSpeed))
                 .font(AppFont.mono(size: 12, weight: .bold))
-                .foregroundStyle(.white.opacity(0.92))
+                .foregroundStyle(theme.textPrimary.opacity(0.92))
                 .padding(.horizontal, 10)
                 .padding(.vertical, 6)
-                .background(Color.black.opacity(0.18))
+                .background(theme.navBackground.opacity(0.82))
                 .clipShape(Capsule())
         }
     }
@@ -784,10 +786,10 @@ struct VideoControlsOverlay: View {
         Button(action: action) {
             Text(title)
                 .font(AppFont.body(size: 11, weight: .semibold))
-                .foregroundStyle(.white.opacity(isActive ? 0.96 : 0.72))
+                .foregroundStyle(isActive ? theme.textPrimary.opacity(0.96) : theme.textSecondary.opacity(0.88))
                 .padding(.horizontal, 10)
                 .padding(.vertical, 6)
-                .background(Color.black.opacity(isActive ? 0.22 : 0.14))
+                .background(theme.navBackground.opacity(isActive ? 0.88 : 0.72))
                 .clipShape(Capsule())
         }
         .buttonStyle(.plain)
@@ -831,12 +833,12 @@ struct SpeedPicker: View {
                 Button(action: { onSelect(speed) }) {
                     Text(speedLabel(speed))
                         .font(AppFont.mono(size: 11, weight: .bold))
-                        .foregroundStyle(selectedSpeed == speed ? theme.textOnAccent : .white.opacity(0.8))
+                        .foregroundStyle(selectedSpeed == speed ? theme.textOnAccent : theme.textSecondary.opacity(0.88))
                         .padding(.horizontal, 8)
                         .padding(.vertical, 5)
                         .background(
                             Capsule()
-                                .fill(selectedSpeed == speed ? theme.accent : Color.black.opacity(0.3))
+                                .fill(selectedSpeed == speed ? theme.accent : theme.navBackground.opacity(0.78))
                         )
                 }
             }
@@ -844,7 +846,7 @@ struct SpeedPicker: View {
         .padding(3)
         .background(
             Capsule()
-                .fill(Color.black.opacity(0.4))
+                .fill(theme.navBackground.opacity(0.88))
         )
     }
 
@@ -865,11 +867,11 @@ struct AutoSlowToggle: View {
         Button(action: onToggle) {
             Image(systemName: isEnabled ? "slowmo" : "gauge.with.dots.needle.bottom.50percent")
                 .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(isEnabled ? theme.textOnAccent : .white.opacity(0.8))
+                .foregroundStyle(isEnabled ? theme.textOnAccent : theme.textSecondary.opacity(0.88))
                 .frame(width: 36, height: 36)
                 .background(
                     Circle()
-                        .fill(isEnabled ? theme.accent.opacity(0.85) : Color.black.opacity(0.4))
+                        .fill(isEnabled ? theme.accent.opacity(0.85) : theme.navBackground.opacity(0.84))
                 )
         }
         .accessibilityLabel(isEnabled ? "Auto slow motion on" : "Auto slow motion off")
@@ -1085,7 +1087,8 @@ struct StrokeSelectorRow: View {
                         .id(stroke.id)
                     }
                 }
-                .padding(.horizontal, Spacing.md)
+                .padding(.leading, Spacing.md)
+                .padding(.trailing, Spacing.lg)
                 .padding(.vertical, Spacing.sm)
             }
             .onChange(of: selectedStroke?.id) { _, newID in
@@ -1328,7 +1331,7 @@ struct GradeBadge: View {
                 .foregroundStyle(gradeColor)
 
             Text(coachVerdict(for: grade))
-                .font(AppFont.body(size: 9, weight: .bold))
+                .font(AppFont.body(size: 10, weight: .bold))
                 .foregroundStyle(gradeColor)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
@@ -1970,13 +1973,13 @@ struct PhaseTimelineStrip: View {
 
                 // Score badge below circle
                 Text("\(score)")
-                    .font(AppFont.mono(size: 9, weight: .bold))
-                    .foregroundStyle(isSelected ? .white : theme.textPrimary)
+                    .font(AppFont.mono(size: 10, weight: .bold))
+                    .foregroundStyle(isSelected ? theme.textOnAccent : theme.textPrimary)
 
                 // Full phase name
                 Text(phase.displayName)
-                    .font(.system(size: 7, weight: .medium))
-                    .foregroundStyle(isSelected ? .white : theme.textTertiary)
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundStyle(isSelected ? theme.textOnAccent : theme.textTertiary)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
                     .frame(height: 22, alignment: .top)

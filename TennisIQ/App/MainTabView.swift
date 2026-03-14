@@ -2,6 +2,7 @@ import SwiftUI
 
 struct MainTabView: View {
     @State private var selectedTab: Tab = .record
+    private let theme = DesignSystem.current
 
     enum Tab: String, CaseIterable {
         case record = "Record"
@@ -20,35 +21,54 @@ struct MainTabView: View {
     }
 
     var body: some View {
-        ZStack {
-            switch selectedTab {
-            case .record:
-                NavigationStack {
-                    RecordView(switchToSessions: { selectedTab = .sessions })
-                }
-            case .sessions:
-                NavigationStack {
-                    SessionsListView()
-                }
-            case .progress:
-                NavigationStack {
-                    ProgressDashboardView()
-                }
-            case .profile:
-                NavigationStack {
-                    ProfileView()
-                }
-            }
+        ZStack(alignment: .bottom) {
+            theme.background
+                .ignoresSafeArea()
+
+            currentTabContent
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .safeAreaInset(edge: .bottom, spacing: 0) {
             compactTabBar
         }
     }
 
+    @ViewBuilder
+    private var currentTabContent: some View {
+        switch selectedTab {
+        case .record:
+            tabNavigationContainer {
+                RecordView(switchToSessions: { selectedTab = .sessions })
+            }
+        case .sessions:
+            tabNavigationContainer {
+                SessionsListView()
+            }
+        case .progress:
+            tabNavigationContainer {
+                ProgressDashboardView()
+            }
+        case .profile:
+            tabNavigationContainer {
+                ProfileView()
+            }
+        }
+    }
+
+    private func tabNavigationContainer<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        NavigationStack {
+            content()
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                .background(theme.background)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .background(theme.background)
+    }
+
     private var compactTabBar: some View {
         VStack(spacing: 0) {
-            Color.white.opacity(0.1)
+            theme.surfaceSecondary.opacity(0.8)
                 .frame(height: 0.5)
 
             HStack(spacing: 0) {
@@ -58,13 +78,18 @@ struct MainTabView: View {
                     } label: {
                         Image(systemName: tab.icon)
                             .font(.system(size: 16, weight: .medium))
-                            .foregroundStyle(.white.opacity(selectedTab == tab ? 1.0 : 0.4))
+                            .foregroundStyle(selectedTab == tab ? theme.textPrimary : theme.textTertiary)
                             .frame(maxWidth: .infinity)
-                            .frame(height: 36)
+                            .frame(minWidth: 44, minHeight: 44)
+                            .contentShape(Rectangle())
                     }
+                    .buttonStyle(.plain)
                 }
             }
+            .padding(.horizontal, Spacing.sm)
+            .padding(.top, Spacing.xs)
+            .padding(.bottom, max(Spacing.sm, 12))
         }
-        .background(DesignSystem.current.navBackground)
+        .background(theme.navBackground.ignoresSafeArea(edges: .bottom))
     }
 }

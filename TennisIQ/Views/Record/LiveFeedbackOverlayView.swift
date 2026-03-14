@@ -62,7 +62,7 @@ struct LiveFeedbackOverlayView: View {
             }
 
             Text("FORM")
-                .font(AppFont.body(size: 8, weight: .semibold))
+                .font(AppFont.body(size: 10, weight: .semibold))
                 .foregroundStyle(.white.opacity(0.7))
                 .textCase(.uppercase)
                 .tracking(0.5)

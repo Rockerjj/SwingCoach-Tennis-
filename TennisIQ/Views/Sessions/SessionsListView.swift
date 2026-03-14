@@ -19,9 +19,12 @@ struct SessionsListView: View {
                 sessionsList
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .navigationTitle("Sessions")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(theme.background, for: .navigationBar)
+        .toolbarBackground(.visible, for: .navigationBar)
         .toolbarColorScheme(.dark, for: .navigationBar)
-        .navigationBarTitleDisplayMode(.large)
         .toolbar {
             if failedSessionsCount > 0 {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -88,9 +91,12 @@ struct SessionsListView: View {
                     .buttonStyle(.plain)
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .topLeading)
             .padding(.horizontal, Spacing.md)
             .padding(.top, Spacing.sm)
+            .padding(.bottom, Spacing.xxl)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 
     // MARK: - Empty State
@@ -113,6 +119,7 @@ struct SessionsListView: View {
                     .lineSpacing(3)
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 

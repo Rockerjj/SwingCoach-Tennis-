@@ -18,6 +18,7 @@ struct RecordView: View {
                 cameraScreen
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .task {
             await viewModel.setup()
         }
@@ -117,6 +118,7 @@ struct RecordView: View {
                 Spacer()
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 
     // MARK: - Session Saved Screen
@@ -182,6 +184,7 @@ struct RecordView: View {
                 .padding(.bottom, Spacing.xl)
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 
     // MARK: - Positioning Guide
