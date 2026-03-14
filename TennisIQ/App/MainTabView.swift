@@ -60,11 +60,11 @@ struct MainTabView: View {
                         }
                     }
                 }
-                .background(Color(hex: "0D2818"))
+                .background(TenniqueNightTheme.navBackground)
             }
-            .background(Color(hex: "0D2818"))
+            .background(TenniqueNightTheme.navBackground)
         }
         .ignoresSafeArea(.keyboard)
-        .background(Color(hex: "0D2818").ignoresSafeArea(edges: .bottom))
+        .background(DesignSystem.current.background.ignoresSafeArea())
     }
 }

@@ -28,7 +28,7 @@ struct TennisIQApp: App {
                 .environmentObject(authService)
                 .environmentObject(subscriptionService)
                 .modelContainer(sharedModelContainer)
-                .preferredColorScheme(.light)
+                .preferredColorScheme(.dark)
                 .onAppear {
                     analytics.trackEvent(.appOpened)
                 }
