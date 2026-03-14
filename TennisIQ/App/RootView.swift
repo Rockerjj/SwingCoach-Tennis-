@@ -15,7 +15,6 @@ struct RootView: View {
             }
         }
         .animation(.easeInOut(duration: 0.3), value: hasCompletedOnboarding)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .animation(.easeInOut(duration: 0.3), value: authService.isAuthenticated)
     }
 }

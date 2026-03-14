@@ -17,29 +17,27 @@ struct ProgressDashboardView: View {
     private var latest: ProgressSnapshotModel? { snapshots.first }
 
     var body: some View {
-        NavigationStack {
-            ZStack {
-                theme.background.ignoresSafeArea()
+        ZStack {
+            theme.background.ignoresSafeArea()
 
-                if snapshots.isEmpty {
-                    emptyProgressState
-                } else {
-                    ScrollView {
-                        VStack(spacing: Spacing.md) {
-                            overallScoreCard
-                            strokeBreakdownGrid
-                            weeklyFocusCard
-                            progressChart
-                            sessionStreakCard
-                        }
-                        .padding(Spacing.md)
-                        .padding(.bottom, Spacing.xxl)
+            if snapshots.isEmpty {
+                emptyProgressState
+            } else {
+                ScrollView {
+                    VStack(spacing: Spacing.md) {
+                        overallScoreCard
+                        strokeBreakdownGrid
+                        weeklyFocusCard
+                        progressChart
+                        sessionStreakCard
                     }
+                    .padding(Spacing.md)
+                    .padding(.bottom, Spacing.xxl)
                 }
             }
-            .navigationTitle("Progress")
-            .toolbarColorScheme(.dark, for: .navigationBar)
         }
+        .navigationTitle("Progress")
+        .toolbarColorScheme(.dark, for: .navigationBar)
     }
 
     // MARK: - Overall Score

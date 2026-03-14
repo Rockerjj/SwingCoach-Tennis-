@@ -20,14 +20,16 @@ struct MainTabView: View {
     }
 
     var body: some View {
-        Group {
+        ZStack {
             switch selectedTab {
             case .record:
                 NavigationStack {
                     RecordView(switchToSessions: { selectedTab = .sessions })
                 }
             case .sessions:
-                SessionsListView()
+                NavigationStack {
+                    SessionsListView()
+                }
             case .progress:
                 NavigationStack {
                     ProgressDashboardView()
@@ -38,6 +40,7 @@ struct MainTabView: View {
                 }
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .safeAreaInset(edge: .bottom, spacing: 0) {
             compactTabBar
         }

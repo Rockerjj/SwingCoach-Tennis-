@@ -9,26 +9,24 @@ struct ProfileView: View {
     let theme = DesignSystem.current
 
     var body: some View {
-        NavigationStack {
-            ZStack {
-                theme.background.ignoresSafeArea()
+        ZStack {
+            theme.background.ignoresSafeArea()
 
-                ScrollView {
-                    VStack(spacing: Spacing.lg) {
-                        profileHeader
-                        subscriptionCard
-                        settingsSection
-                        handednessSection
-                        themeSection
-                        legalSection
-                        signOutButton
-                    }
-                    .padding(Spacing.md)
+            ScrollView {
+                VStack(spacing: Spacing.lg) {
+                    profileHeader
+                    subscriptionCard
+                    settingsSection
+                    handednessSection
+                    themeSection
+                    legalSection
+                    signOutButton
                 }
+                .padding(Spacing.md)
             }
-            .navigationTitle("Profile")
-            .toolbarColorScheme(.dark, for: .navigationBar)
         }
+        .navigationTitle("Profile")
+        .toolbarColorScheme(.dark, for: .navigationBar)
     }
 
     // MARK: - Profile Header

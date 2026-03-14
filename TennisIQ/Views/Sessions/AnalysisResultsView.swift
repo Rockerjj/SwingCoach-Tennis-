@@ -437,9 +437,7 @@ struct AnalysisResultsView: View {
                             wristPoints: playback.racketTrajectory,
                             videoNaturalSize: playback.videoNaturalSize
                         )
-                        .containerRelativeFrame(.vertical) { height, _ in
-                            height * 0.62
-                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .allowsHitTesting(false)
                     }
 
@@ -450,12 +448,12 @@ struct AnalysisResultsView: View {
                             highlightedJoints: highlightedJointNames,
                             highlightAngles: selectedPhaseAngles
                         )
-                        .containerRelativeFrame(.vertical) { height, _ in
-                            height * 0.62
-                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .allowsHitTesting(false)
                     }
                 }
+                .frame(maxWidth: .infinity)
+                .frame(height: heroVideoHeight)
                 .background(DesignSystem.current.navBackground)
                 .ignoresSafeArea(edges: .top)
                 .clipped()
@@ -545,6 +543,10 @@ struct AnalysisResultsView: View {
               let detail = breakdown.detail(for: phase)
         else { return [] }
         return detail.keyAngles
+    }
+
+    private var heroVideoHeight: CGFloat {
+        UIScreen.main.bounds.height * 0.68
     }
 }
 
@@ -664,8 +666,7 @@ struct LiveVideoPlayerSection: View {
         if hasVideo {
             ZStack {
                 PlayerLayerView(player: playback.player)
-                    .frame(maxWidth: .infinity)
-                    .containerRelativeFrame(.vertical) { height, _ in height * 0.68 }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .clipped()
                     .onTapGesture { playback.togglePlayPause() }
 
@@ -684,8 +685,7 @@ struct LiveVideoPlayerSection: View {
     private var noVideoPlaceholder: some View {
         Rectangle()
             .fill(theme.surfaceSecondary)
-            .frame(maxWidth: .infinity)
-            .containerRelativeFrame(.vertical) { height, _ in height * 0.68 }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .overlay {
                 VStack(spacing: Spacing.xs) {
                     Image(systemName: "video.slash")

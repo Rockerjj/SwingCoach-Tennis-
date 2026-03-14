@@ -10,45 +10,43 @@ struct SessionsListView: View {
     let theme = DesignSystem.current
 
     var body: some View {
-        NavigationStack {
-            ZStack {
-                theme.background.ignoresSafeArea()
+        ZStack {
+            theme.background.ignoresSafeArea()
 
-                if sessions.isEmpty {
-                    emptyState
-                } else {
-                    sessionsList
+            if sessions.isEmpty {
+                emptyState
+            } else {
+                sessionsList
+            }
+        }
+        .navigationTitle("Sessions")
+        .toolbarColorScheme(.dark, for: .navigationBar)
+        .navigationBarTitleDisplayMode(.large)
+        .toolbar {
+            if failedSessionsCount > 0 {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(isRetryingFailed ? "Retrying..." : "Retry Failed (\(failedSessionsCount))") {
+                        Task { await retryFailedSessions() }
+                    }
+                    .disabled(isRetryingFailed)
                 }
             }
-            .navigationTitle("Sessions")
-            .toolbarColorScheme(.dark, for: .navigationBar)
-            .navigationBarTitleDisplayMode(.large)
-            .toolbar {
-                if failedSessionsCount > 0 {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button(isRetryingFailed ? "Retrying..." : "Retry Failed (\(failedSessionsCount))") {
-                            Task { await retryFailedSessions() }
-                        }
-                        .disabled(isRetryingFailed)
-                    }
+        }
+        .overlay(alignment: .top) {
+            if isRetryingFailed {
+                VStack(spacing: Spacing.xs) {
+                    ProgressView(value: retryTotal == 0 ? 0 : Double(retryProgress), total: Double(max(retryTotal, 1)))
+                        .tint(theme.accent)
+                    Text("Retrying failed sessions (\(retryProgress)/\(retryTotal))")
+                        .font(AppFont.body(size: 12))
+                        .foregroundStyle(theme.textSecondary)
                 }
-            }
-            .overlay(alignment: .top) {
-                if isRetryingFailed {
-                    VStack(spacing: Spacing.xs) {
-                        ProgressView(value: retryTotal == 0 ? 0 : Double(retryProgress), total: Double(max(retryTotal, 1)))
-                            .tint(theme.accent)
-                        Text("Retrying failed sessions (\(retryProgress)/\(retryTotal))")
-                            .font(AppFont.body(size: 12))
-                            .foregroundStyle(theme.textSecondary)
-                    }
-                    .padding(Spacing.sm)
-                    .background(
-                        RoundedRectangle(cornerRadius: Radius.md)
-                            .fill(theme.surfacePrimary)
-                    )
-                    .padding(.top, Spacing.sm)
-                }
+                .padding(Spacing.sm)
+                .background(
+                    RoundedRectangle(cornerRadius: Radius.md)
+                        .fill(theme.surfacePrimary)
+                )
+                .padding(.top, Spacing.sm)
             }
         }
     }
