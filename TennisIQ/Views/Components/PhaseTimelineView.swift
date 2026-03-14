@@ -35,28 +35,28 @@ struct PhaseTimelineView: View {
                 // Icon circle
                 ZStack {
                     Circle()
-                        .fill(isSelected ? theme.accent : theme.surfacePrimary)
+                        .fill(isSelected ? TenniqueNightTheme.navBackground : theme.surfacePrimary)
                         .frame(width: isSelected ? 32 : 28, height: isSelected ? 32 : 28)
 
                     Circle()
-                        .stroke(isSelected ? theme.accent : borderColor(status), lineWidth: 2)
+                        .stroke(isSelected ? TenniqueNightTheme.navBackground : borderColor(status), lineWidth: 2)
                         .frame(width: isSelected ? 32 : 28, height: isSelected ? 32 : 28)
 
                     Image(systemName: phase.icon)
                         .font(.system(size: isSelected ? 13 : 11, weight: .semibold))
-                        .foregroundStyle(isSelected ? .white : theme.accent)
+                        .foregroundStyle(isSelected ? .white : theme.textSecondary)
                 }
-                .shadow(color: isSelected ? theme.accent.opacity(0.2) : .clear, radius: 8, y: 2)
+                .shadow(color: isSelected ? theme.textPrimary.opacity(0.15) : .clear, radius: 8, y: 2)
 
                 // Score badge below circle
                 Text("\(score)")
                     .font(AppFont.mono(size: 9, weight: .bold))
-                    .foregroundStyle(isSelected ? theme.accent : theme.textSecondary)
+                    .foregroundStyle(isSelected ? .white : theme.textPrimary)
 
                 // Full phase name
                 Text(phase.displayName)
                     .font(.system(size: 7, weight: .medium))
-                    .foregroundStyle(isSelected ? theme.accent : theme.textTertiary)
+                    .foregroundStyle(isSelected ? .white : theme.textTertiary)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
                     .frame(width: 50)

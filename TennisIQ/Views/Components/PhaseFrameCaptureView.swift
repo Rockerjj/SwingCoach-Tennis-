@@ -120,7 +120,8 @@ struct PhaseFrameCaptureView: View {
         }
         .frame(height: height)
         .clipShape(RoundedRectangle(cornerRadius: Radius.sm))
-        .task {
+        .task(id: timestamp) {
+            frameImage = nil
             await extractFrame()
         }
         .onAppear {
@@ -184,21 +185,27 @@ struct PhaseFrameCaptureView: View {
 
     private func angleLabelOverlay(jointMap: [String: JointData], size: CGSize, imageSize: CGSize) -> some View {
         let crop = aspectFillCrop(videoSize: imageSize, viewSize: size)
+        // Only show top 2 most relevant labels (lowest-scoring / first listed)
+        let visibleLabels = Array(angleLabels.prefix(2))
 
         return ZStack {
-            ForEach(Array(angleLabels.enumerated()), id: \.offset) { _, label in
+            ForEach(Array(visibleLabels.enumerated()), id: \.offset) { _, label in
                 if let joint = jointMap[label.joint] {
                     let pos = toScreen(joint, crop: crop, videoSize: imageSize)
                     Text(label.text)
-                        .font(AppFont.mono(size: 8, weight: .semibold))
-                        .foregroundStyle(theme.angleAnnotation)
+                        .font(AppFont.mono(size: 7, weight: .medium))
+                        .foregroundStyle(.white)
                         .padding(.horizontal, 4)
                         .padding(.vertical, 2)
                         .background(
                             RoundedRectangle(cornerRadius: 4)
-                                .fill(Color.black.opacity(0.7))
+                                .fill(Color.black.opacity(0.5))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 4)
+                                        .stroke(Color.white.opacity(0.2), lineWidth: 0.5)
+                                )
                         )
-                        .position(x: pos.x + 30, y: pos.y - 14)
+                        .position(x: pos.x + 36, y: pos.y - 18)
                 }
             }
         }
@@ -209,8 +216,8 @@ struct PhaseFrameCaptureView: View {
         let asset = AVURLAsset(url: url)
         let generator = AVAssetImageGenerator(asset: asset)
         generator.appliesPreferredTrackTransform = true
-        generator.requestedTimeToleranceBefore = CMTime(seconds: 0.1, preferredTimescale: 600)
-        generator.requestedTimeToleranceAfter = CMTime(seconds: 0.1, preferredTimescale: 600)
+        generator.requestedTimeToleranceBefore = .zero
+        generator.requestedTimeToleranceAfter = .zero
 
         let time = CMTime(seconds: timestamp, preferredTimescale: 600)
         do {

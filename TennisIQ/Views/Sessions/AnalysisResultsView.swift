@@ -317,21 +317,21 @@ struct AnalysisResultsView: View {
             }
         }
         .navigationBarTitleDisplayMode(.inline)
-        .toolbarBackground(TenniqueNightTheme.navBackground, for: .navigationBar)
-        .toolbarBackground(.visible, for: .navigationBar)
+        .toolbarBackground(.hidden, for: .navigationBar)
         .toolbarColorScheme(.dark, for: .navigationBar)
         .toolbar {
             ToolbarItem(placement: .principal) {
-                Text(session.recordedAt.formatted(date: .abbreviated, time: .shortened))
-                    .font(AppFont.body(size: 15, weight: .medium))
-                    .foregroundStyle(theme.textPrimary)
+                Text(session.recordedAt.formatted(.dateTime.month(.wide).day()))
+                    .font(AppFont.body(size: 13, weight: .medium))
+                    .foregroundStyle(.white.opacity(0.7))
+                    .shadow(color: .black.opacity(0.5), radius: 2, y: 1)
             }
             ToolbarItem(placement: .topBarTrailing) {
                 if session.status != .failed && !viewModel.isLoading {
                     Button(action: shareAnalysis) {
                         Image(systemName: "square.and.arrow.up")
                             .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(theme.accent)
+                            .foregroundStyle(.white.opacity(0.7))
                     }
                 }
             }
@@ -1994,10 +1994,10 @@ struct PhaseTimelineStrip: View {
                 HStack(spacing: 5) {
                     Image(systemName: "timeline.selection")
                         .font(.system(size: 10, weight: .bold))
-                        .foregroundStyle(theme.accent)
+                        .foregroundStyle(theme.textSecondary)
                     Text("PHASE BREAKDOWN")
                         .font(AppFont.body(size: 11, weight: .bold))
-                        .foregroundStyle(theme.accent)
+                        .foregroundStyle(theme.textSecondary)
                         .tracking(0.5)
                 }
                 .padding(.horizontal, Spacing.md)
@@ -2054,28 +2054,28 @@ struct PhaseTimelineStrip: View {
                 // Icon circle
                 ZStack {
                     Circle()
-                        .fill(isSelected ? theme.accent : theme.surfacePrimary)
+                        .fill(isSelected ? TenniqueNightTheme.navBackground : theme.surfacePrimary)
                         .frame(width: isSelected ? 32 : 28, height: isSelected ? 32 : 28)
 
                     Circle()
-                        .stroke(isSelected ? theme.accent : borderColor(status), lineWidth: 2)
+                        .stroke(isSelected ? TenniqueNightTheme.navBackground : borderColor(status), lineWidth: 2)
                         .frame(width: isSelected ? 32 : 28, height: isSelected ? 32 : 28)
 
                     Image(systemName: phase.icon)
                         .font(.system(size: isSelected ? 13 : 11, weight: .semibold))
-                        .foregroundStyle(isSelected ? .white : theme.accent)
+                        .foregroundStyle(isSelected ? .white : theme.textSecondary)
                 }
-                .shadow(color: isSelected ? theme.accent.opacity(0.2) : .clear, radius: 8, y: 2)
+                .shadow(color: isSelected ? theme.textPrimary.opacity(0.15) : .clear, radius: 8, y: 2)
 
                 // Score badge below circle
                 Text("\(score)")
                     .font(AppFont.mono(size: 9, weight: .bold))
-                    .foregroundStyle(isSelected ? theme.accent : theme.textSecondary)
+                    .foregroundStyle(isSelected ? .white : theme.textPrimary)
 
                 // Full phase name
                 Text(phase.displayName)
                     .font(.system(size: 7, weight: .medium))
-                    .foregroundStyle(isSelected ? theme.accent : theme.textTertiary)
+                    .foregroundStyle(isSelected ? .white : theme.textTertiary)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
                     .frame(height: 22, alignment: .top)

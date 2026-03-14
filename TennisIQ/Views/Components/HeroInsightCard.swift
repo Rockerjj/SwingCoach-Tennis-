@@ -32,10 +32,10 @@ struct HeroInsightCard: View {
                 HStack(spacing: Spacing.xxs) {
                     Image(systemName: "star.fill")
                         .font(.system(size: 10))
-                        .foregroundStyle(theme.accent)
+                        .foregroundStyle(theme.textSecondary)
                     Text("YOUR TOP PRIORITIES")
                         .font(AppFont.body(size: 10, weight: .bold))
-                        .foregroundStyle(theme.accent)
+                        .foregroundStyle(theme.textSecondary)
                         .tracking(1)
                 }
 
@@ -93,16 +93,16 @@ struct HeroInsightCard: View {
             HStack(spacing: Spacing.xxs) {
                 Image(systemName: "arrow.up.right")
                     .font(.system(size: 8, weight: .bold))
-                    .foregroundStyle(theme.accent)
+                    .foregroundStyle(theme.textSecondary)
                 Text("HIGH IMPACT")
                     .font(AppFont.body(size: 10, weight: .bold))
-                    .foregroundStyle(theme.accent)
+                    .foregroundStyle(theme.textSecondary)
                     .tracking(0.5)
             }
             .padding(.horizontal, Spacing.xs)
             .padding(.vertical, 3)
             .background(
-                Capsule().fill(theme.accentMuted)
+                Capsule().fill(theme.surfaceSecondary)
             )
         }
     }
