@@ -38,7 +38,7 @@ struct ProgressDashboardView: View {
                 }
             }
             .navigationTitle("Progress")
-            .toolbarColorScheme(.light, for: .navigationBar)
+            .toolbarColorScheme(.dark, for: .navigationBar)
         }
     }
 

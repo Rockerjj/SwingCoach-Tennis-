@@ -35,11 +35,11 @@ struct PhaseTimelineView: View {
                 // Icon circle
                 ZStack {
                     Circle()
-                        .fill(isSelected ? TenniqueNightTheme.navBackground : theme.surfacePrimary)
+                        .fill(isSelected ? DesignSystem.current.navBackground : theme.surfacePrimary)
                         .frame(width: isSelected ? 32 : 28, height: isSelected ? 32 : 28)
 
                     Circle()
-                        .stroke(isSelected ? TenniqueNightTheme.navBackground : borderColor(status), lineWidth: 2)
+                        .stroke(isSelected ? DesignSystem.current.navBackground : borderColor(status), lineWidth: 2)
                         .frame(width: isSelected ? 32 : 28, height: isSelected ? 32 : 28)
 
                     Image(systemName: phase.icon)

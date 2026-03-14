@@ -20,51 +20,53 @@ struct MainTabView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            // Content area
-            Group {
-                switch selectedTab {
-                case .record:
-                    NavigationStack {
-                        RecordView(switchToSessions: { selectedTab = .sessions })
-                    }
-                case .sessions:
-                    SessionsListView()
-                case .progress:
-                    NavigationStack {
-                        ProgressDashboardView()
-                    }
-                case .profile:
-                    NavigationStack {
-                        ProfileView()
-                    }
-                }
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-            // Custom compact tab bar
+        GeometryReader { geometry in
             VStack(spacing: 0) {
-                Color.white.opacity(0.1)
-                    .frame(height: 0.5)
-
-                HStack(spacing: 0) {
-                    ForEach(Tab.allCases, id: \.self) { tab in
-                        Button {
-                            selectedTab = tab
-                        } label: {
-                            Image(systemName: tab.icon)
-                                .font(.system(size: 16, weight: .medium))
-                                .foregroundStyle(.white.opacity(selectedTab == tab ? 1.0 : 0.4))
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 36)
+                // Content area
+                Group {
+                    switch selectedTab {
+                    case .record:
+                        NavigationStack {
+                            RecordView(switchToSessions: { selectedTab = .sessions })
+                        }
+                    case .sessions:
+                        SessionsListView()
+                    case .progress:
+                        NavigationStack {
+                            ProgressDashboardView()
+                        }
+                    case .profile:
+                        NavigationStack {
+                            ProfileView()
                         }
                     }
                 }
-                .background(TenniqueNightTheme.navBackground)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                // Custom compact tab bar
+                VStack(spacing: 0) {
+                    Color.white.opacity(0.1)
+                        .frame(height: 0.5)
+
+                    HStack(spacing: 0) {
+                        ForEach(Tab.allCases, id: \.self) { tab in
+                            Button {
+                                selectedTab = tab
+                            } label: {
+                                Image(systemName: tab.icon)
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundStyle(.white.opacity(selectedTab == tab ? 1.0 : 0.4))
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 36)
+                            }
+                        }
+                    }
+                }
+                .padding(.bottom, geometry.safeAreaInsets.bottom)
+                .background(DesignSystem.current.navBackground)
             }
-            .background(TenniqueNightTheme.navBackground)
+            .ignoresSafeArea()
         }
         .ignoresSafeArea(.keyboard)
-        .background(DesignSystem.current.background.ignoresSafeArea())
     }
 }

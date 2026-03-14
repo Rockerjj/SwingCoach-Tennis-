@@ -27,6 +27,9 @@ struct RallyTheme: AppTheme {
     let warning = Color(hex: "FFB547")
     let error = Color(hex: "FF5C5C")
 
+    // Nav / video area
+    let navBackground = Color(hex: "080E1A")
+
     // Overlay — dual-tone skeleton (coral = problem, cyan = correct)
     let skeletonStroke = Color(hex: "00D4FF")
     let skeletonCorrect = Color(hex: "00D4FF")

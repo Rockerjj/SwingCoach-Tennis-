@@ -28,7 +28,7 @@ struct TenniqueNightTheme: AppTheme {
     let error = Color(hex: "EF4444")
 
     // Nav / video area — darker than emerald background for contrast
-    static let navBackground = Color(hex: "0F1411")
+    let navBackground = Color(hex: "0F1411")
 
     // Overlay
     let skeletonStroke = Color.white.opacity(0.92)

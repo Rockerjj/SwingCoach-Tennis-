@@ -456,7 +456,7 @@ struct AnalysisResultsView: View {
                         .allowsHitTesting(false)
                     }
                 }
-                .background(TenniqueNightTheme.navBackground)
+                .background(DesignSystem.current.navBackground)
                 .ignoresSafeArea(edges: .top)
                 .clipped()
 
@@ -665,7 +665,7 @@ struct LiveVideoPlayerSection: View {
             ZStack {
                 PlayerLayerView(player: playback.player)
                     .frame(maxWidth: .infinity)
-                    .frame(height: UIScreen.main.bounds.height * 0.68)
+                    .containerRelativeFrame(.vertical) { height, _ in height * 0.68 }
                     .clipped()
                     .onTapGesture { playback.togglePlayPause() }
 
@@ -685,7 +685,7 @@ struct LiveVideoPlayerSection: View {
         Rectangle()
             .fill(theme.surfaceSecondary)
             .frame(maxWidth: .infinity)
-            .frame(height: UIScreen.main.bounds.height * 0.68)
+            .containerRelativeFrame(.vertical) { height, _ in height * 0.68 }
             .overlay {
                 VStack(spacing: Spacing.xs) {
                     Image(systemName: "video.slash")
@@ -1106,21 +1106,6 @@ struct SessionSummaryCard: View {
     var onSelectCategory: ((AnalysisCategory) -> Void)? = nil
     private let theme = DesignSystem.current
 
-    /// Mock score history for sparkline (until multi-session tracking)
-    private var mockScoreHistory: [Double] {
-        let current = numericScore(for: session.overallGrade ?? "C")
-        return [
-            max(50, current - 14),
-            max(50, current - 10),
-            max(50, current - 12),
-            max(50, current - 7),
-            max(50, current - 4.5),
-            max(50, current - 6),
-            max(50, current - 4.2),
-            current
-        ]
-    }
-
     private func numericScore(for grade: String) -> Double {
         switch normalizedGrade(grade) {
         case "A+": return 96; case "A": return 93; case "A-": return 90
@@ -1183,17 +1168,9 @@ struct SessionSummaryCard: View {
                             )
                     }
 
-                    // Trend
-                    let prev = mockScoreHistory.dropLast().last ?? 0
-                    let current = numericScore(for: session.overallGrade ?? "C")
-                    if prev > 0 {
-                        Text("\u{2191} from \(String(format: "%.1f", prev)) last session")
-                            .font(AppFont.body(size: 12, weight: .semibold))
-                            .foregroundStyle(current >= prev ? theme.success : theme.error)
-                    }
-
-                    // Sparkline
-                    ScoreSparklineView(scores: mockScoreHistory, width: 160, height: 40)
+                    Text("Session Score")
+                        .font(AppFont.body(size: 12))
+                        .foregroundStyle(theme.textTertiary)
                 }
             }
 
@@ -1978,11 +1955,11 @@ struct PhaseTimelineStrip: View {
                 // Icon circle
                 ZStack {
                     Circle()
-                        .fill(isSelected ? TenniqueNightTheme.navBackground : theme.surfacePrimary)
+                        .fill(isSelected ? DesignSystem.current.navBackground : theme.surfacePrimary)
                         .frame(width: isSelected ? 32 : 28, height: isSelected ? 32 : 28)
 
                     Circle()
-                        .stroke(isSelected ? TenniqueNightTheme.navBackground : borderColor(status), lineWidth: 2)
+                        .stroke(isSelected ? DesignSystem.current.navBackground : borderColor(status), lineWidth: 2)
                         .frame(width: isSelected ? 32 : 28, height: isSelected ? 32 : 28)
 
                     Image(systemName: phase.icon)

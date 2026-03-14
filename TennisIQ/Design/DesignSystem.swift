@@ -27,6 +27,9 @@ protocol AppTheme {
     var warning: Color { get }
     var error: Color { get }
 
+    // Navigation
+    var navBackground: Color { get }
+
     // Overlay-specific
     var skeletonStroke: Color { get }
     var skeletonCorrect: Color { get }

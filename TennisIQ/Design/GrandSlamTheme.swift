@@ -27,6 +27,9 @@ struct GrandSlamTheme: AppTheme {
     let warning = Color(hex: "D97706")
     let error = Color(hex: "DC2626")
 
+    // Nav / video area
+    let navBackground = Color(hex: "F0F1F3")
+
     // Extended score palette (for score bars in views)
     static let scoreExcellent = Color(hex: "16A34A")   // 8-10
     static let scoreGood = Color(hex: "22C55E")         // 7

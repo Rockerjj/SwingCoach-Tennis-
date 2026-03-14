@@ -27,6 +27,9 @@ struct CourtVisionTheme: AppTheme {
     let warning = Color(hex: "FBBF24")
     let error = Color(hex: "E85D3A")
 
+    // Nav / video area
+    let navBackground = Color(hex: "060609")
+
     // Overlay — neon lime skeleton
     let skeletonStroke = Color(hex: "C8FF00")
     let skeletonCorrect = Color(hex: "34D399")

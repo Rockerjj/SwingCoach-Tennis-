@@ -319,7 +319,7 @@ struct ProfileView: View {
         let name = authService.displayName ?? "TP"
         let parts = name.split(separator: " ")
         let first = parts.first.map { String($0.prefix(1)).uppercased() } ?? "T"
-        let last = parts.count > 1 ? String(parts.last!.prefix(1)).uppercased() : "P"
+        let last = parts.count > 1 ? (parts.last.map { String($0.prefix(1)).uppercased() } ?? "P") : "P"
         return first + last
     }
 }

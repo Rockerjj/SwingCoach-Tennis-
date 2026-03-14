@@ -17,13 +17,9 @@ struct SignInView: View {
                         .font(.system(size: 72, weight: .thin))
                         .foregroundStyle(theme.accent)
 
-                    Text("TennisCoach")
+                    Text("Tennique")
                         .font(AppFont.display(size: 36))
                         .foregroundStyle(theme.textPrimary)
-                    +
-                    Text("AI")
-                        .font(AppFont.display(size: 36))
-                        .foregroundStyle(theme.accent)
 
                     Text("World-class coaching\nthrough your phone")
                         .font(AppFont.body(size: 18))
