@@ -185,15 +185,15 @@ struct PhaseFrameCaptureView: View {
 
     private func angleLabelOverlay(jointMap: [String: JointData], size: CGSize, imageSize: CGSize) -> some View {
         let crop = aspectFillCrop(videoSize: imageSize, viewSize: size)
-        // Only show top 2 most relevant labels (lowest-scoring / first listed)
-        let visibleLabels = Array(angleLabels.prefix(2))
+        // Only show the single most critical label to avoid clutter
+        let visibleLabels = Array(angleLabels.prefix(1))
 
         return ZStack {
             ForEach(Array(visibleLabels.enumerated()), id: \.offset) { _, label in
                 if let joint = jointMap[label.joint] {
                     let pos = toScreen(joint, crop: crop, videoSize: imageSize)
                     Text(label.text)
-                        .font(AppFont.mono(size: 7, weight: .medium))
+                        .font(AppFont.mono(size: 6, weight: .medium))
                         .foregroundStyle(.white)
                         .padding(.horizontal, 4)
                         .padding(.vertical, 2)
