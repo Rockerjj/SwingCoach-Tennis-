@@ -274,6 +274,7 @@ struct AnalysisResultsView: View {
     @State private var showFeedbackPrompt = false
     @State private var showProComparison = false
     @EnvironmentObject var authService: AuthService
+    @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
 
     private let theme = DesignSystem.current
@@ -317,11 +318,24 @@ struct AnalysisResultsView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .navigationBarBackButtonHidden(true)
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(theme.background, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbarColorScheme(.dark, for: .navigationBar)
         .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button(action: { dismiss() }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 13, weight: .semibold))
+                        Text("Sessions")
+                            .font(AppFont.body(size: 14, weight: .medium))
+                    }
+                    .foregroundStyle(.white.opacity(0.85))
+                }
+                .buttonStyle(.plain)
+            }
             ToolbarItem(placement: .principal) {
                 Text(session.recordedAt.formatted(.dateTime.month(.wide).day()))
                     .font(AppFont.body(size: 13, weight: .medium))

@@ -18,6 +18,7 @@
 		16989566A6181A6A5DC87413 /* ProComparisonService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0387E07E847607E871D2C68D /* ProComparisonService.swift */; };
 		19BD5FBE24AB5C94BE1E29F9 /* SwingAnalysisReportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03FA3A4D886936D5B97764AE /* SwingAnalysisReportView.swift */; };
 		1ADD2FA94E9F828678FA6445 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = E4E8C4AF0A8E42144F03FC73 /* PrivacyInfo.xcprivacy */; };
+		1ADD2FA94E9F828678FA6446 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E4E8C4AF0A8E42144F03FC74 /* LaunchScreen.storyboard */; };
 		1CC1428AE07C196360ECDE45 /* ProgressSnapshotModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C65D919DC64EC70453787CCF /* ProgressSnapshotModel.swift */; };
 		221082AD24FCA86D8EF9BF48 /* PoseData.swift in Sources */ = {isa = PBXBuildFile; fileRef = C45B5057646AA6C903DBE2AD /* PoseData.swift */; };
 		23CAF53E1D7A1740DDA6D8C1 /* AnalyticsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DFEFE336346EB99AA24E40B /* AnalyticsService.swift */; };
@@ -118,6 +119,7 @@
 		DEF7D7ADF16853A1D96535BC /* ScoreSparklineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScoreSparklineView.swift; sourceTree = "<group>"; };
 		DEF9AFAE8D6C8A12B5120558 /* TennisIQ.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TennisIQ.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0936ABE30EF28A2BF3B4294 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		E4E8C4AF0A8E42144F03FC74 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		E46A42D98AB9BC3C04C6B062 /* CameraService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraService.swift; sourceTree = "<group>"; };
 		E4E8C4AF0A8E42144F03FC73 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		E6A5536E2F240904D190FC57 /* RallyTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RallyTheme.swift; sourceTree = "<group>"; };
@@ -144,6 +146,7 @@
 				3F9BF8A5993BFA0C4BF950A7 /* ProPoseData */,
 				30AEC89CE756868EF697E74A /* Assets.xcassets */,
 				E0936ABE30EF28A2BF3B4294 /* Info.plist */,
+				E4E8C4AF0A8E42144F03FC74 /* LaunchScreen.storyboard */,
 				E4E8C4AF0A8E42144F03FC73 /* PrivacyInfo.xcprivacy */,
 				509263CA2F409EC043774E40 /* TennisIQ.entitlements */,
 				5610F855E169537F79B3D956 /* TennisIQ.storekit */,
@@ -403,6 +406,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				EB42DF9CB26B4488207D6A12 /* Assets.xcassets in Resources */,
+				1ADD2FA94E9F828678FA6446 /* LaunchScreen.storyboard in Resources */,
 				1ADD2FA94E9F828678FA6445 /* PrivacyInfo.xcprivacy in Resources */,
 				7B1CE7A50703EE686B3EB34A /* TennisIQ.storekit in Resources */,
 				CBB3110C02B4C4B30E9C581C /* djokovic_backhand.json in Resources */,
@@ -617,7 +621,7 @@
 				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.tennisiq.app;
 				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
@@ -638,7 +642,7 @@
 				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.tennisiq.app;
 				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
