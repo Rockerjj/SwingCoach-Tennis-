@@ -546,7 +546,11 @@ struct AnalysisResultsView: View {
                     .id("section_phases")
 
                     // --- Coaching Section ---
-                    StrokeCardsSection(strokes: session.strokeAnalyses)
+                    StrokeCardsSection(strokes: session.strokeAnalyses, scrollToPhases: {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            scrollProxy.scrollTo("section_phases", anchor: .top)
+                        }
+                    })
                         .id("section_coaching")
 
                     // --- Drills / Tactical Notes ---
@@ -1324,11 +1328,12 @@ struct CompactSessionSummaryCard: View {
 
 struct StrokeCardsSection: View {
     let strokes: [StrokeAnalysisModel]
+    var scrollToPhases: (() -> Void)? = nil
 
     var body: some View {
         VStack(spacing: Spacing.sm) {
             ForEach(strokes) { stroke in
-                CoachingCard(stroke: stroke)
+                CoachingCard(stroke: stroke, scrollToPhases: scrollToPhases)
             }
         }
         .padding(Spacing.md)
@@ -1339,7 +1344,11 @@ struct StrokeCardsSection: View {
 
 struct CoachingCard: View {
     let stroke: StrokeAnalysisModel
+    var scrollToPhases: (() -> Void)? = nil
     @State private var isExpanded = false
+    @State private var showMechanics = false
+    @State private var showDrill = false
+    @State private var showSources = false
     private let theme = DesignSystem.current
 
     var body: some View {
@@ -1394,19 +1403,69 @@ struct CoachingCard: View {
         VStack(alignment: .leading, spacing: Spacing.md) {
             Divider().foregroundStyle(theme.surfaceSecondary)
 
-            // What to Fix — bullet points with bold numbers
+            // What to Fix — always visible
             WhatToFixSection(rationale: stroke.gradingRationale)
 
-            MechanicsBreakdownSection(mechanics: stroke.mechanics)
+            // Mechanics Breakdown — collapsed by default
+            CollapsibleSection(title: "MECHANICS BREAKDOWN", icon: "gearshape.2", isExpanded: $showMechanics) {
+                MechanicsBreakdownSection(mechanics: stroke.mechanics, compactMode: true, scrollToPhases: scrollToPhases)
+            }
 
-            // Practice Drill — card-within-card
-            DrillSection(plan: stroke.nextRepsPlan)
+            // Practice Drill — collapsed by default
+            CollapsibleSection(title: "PRACTICE DRILL", icon: "play.circle.fill", isExpanded: $showDrill) {
+                DrillSection(plan: stroke.nextRepsPlan)
+            }
 
-            VerifiedSourcesSection(stroke: stroke)
+            // Verified Sources — collapsed by default
+            CollapsibleSection(title: "VERIFIED SOURCES", icon: "checkmark.seal", isExpanded: $showSources) {
+                VerifiedSourcesSection(stroke: stroke)
+            }
         }
         .padding(.horizontal, Spacing.md)
         .padding(.bottom, Spacing.md)
         .transition(.opacity.combined(with: .move(edge: .top)))
+    }
+}
+
+// MARK: - Collapsible Section Wrapper
+
+struct CollapsibleSection<Content: View>: View {
+    let title: String
+    let icon: String
+    @Binding var isExpanded: Bool
+    @ViewBuilder let content: () -> Content
+    private let theme = DesignSystem.current
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) { isExpanded.toggle() }
+            } label: {
+                HStack(spacing: 5) {
+                    Image(systemName: icon)
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(theme.textTertiary)
+                    Text(title)
+                        .font(AppFont.body(size: 11, weight: .bold))
+                        .foregroundStyle(theme.textTertiary)
+                        .tracking(0.5)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(theme.textTertiary)
+                        .rotationEffect(.degrees(isExpanded ? 90 : 0))
+                }
+                .padding(.vertical, Spacing.xs)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
+            if isExpanded {
+                content()
+                    .padding(.top, Spacing.xs)
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+        }
     }
 }
 
@@ -1448,13 +1507,30 @@ struct WhatToFixSection: View {
     let rationale: String?
     private let theme = DesignSystem.current
 
-    /// Split rationale into bullet points
+    /// Split rationale into bullet points using sentence-boundary splitting
+    /// that avoids breaking on decimals like "21.6s"
     private var bullets: [String] {
         guard let text = rationale, !text.isEmpty else { return [] }
-        // Split on sentences or common delimiters
-        let parts = text.components(separatedBy: CharacterSet(charactersIn: ".;"))
-            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-            .filter { !$0.isEmpty }
+        // Split on ". " followed by uppercase letter, or on ";" or newlines
+        let pattern = #"\.\s+(?=[A-Z])|;\s*|\n+"#
+        guard let regex = try? NSRegularExpression(pattern: pattern) else {
+            return [text]
+        }
+        let nsText = text as NSString
+        let matches = regex.matches(in: text, range: NSRange(location: 0, length: nsText.length))
+        var parts: [String] = []
+        var lastEnd = 0
+        for match in matches {
+            let range = NSRange(location: lastEnd, length: match.range.location - lastEnd)
+            let part = nsText.substring(with: range).trimmingCharacters(in: .whitespacesAndNewlines)
+            if !part.isEmpty { parts.append(part) }
+            lastEnd = match.range.location + match.range.length
+        }
+        // Remaining text
+        if lastEnd < nsText.length {
+            let remaining = nsText.substring(from: lastEnd).trimmingCharacters(in: .whitespacesAndNewlines)
+            if !remaining.isEmpty { parts.append(remaining) }
+        }
         return Array(parts.prefix(3))
     }
 
@@ -1488,14 +1564,29 @@ struct WhatToFixSection: View {
 
 struct MechanicsBreakdownSection: View {
     let mechanics: StrokeMechanics?
+    var compactMode: Bool = false
+    var scrollToPhases: (() -> Void)? = nil
     private let theme = DesignSystem.current
 
     var body: some View {
         if let mechanics {
             VStack(alignment: .leading, spacing: Spacing.xs) {
-                SectionLabel(icon: "gearshape.2", title: "MECHANICS BREAKDOWN")
-
                 mechanicsList(mechanics)
+
+                // "See phase details" link when in compact mode
+                if compactMode, let scrollToPhases {
+                    Button(action: scrollToPhases) {
+                        HStack(spacing: Spacing.xxs) {
+                            Text("See phase details")
+                                .font(AppFont.body(size: 13, weight: .medium))
+                            Image(systemName: "arrow.up")
+                                .font(.system(size: 11, weight: .semibold))
+                        }
+                        .foregroundStyle(theme.accent)
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.top, Spacing.xxs)
+                }
             }
         }
     }
