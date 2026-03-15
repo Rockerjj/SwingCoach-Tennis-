@@ -273,6 +273,7 @@ struct AnalysisResultsView: View {
     @State private var selectedPhase: SwingPhase?
     @State private var showFeedbackPrompt = false
     @State private var showProComparison = false
+    @State private var activeSection: SectionJumpBar.SectionTab = .overview
     @EnvironmentObject var authService: AuthService
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
@@ -436,96 +437,126 @@ struct AnalysisResultsView: View {
     }
 
     private var analysisContent: some View {
-        ScrollView {
-            VStack(spacing: 0) {
-                // 1. Video player
-                ZStack {
-                    LiveVideoPlayerSection(
-                        playback: playback,
-                        showOverlay: $showOverlay,
-                        showSwingPath: $showSwingPath,
-                        hasVideo: session.videoLocalURL != nil
-                    )
-
-                    if showSwingPath && !playback.racketTrajectory.isEmpty {
-                        SwingPathOverlayView(
-                            wristPoints: playback.racketTrajectory,
-                            videoNaturalSize: playback.videoNaturalSize
+        ScrollViewReader { scrollProxy in
+            ScrollView {
+                VStack(spacing: 0) {
+                    // 1. Video player
+                    ZStack {
+                        LiveVideoPlayerSection(
+                            playback: playback,
+                            showOverlay: $showOverlay,
+                            showSwingPath: $showSwingPath,
+                            hasVideo: session.videoLocalURL != nil
                         )
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .allowsHitTesting(false)
+
+                        if showSwingPath && !playback.racketTrajectory.isEmpty {
+                            SwingPathOverlayView(
+                                wristPoints: playback.racketTrajectory,
+                                videoNaturalSize: playback.videoNaturalSize
+                            )
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .allowsHitTesting(false)
+                        }
+
+                        if showOverlay && !playback.smoothedJoints.isEmpty {
+                            WireframeOverlayView(
+                                joints: playback.smoothedJoints,
+                                videoNaturalSize: playback.videoNaturalSize,
+                                highlightedJoints: highlightedJointNames,
+                                highlightAngles: selectedPhaseAngles
+                            )
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .allowsHitTesting(false)
+                        }
                     }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: heroVideoHeight)
+                    .background(DesignSystem.current.navBackground)
+                    .clipped()
 
-                    if showOverlay && !playback.smoothedJoints.isEmpty {
-                        WireframeOverlayView(
-                            joints: playback.smoothedJoints,
-                            videoNaturalSize: playback.videoNaturalSize,
-                            highlightedJoints: highlightedJointNames,
-                            highlightAngles: selectedPhaseAngles
-                        )
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .allowsHitTesting(false)
-                    }
-                }
-                .frame(maxWidth: .infinity)
-                .frame(height: heroVideoHeight)
-                .background(DesignSystem.current.navBackground)
-                .clipped()
-
-                // 2. Stroke selector pills
-                StrokeSelectorRow(
-                    strokes: session.strokeAnalyses,
-                    selectedStroke: $selectedStroke,
-                    onSelectStroke: { stroke in
-                        selectedStroke = stroke
-                        playback.selectStroke(stroke)
-                    }
-                )
-
-                // 2b. Compact Session Summary (score ring + grade + work-on count)
-                CompactSessionSummaryCard(
-                    session: session,
-                    thingsToWorkOn: selectedStroke?.analysisCategories?.filter { $0.status != .inZone }.count ?? 0
-                )
-
-                // 3. Phase Breakdown
-                if let stroke = selectedStroke, let breakdown = stroke.phaseBreakdown {
-                    PhaseTimelineStrip(
-                        breakdown: breakdown,
-                        selectedPhase: $selectedPhase,
-                        onPhaseSelected: { phase in
-                            if let detail = breakdown.detail(for: phase) {
-                                playback.seekTo(timestamp: detail.timestamp)
-                            }
-                        },
-                        videoURL: resolvedVideoURL,
-                        poseFrames: session.poseFrames
-                    )
-                }
-
-                // 4. Key Fixes (merged Top Priorities + Main Fix)
-                if let stroke = selectedStroke {
-                    KeyFixesCard(
-                        stroke: stroke,
-                        selectedPhase: $selectedPhase,
-                        onScrollToPhases: {
-                            if let phase = selectedPhase,
-                               let detail = stroke.phaseBreakdown?.detail(for: phase) {
-                                playback.seekTo(timestamp: detail.timestamp)
-                            }
+                    // 2. Stroke selector pills
+                    StrokeSelectorRow(
+                        strokes: session.strokeAnalyses,
+                        selectedStroke: $selectedStroke,
+                        onSelectStroke: { stroke in
+                            selectedStroke = stroke
+                            playback.selectStroke(stroke)
                         }
                     )
+
+                    // 2c. Section Jump Bar
+                    SectionJumpBar(activeTab: $activeSection) { tab in
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            switch tab {
+                            case .overview:
+                                scrollProxy.scrollTo("section_overview", anchor: .top)
+                            case .phases:
+                                scrollProxy.scrollTo("section_phases", anchor: .top)
+                            case .coaching:
+                                scrollProxy.scrollTo("section_coaching", anchor: .top)
+                            case .drills:
+                                scrollProxy.scrollTo("section_drills", anchor: .top)
+                            }
+                        }
+                    }
+
+                    // --- Overview Section ---
+                    VStack(spacing: 0) {
+                        // 2b. Compact Session Summary
+                        CompactSessionSummaryCard(
+                            session: session,
+                            thingsToWorkOn: selectedStroke?.analysisCategories?.filter { $0.status != .inZone }.count ?? 0
+                        )
+
+                        // 4. Key Fixes
+                        if let stroke = selectedStroke {
+                            KeyFixesCard(
+                                stroke: stroke,
+                                selectedPhase: $selectedPhase,
+                                onScrollToPhases: {
+                                    withAnimation(.easeInOut(duration: 0.3)) {
+                                        scrollProxy.scrollTo("section_phases", anchor: .top)
+                                    }
+                                    if let phase = selectedPhase,
+                                       let detail = stroke.phaseBreakdown?.detail(for: phase) {
+                                        playback.seekTo(timestamp: detail.timestamp)
+                                    }
+                                }
+                            )
+                        }
+                    }
+                    .id("section_overview")
+
+                    // --- Phases Section ---
+                    VStack(spacing: 0) {
+                        if let stroke = selectedStroke, let breakdown = stroke.phaseBreakdown {
+                            PhaseTimelineStrip(
+                                breakdown: breakdown,
+                                selectedPhase: $selectedPhase,
+                                onPhaseSelected: { phase in
+                                    if let detail = breakdown.detail(for: phase) {
+                                        playback.seekTo(timestamp: detail.timestamp)
+                                    }
+                                },
+                                videoURL: resolvedVideoURL,
+                                poseFrames: session.poseFrames
+                            )
+                        }
+                    }
+                    .id("section_phases")
+
+                    // --- Coaching Section ---
+                    StrokeCardsSection(strokes: session.strokeAnalyses)
+                        .id("section_coaching")
+
+                    // --- Drills / Tactical Notes ---
+                    TacticalNotesCard(notes: session.tacticalNotes)
+                        .id("section_drills")
                 }
-
-                // 7. Coaching Cards
-                StrokeCardsSection(strokes: session.strokeAnalyses)
-
-                // 8. Tactical Notes
-                TacticalNotesCard(notes: session.tacticalNotes)
+                .frame(maxWidth: .infinity, alignment: .topLeading)
             }
-            .frame(maxWidth: .infinity, alignment: .topLeading)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 
     private var selectedPhaseAngles: [String] {
