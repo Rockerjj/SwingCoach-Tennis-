@@ -1593,11 +1593,11 @@ struct MechanicsBreakdownSection: View {
 
     @ViewBuilder
     private func mechanicsList(_ m: StrokeMechanics) -> some View {
-        if let d = m.backswing { ExpandableMechanicRow(name: "Backswing", detail: d) }
-        if let d = m.contactPoint { ExpandableMechanicRow(name: "Contact Point", detail: d) }
-        if let d = m.followThrough { ExpandableMechanicRow(name: "Follow-Through", detail: d) }
-        if let d = m.stance { ExpandableMechanicRow(name: "Stance", detail: d) }
-        if let d = m.toss { ExpandableMechanicRow(name: "Toss", detail: d) }
+        if let d = m.backswing { ExpandableMechanicRow(name: "Backswing", detail: d, compactMode: compactMode) }
+        if let d = m.contactPoint { ExpandableMechanicRow(name: "Contact Point", detail: d, compactMode: compactMode) }
+        if let d = m.followThrough { ExpandableMechanicRow(name: "Follow-Through", detail: d, compactMode: compactMode) }
+        if let d = m.stance { ExpandableMechanicRow(name: "Stance", detail: d, compactMode: compactMode) }
+        if let d = m.toss { ExpandableMechanicRow(name: "Toss", detail: d, compactMode: compactMode) }
     }
 }
 
@@ -1606,13 +1606,14 @@ struct MechanicsBreakdownSection: View {
 struct ExpandableMechanicRow: View {
     let name: String
     let detail: MechanicDetail
+    var compactMode: Bool = false
     @State private var isExpanded = false
     private let theme = DesignSystem.current
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             mechanicHeader
-            if isExpanded {
+            if !compactMode && isExpanded {
                 mechanicDetails
             }
         }
@@ -1623,7 +1624,10 @@ struct ExpandableMechanicRow: View {
     }
 
     private var mechanicHeader: some View {
-        Button(action: { withAnimation(.easeInOut(duration: 0.15)) { isExpanded.toggle() } }) {
+        Button(action: {
+            guard !compactMode else { return }
+            withAnimation(.easeInOut(duration: 0.15)) { isExpanded.toggle() }
+        }) {
             HStack {
                 Text(name)
                     .font(AppFont.body(size: 13, weight: .medium))
@@ -1633,10 +1637,12 @@ struct ExpandableMechanicRow: View {
 
                 ScoreBar(score: detail.score)
 
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 10, weight: .bold))
-                    .foregroundStyle(theme.textTertiary)
-                    .rotationEffect(.degrees(isExpanded ? 90 : 0))
+                if !compactMode {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(theme.textTertiary)
+                        .rotationEffect(.degrees(isExpanded ? 90 : 0))
+                }
             }
             .padding(.horizontal, Spacing.sm)
             .padding(.vertical, Spacing.xs)
