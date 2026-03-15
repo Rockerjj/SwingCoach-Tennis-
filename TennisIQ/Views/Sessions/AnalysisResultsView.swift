@@ -482,6 +482,12 @@ struct AnalysisResultsView: View {
                     }
                 )
 
+                // 2b. Compact Session Summary (score ring + grade + work-on count)
+                CompactSessionSummaryCard(
+                    session: session,
+                    thingsToWorkOn: selectedStroke?.analysisCategories?.filter { $0.status != .inZone }.count ?? 0
+                )
+
                 // 3. Phase Breakdown
                 if let stroke = selectedStroke, let breakdown = stroke.phaseBreakdown {
                     PhaseTimelineStrip(
@@ -524,23 +530,6 @@ struct AnalysisResultsView: View {
                     }
                 )
 
-                // 6. Session Summary
-                SessionSummaryCard(
-                    session: session,
-                    analysisCategories: selectedStroke?.analysisCategories,
-                    onSelectCategory: { category in
-                        if let phase = selectedStroke?.phaseBreakdown?.allPhases.first(where: {
-                            ($0.0.displayName.localizedCaseInsensitiveContains(category.name)) ||
-                            (category.name.localizedCaseInsensitiveContains($0.0.displayName))
-                        })?.0 {
-                            selectedPhase = phase
-                            if let detail = selectedStroke?.phaseBreakdown?.detail(for: phase) {
-                                playback.seekTo(timestamp: detail.timestamp)
-                            }
-                        }
-                    }
-                )
-
                 // 7. Coaching Cards
                 StrokeCardsSection(strokes: session.strokeAnalyses)
 
@@ -562,7 +551,7 @@ struct AnalysisResultsView: View {
     }
 
     private var heroVideoHeight: CGFloat {
-        UIScreen.main.bounds.height * 0.68
+        UIScreen.main.bounds.height * 0.40
     }
 }
 
@@ -1239,6 +1228,77 @@ struct SessionSummaryCard: View {
                 )
             }
         }
+    }
+}
+
+// MARK: - Compact Session Summary Card (score ring + grade + work-on count)
+
+struct CompactSessionSummaryCard: View {
+    let session: SessionModel
+    let thingsToWorkOn: Int
+    private let theme = DesignSystem.current
+
+    private func numericScore(for grade: String) -> Double {
+        switch normalizedGrade(grade) {
+        case "A+": return 96; case "A": return 93; case "A-": return 90
+        case "B+": return 87; case "B": return 84; case "B-": return 81
+        case "C+": return 78; case "C": return 75; case "C-": return 72
+        case "D+": return 69; case "D": return 66; case "D-": return 63
+        case "F": return 55
+        default: return 72
+        }
+    }
+
+    var body: some View {
+        HStack(spacing: Spacing.md) {
+            // Compact score ring — 60pt
+            let score = numericScore(for: session.overallGrade ?? "C")
+            let progress = score / 100.0
+            ZStack {
+                Circle()
+                    .stroke(theme.surfaceSecondary, lineWidth: 5)
+                    .frame(width: 60, height: 60)
+                Circle()
+                    .trim(from: 0, to: progress)
+                    .stroke(theme.accent, style: StrokeStyle(lineWidth: 5, lineCap: .round))
+                    .frame(width: 60, height: 60)
+                    .rotationEffect(.degrees(-90))
+                Text(String(format: "%.0f", score))
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundStyle(theme.textPrimary)
+            }
+
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(alignment: .firstTextBaseline, spacing: Spacing.xs) {
+                    Text(normalizedGrade(session.overallGrade ?? "--"))
+                        .font(AppFont.body(size: 18, weight: .bold))
+                        .foregroundStyle(theme.textPrimary)
+
+                    Text("Session Score")
+                        .font(AppFont.body(size: 12))
+                        .foregroundStyle(theme.textTertiary)
+                }
+
+                if thingsToWorkOn > 0 {
+                    Text("\(thingsToWorkOn) thing\(thingsToWorkOn == 1 ? "" : "s") to work on")
+                        .font(AppFont.body(size: 13))
+                        .foregroundStyle(theme.textSecondary)
+                }
+            }
+
+            Spacer()
+        }
+        .padding(Spacing.md)
+        .background(
+            RoundedRectangle(cornerRadius: Radius.md)
+                .fill(theme.surfacePrimary)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: Radius.md)
+                .stroke(theme.surfaceSecondary, lineWidth: 1)
+        )
+        .padding(.horizontal, Spacing.md)
+        .padding(.top, Spacing.sm)
     }
 }
 
