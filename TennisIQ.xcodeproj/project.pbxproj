@@ -64,6 +64,8 @@
 		F01D4278751F2DFBB2621892 /* FeedbackService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7811A06F978478D32276993 /* FeedbackService.swift */; };
 		F8B34770D71406488E66ADE7 /* StrokeAnalysisModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52B20C486E4DDFFAB3786FAD /* StrokeAnalysisModel.swift */; };
 		FECCC292B1482A2044723AF3 /* SubscriptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0D9F2A15A6BC7093DDF9E23 /* SubscriptionService.swift */; };
+		AA11BB22CC33DD44EE55FF01 /* KeyFixesCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF02 /* KeyFixesCard.swift */; };
+		AA11BB22CC33DD44EE55FF03 /* SectionJumpBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF04 /* SectionJumpBar.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -126,6 +128,8 @@
 		F3CDD641DA3F46B6758D70C3 /* UserProfileModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileModel.swift; sourceTree = "<group>"; };
 		F69C954894BA2C837EF0C9BC /* ZoneIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoneIndicator.swift; sourceTree = "<group>"; };
 		F7811A06F978478D32276993 /* FeedbackService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackService.swift; sourceTree = "<group>"; };
+		AA11BB22CC33DD44EE55FF02 /* KeyFixesCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyFixesCard.swift; sourceTree = "<group>"; };
+		AA11BB22CC33DD44EE55FF04 /* SectionJumpBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SectionJumpBar.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -219,11 +223,13 @@
 			children = (
 				9A24F290A8A8FDD57A8E52CF /* FeedbackPromptView.swift */,
 				B62CF863477F0A539F5EF6C9 /* HeroInsightCard.swift */,
+				AA11BB22CC33DD44EE55FF02 /* KeyFixesCard.swift */,
 				69320059865F2A9BBF43BB00 /* PhaseDetailCard.swift */,
 				71C6B8C08DD7E528EF6C33D6 /* PhaseFrameCaptureView.swift */,
 				BEC6740F72DC1CDE05F546C0 /* PhaseTimelineView.swift */,
 				BD7C05C154F82A804E8D1347 /* ProComparisonView.swift */,
 				DEF7D7ADF16853A1D96535BC /* ScoreSparklineView.swift */,
+				AA11BB22CC33DD44EE55FF04 /* SectionJumpBar.swift */,
 				C3F6E5A5292C83F9915E16A6 /* SwingPathOverlayView.swift */,
 				F69C954894BA2C837EF0C9BC /* ZoneIndicator.swift */,
 			);
@@ -439,6 +445,8 @@
 				EDE6F0F9E2E0AD3C904B26E2 /* TenniqueNightTheme.swift in Sources */,
 				171B7C1EB67B91B7B7D75ED7 /* PhaseFrameCaptureView.swift in Sources */,
 				094C8A26FEBAA5FBAB468E80 /* HeroInsightCard.swift in Sources */,
+				AA11BB22CC33DD44EE55FF01 /* KeyFixesCard.swift in Sources */,
+				AA11BB22CC33DD44EE55FF03 /* SectionJumpBar.swift in Sources */,
 				37C0E6125F35BD8D965FCDD0 /* LiveFeedbackOverlayView.swift in Sources */,
 				2C329E9AB45FC19844B30E78 /* LiveSwingAnalyzer.swift in Sources */,
 				C0E24905A277C542BAE2A773 /* MainTabView.swift in Sources */,
