@@ -503,32 +503,19 @@ struct AnalysisResultsView: View {
                     )
                 }
 
-                // 4. Top Priorities
+                // 4. Key Fixes (merged Top Priorities + Main Fix)
                 if let stroke = selectedStroke {
-                    HeroInsightCard(
+                    KeyFixesCard(
                         stroke: stroke,
-                        videoURL: resolvedVideoURL,
-                        poseFrames: session.poseFrames
+                        selectedPhase: $selectedPhase,
+                        onScrollToPhases: {
+                            if let phase = selectedPhase,
+                               let detail = stroke.phaseBreakdown?.detail(for: phase) {
+                                playback.seekTo(timestamp: detail.timestamp)
+                            }
+                        }
                     )
                 }
-
-                // 5. Main Fix
-                VideoFocusInsightCard(
-                    selectedStroke: selectedStroke,
-                    selectedPhase: selectedPhase,
-                    onJumpToFocus: {
-                        if let phase = selectedPhase,
-                           let breakdown = selectedStroke?.phaseBreakdown,
-                           let detail = breakdown.detail(for: phase) {
-                            playback.seekTo(timestamp: detail.timestamp)
-                        } else if let stroke = selectedStroke {
-                            playback.selectStroke(stroke)
-                        }
-                    },
-                    onJumpToTimestamp: { timestamp in
-                        playback.seekTo(timestamp: timestamp)
-                    }
-                )
 
                 // 7. Coaching Cards
                 StrokeCardsSection(strokes: session.strokeAnalyses)
