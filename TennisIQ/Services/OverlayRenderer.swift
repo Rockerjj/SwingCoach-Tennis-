@@ -307,15 +307,6 @@ final class OverlayRenderer {
         CGPoint(x: x * size.width, y: (1.0 - y) * size.height)
     }
 
-    private func uiColor(_ color: any ShapeStyle) -> UIColor {
-        // ShapeStyle can be a Color in most of our usage; attempt to cast
-        if let swiftUIColor = color as? Color {
-            return UIColor(swiftUIColor)
-        }
-        // Fallback for non-Color ShapeStyles
-        return .white
-    }
-
     private func uiColor(_ color: Color) -> UIColor {
         UIColor(color)
     }

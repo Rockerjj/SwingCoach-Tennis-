@@ -178,8 +178,12 @@ final class CameraService: NSObject, ObservableObject {
 
     func teardown() {
         stopRecording()
-        captureSession?.stopRunning()
+        // Dispatch stopRunning to a background queue to avoid blocking the main thread
+        let session = captureSession
         captureSession = nil
+        DispatchQueue.global(qos: .userInitiated).async {
+            session?.stopRunning()
+        }
     }
 }
 
