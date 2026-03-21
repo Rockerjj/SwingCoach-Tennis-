@@ -3,7 +3,7 @@ from functools import lru_cache
 
 
 class Settings(BaseSettings):
-    app_name: str = "TennisIQ API"
+    app_name: str = "Tennique API"
     debug: bool = False
 
     # OpenAI
