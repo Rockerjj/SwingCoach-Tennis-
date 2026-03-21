@@ -20,6 +20,7 @@ struct RecordView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .task {
+            viewModel.liveAnalyzer = liveAnalyzer
             await viewModel.setup()
         }
         .onDisappear {
@@ -251,6 +252,7 @@ struct RecordView: View {
     private var liveModeToggle: some View {
         Button(action: {
             liveModeEnabled.toggle()
+            viewModel.setLiveMode(liveModeEnabled)
             voiceFeedback.isEnabled = liveModeEnabled
         }) {
             VStack(spacing: 3) {

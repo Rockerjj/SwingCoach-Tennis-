@@ -3,17 +3,36 @@ import AVFAudio
 import UIKit
 import Combine
 
+/// Delegate protocol for receiving live video frames during recording
+protocol CameraFrameDelegate: AnyObject {
+    func cameraService(_ service: CameraService, didOutputPixelBuffer pixelBuffer: CVPixelBuffer, timestamp: CMTime)
+}
+
 final class CameraService: NSObject, ObservableObject {
     @Published var isRecording = false
     @Published var recordingDuration: TimeInterval = 0
     @Published var previewLayer: AVCaptureVideoPreviewLayer?
     @Published var error: CameraError?
 
+    /// Set this delegate to receive live video frames during recording
+    weak var frameDelegate: CameraFrameDelegate?
+
     private var captureSession: AVCaptureSession?
     private var movieOutput: AVCaptureMovieFileOutput?
+    private var videoDataOutput: AVCaptureVideoDataOutput?
     private var timer: Timer?
     private var currentVideoURL: URL?
     private var recordingStartTime: Date?
+
+    private let sessionQueue = DispatchQueue(label: "com.tennique.camera.session", qos: .userInitiated)
+    private let videoOutputQueue = DispatchQueue(label: "com.tennique.camera.videoOutput", qos: .userInitiated)
+
+    /// Controls whether live frame output is active (set to true when live mode is on)
+    var liveFrameOutputEnabled = false
+
+    /// Only process every Nth frame to keep CPU usage reasonable
+    private var frameCount = 0
+    private let frameSkipInterval = 4 // Process every 4th frame (~15fps from 60fps)
 
     private var completionHandler: ((Result<URL, CameraError>) -> Void)?
 
@@ -99,6 +118,7 @@ final class CameraService: NSObject, ObservableObject {
             session.addInput(audioInput)
         }
 
+        // Movie file output (for saving the recording)
         let output = AVCaptureMovieFileOutput()
         output.maxRecordedDuration = CMTime(
             seconds: AppConstants.Camera.maxRecordingDuration,
@@ -108,6 +128,18 @@ final class CameraService: NSObject, ObservableObject {
             throw CameraError.setupFailed("Cannot add movie output")
         }
         session.addOutput(output)
+
+        // Video data output (for live frame analysis)
+        let dataOutput = AVCaptureVideoDataOutput()
+        dataOutput.videoSettings = [
+            kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA
+        ]
+        dataOutput.alwaysCopiesSampleData = false
+        dataOutput.setSampleBufferDelegate(self, queue: videoOutputQueue)
+        if session.canAddOutput(dataOutput) {
+            session.addOutput(dataOutput)
+            self.videoDataOutput = dataOutput
+        }
 
         self.captureSession = session
         self.movieOutput = output
@@ -145,6 +177,7 @@ final class CameraService: NSObject, ObservableObject {
         currentVideoURL = url
         completionHandler = completion
         recordingStartTime = Date()
+        frameCount = 0
 
         output.startRecording(to: url, recordingDelegate: self)
         isRecording = true
@@ -154,6 +187,7 @@ final class CameraService: NSObject, ObservableObject {
     func stopRecording() {
         movieOutput?.stopRecording()
         isRecording = false
+        liveFrameOutputEnabled = false
         stopTimer()
     }
 
@@ -204,5 +238,27 @@ extension CameraService: AVCaptureFileOutputRecordingDelegate {
             }
             self?.completionHandler = nil
         }
+    }
+}
+
+// MARK: - AVCaptureVideoDataOutputSampleBufferDelegate (Live Frame Analysis)
+
+extension CameraService: AVCaptureVideoDataOutputSampleBufferDelegate {
+    func captureOutput(
+        _ output: AVCaptureOutput,
+        didOutput sampleBuffer: CMSampleBuffer,
+        from connection: AVCaptureConnection
+    ) {
+        // Only process frames when recording AND live mode is enabled
+        guard isRecording, liveFrameOutputEnabled else { return }
+
+        // Skip frames to maintain ~15fps processing rate
+        frameCount += 1
+        guard frameCount % frameSkipInterval == 0 else { return }
+
+        guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
+        let timestamp = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
+
+        frameDelegate?.cameraService(self, didOutputPixelBuffer: pixelBuffer, timestamp: timestamp)
     }
 }

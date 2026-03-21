@@ -1,13 +1,13 @@
 import Foundation
 
 enum AppConstants {
-    static let appName = "TennisIQ"
+    static let appName = "Tennique"
     static let minimumIOSVersion = "17.0"
     static let minimumDeviceModel = "iPhone 12"
 
-    static let privacyPolicyURL = URL(string: "https://tennisiq.com/privacy")!
-    static let termsOfServiceURL = URL(string: "https://tennisiq.com/terms")!
-    static let supportEmail = "support@tennisiq.com"
+    static let privacyPolicyURL = URL(string: "https://tennique.com/privacy")!
+    static let termsOfServiceURL = URL(string: "https://tennique.com/terms")!
+    static let supportEmail = "support@tennique.com"
     static let appStoreID = "" // Set after App Store Connect setup
 
     enum Camera {
@@ -25,7 +25,7 @@ enum AppConstants {
     }
 
     enum API {
-        static let baseURL = "https://api.tennisiq.com/api/v1"
+        static let baseURL = "https://api.tennique.com/api/v1"
         #if DEBUG
         static let debugBaseURL = "http://10.0.0.101:8000/api/v1"
         #endif
@@ -44,8 +44,8 @@ enum AppConstants {
     }
 
     enum Subscription {
-        static let monthlyProductID = "tennisiq_monthly"
-        static let annualProductID = "tennisiq_annual"
+        static let monthlyProductID = "tennique_pro_monthly"
+        static let annualProductID = "tennique_pro_annual"
     }
 
     enum Feedback {

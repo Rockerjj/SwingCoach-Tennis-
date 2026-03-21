@@ -69,9 +69,8 @@ final class AnalysisViewModel: ObservableObject {
                 detectedStrokes: extraction.detectedStrokes
             )
 
-            // Backend debug mode expects any non-empty bearer token.
-            let storedToken = KeychainHelper.shared.read(key: "apple_id_token")?.trimmingCharacters(in: .whitespacesAndNewlines)
-            let authToken = (storedToken?.isEmpty == false) ? storedToken! : "dev-token"
+            // Use Supabase JWT if available, fall back to Apple token or dev token
+            let authToken = AuthService().authToken
 
             let response = try await apiService.analyzeSession(
                 posePayload: payload,

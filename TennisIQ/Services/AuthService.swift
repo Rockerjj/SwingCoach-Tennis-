@@ -1,6 +1,7 @@
 import Foundation
 import AuthenticationServices
 import Combine
+import Supabase
 
 @MainActor
 final class AuthService: ObservableObject {
@@ -12,15 +13,25 @@ final class AuthService: ObservableObject {
 
     private let keychain = KeychainHelper.shared
 
+    // Supabase client for auth token exchange
+    private let supabaseClient: SupabaseClient = {
+        SupabaseClient(
+            supabaseURL: URL(string: AppConstants.Supabase.projectURL)!,
+            supabaseKey: AppConstants.Supabase.anonKey
+        )
+    }()
+
     enum AuthError: LocalizedError {
         case signInFailed(String)
         case tokenExpired
+        case supabaseExchangeFailed(String)
         case unknown
 
         var errorDescription: String? {
             switch self {
             case .signInFailed(let msg): return "Sign in failed: \(msg)"
             case .tokenExpired: return "Session expired. Please sign in again."
+            case .supabaseExchangeFailed(let msg): return "Authentication failed: \(msg)"
             case .unknown: return "An unknown error occurred."
             }
         }
@@ -30,13 +41,34 @@ final class AuthService: ObservableObject {
         checkExistingSession()
     }
 
+    // MARK: - Session Check
+
     private func checkExistingSession() {
-        if let userID = keychain.read(key: "apple_user_id") {
+        // Check for existing Supabase access token first
+        if let accessToken = keychain.read(key: "supabase_access_token"),
+           let userID = keychain.read(key: "supabase_user_id"),
+           !accessToken.isEmpty {
             currentUserID = userID
             displayName = keychain.read(key: "display_name")
             isAuthenticated = true
+
+            // Try to refresh the session in the background
+            Task {
+                await refreshSessionIfNeeded()
+            }
+            return
+        }
+
+        // Fallback: check for guest session
+        if let userID = keychain.read(key: "apple_user_id"),
+           keychain.read(key: "display_name") == "Guest" {
+            currentUserID = userID
+            displayName = "Guest"
+            isAuthenticated = true
         }
     }
+
+    // MARK: - Apple Sign In → Supabase Exchange
 
     func handleSignInResult(_ result: Result<ASAuthorization, Error>) {
         switch result {
@@ -46,30 +78,102 @@ final class AuthService: ObservableObject {
                 return
             }
 
-            let userID = credential.user
             let name = [credential.fullName?.givenName, credential.fullName?.familyName]
                 .compactMap { $0 }
                 .joined(separator: " ")
 
-            keychain.save(key: "apple_user_id", value: userID)
             if !name.isEmpty {
                 keychain.save(key: "display_name", value: name)
             }
 
-            if let identityToken = credential.identityToken,
-               let tokenString = String(data: identityToken, encoding: .utf8) {
-                keychain.save(key: "apple_id_token", value: tokenString)
+            guard let identityToken = credential.identityToken,
+                  let tokenString = String(data: identityToken, encoding: .utf8) else {
+                error = .signInFailed("No identity token received from Apple")
+                return
             }
 
-            currentUserID = userID
-            displayName = name.isEmpty ? nil : name
-            isAuthenticated = true
+            // Store Apple token as backup
+            keychain.save(key: "apple_id_token", value: tokenString)
+            keychain.save(key: "apple_user_id", value: credential.user)
+
+            // Exchange Apple token for Supabase session
+            isLoading = true
+            Task {
+                await exchangeAppleTokenWithSupabase(idToken: tokenString, appleUserID: credential.user, name: name)
+            }
 
         case .failure(let err):
             if (err as? ASAuthorizationError)?.code == .canceled { return }
             error = .signInFailed(err.localizedDescription)
         }
     }
+
+    private func exchangeAppleTokenWithSupabase(idToken: String, appleUserID: String, name: String) async {
+        do {
+            let session = try await supabaseClient.auth.signInWithIdToken(
+                credentials: .init(
+                    provider: .apple,
+                    idToken: idToken
+                )
+            )
+
+            // Store Supabase session tokens
+            keychain.save(key: "supabase_access_token", value: session.accessToken)
+            keychain.save(key: "supabase_refresh_token", value: session.refreshToken)
+            keychain.save(key: "supabase_user_id", value: session.user.id.uuidString)
+
+            currentUserID = session.user.id.uuidString
+            displayName = name.isEmpty ? (keychain.read(key: "display_name") ?? nil) : name
+            isAuthenticated = true
+            isLoading = false
+
+        } catch {
+            // If Supabase exchange fails, fall back to local-only auth
+            // This allows the app to work offline or when Supabase is paused
+            print("Supabase token exchange failed: \(error). Falling back to local auth.")
+            currentUserID = appleUserID
+            displayName = name.isEmpty ? nil : name
+            isAuthenticated = true
+            isLoading = false
+
+            // Store a flag so we can retry exchange later
+            keychain.save(key: "needs_supabase_exchange", value: "true")
+            self.error = .supabaseExchangeFailed("Signed in locally. Cloud sync will retry automatically.")
+        }
+    }
+
+    // MARK: - Token Refresh
+
+    private func refreshSessionIfNeeded() async {
+        guard let refreshToken = keychain.read(key: "supabase_refresh_token") else { return }
+
+        do {
+            let session = try await supabaseClient.auth.refreshSession(refreshToken: refreshToken)
+            keychain.save(key: "supabase_access_token", value: session.accessToken)
+            keychain.save(key: "supabase_refresh_token", value: session.refreshToken)
+        } catch {
+            // Token refresh failed — user may need to re-authenticate
+            print("Session refresh failed: \(error)")
+        }
+    }
+
+    // MARK: - Get Auth Token for API Calls
+
+    /// Returns the best available auth token for backend API calls.
+    /// Prefers Supabase JWT, falls back to Apple ID token, then dev token.
+    var authToken: String {
+        if let supabaseToken = keychain.read(key: "supabase_access_token"),
+           !supabaseToken.isEmpty {
+            return supabaseToken
+        }
+        if let appleToken = keychain.read(key: "apple_id_token"),
+           !appleToken.isEmpty {
+            return appleToken
+        }
+        return "dev-token"
+    }
+
+    // MARK: - Guest Mode
 
     func continueAsGuest() {
         let guestID = UUID().uuidString
@@ -80,13 +184,26 @@ final class AuthService: ObservableObject {
         isAuthenticated = true
     }
 
+    // MARK: - Sign Out
+
     func signOut() {
+        // Clear all stored tokens
         keychain.delete(key: "apple_user_id")
         keychain.delete(key: "display_name")
         keychain.delete(key: "apple_id_token")
+        keychain.delete(key: "supabase_access_token")
+        keychain.delete(key: "supabase_refresh_token")
+        keychain.delete(key: "supabase_user_id")
+        keychain.delete(key: "needs_supabase_exchange")
+
         currentUserID = nil
         displayName = nil
         isAuthenticated = false
+
+        // Sign out from Supabase
+        Task {
+            try? await supabaseClient.auth.signOut()
+        }
     }
 }
 
