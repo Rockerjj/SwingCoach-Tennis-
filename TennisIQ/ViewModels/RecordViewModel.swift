@@ -119,6 +119,14 @@ final class RecordViewModel: ObservableObject {
 
             lastSavedSession = session
             showSessionSaved = true
+
+            // Auto-start analysis in the background immediately after saving
+            if let context = modelContext {
+                let vm = AnalysisViewModel(session: session)
+                Task {
+                    await vm.triggerAnalysis(context: context)
+                }
+            }
         } catch {
             self.error = .recordingFailed("Failed to save video: \(error.localizedDescription)")
         }

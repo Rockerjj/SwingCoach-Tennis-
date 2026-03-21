@@ -23,6 +23,11 @@ struct RecordView: View {
             viewModel.liveAnalyzer = liveAnalyzer
             await viewModel.setup()
         }
+        .onChange(of: liveAnalyzer.latestFeedback?.id) { _, _ in
+            guard liveModeEnabled,
+                  let feedback = liveAnalyzer.latestFeedback else { return }
+            voiceFeedback.speak(feedback.cueText)
+        }
         .onDisappear {
             viewModel.teardown()
         }

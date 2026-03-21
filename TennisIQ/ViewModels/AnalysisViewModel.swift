@@ -51,6 +51,15 @@ final class AnalysisViewModel: ObservableObject {
 
             let extraction = try await poseService.extractPoses(from: url)
 
+            // Check network before sending to API
+            if !NetworkMonitor.shared.isConnected {
+                await MainActor.run {
+                    session.status = .processing // Keep as processing so it retries later
+                    try? context.save()
+                }
+                throw AnalysisError.offline
+            }
+
             await MainActor.run {
                 poseProgress = 1.0
                 analysisPhase = .sendingToAPI
@@ -142,10 +151,12 @@ final class AnalysisViewModel: ObservableObject {
 
     enum AnalysisError: LocalizedError {
         case videoNotFound
+        case offline
 
         var errorDescription: String? {
             switch self {
             case .videoNotFound: return "Recording video file not found."
+            case .offline: return "No internet connection. Your session is saved — analysis will run when you're back online."
             }
         }
     }

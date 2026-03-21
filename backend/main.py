@@ -19,12 +19,20 @@ app = FastAPI(
     redoc_url="/redoc" if settings.debug else None,
 )
 
+allowed_origins = [
+    "https://tennique.app",
+    "https://www.tennique.app",
+    "https://landing-page-rho-six-64.vercel.app",
+]
+if settings.debug:
+    allowed_origins.extend(["http://localhost:3000", "http://10.0.0.101:8000"])
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["Authorization", "Content-Type"],
 )
 
 app.include_router(sessions.router, prefix="/api/v1")

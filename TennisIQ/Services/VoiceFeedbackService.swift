@@ -59,6 +59,19 @@ final class VoiceFeedbackService: NSObject, ObservableObject {
     }
 
     private func enqueueAndSpeak(_ text: String) {
+        // Ensure audio session allows speech output alongside camera recording
+        let audioSession = AVAudioSession.sharedInstance()
+        do {
+            try audioSession.setCategory(
+                .playAndRecord,
+                mode: .videoRecording,
+                options: [.defaultToSpeaker, .allowBluetooth, .duckOthers]
+            )
+            try audioSession.setActive(true)
+        } catch {
+            print("Voice feedback audio session error: \(error)")
+        }
+
         let utterance = AVSpeechUtterance(string: text)
         utterance.rate = rate
         utterance.pitchMultiplier = pitch
