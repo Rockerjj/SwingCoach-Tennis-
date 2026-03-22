@@ -134,7 +134,6 @@ final class CameraService: NSObject, ObservableObject {
         dataOutput.videoSettings = [
             kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA
         ]
-        dataOutput.alwaysCopiesSampleData = false
         dataOutput.setSampleBufferDelegate(self, queue: videoOutputQueue)
         if session.canAddOutput(dataOutput) {
             session.addOutput(dataOutput)
