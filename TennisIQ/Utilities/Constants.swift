@@ -27,7 +27,7 @@ enum AppConstants {
     enum API {
         static let baseURL = "https://tennique-api-production.up.railway.app/api/v1"
         #if DEBUG
-        static let debugBaseURL = "http://10.0.0.101:8000/api/v1"
+        static let debugBaseURL = "https://tennique-api-production.up.railway.app/api/v1"
         #endif
     }
 
