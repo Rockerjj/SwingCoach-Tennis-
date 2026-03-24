@@ -8,7 +8,7 @@ class Settings(BaseSettings):
 
     # OpenAI
     openai_api_key: str = ""
-    openai_model: str = "gpt-4o"
+    openai_model: str = "gpt-5.4"
 
     # Supabase
     supabase_url: str = ""
