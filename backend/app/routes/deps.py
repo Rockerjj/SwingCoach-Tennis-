@@ -33,14 +33,14 @@ def get_current_user_id(
 
     settings = get_settings()
 
+    # SAFETY: debug auth bypass requires BOTH debug=True AND ALLOW_DEBUG_AUTH=true
+    if settings.is_debug_auth_allowed():
+        logger.warning("DEBUG AUTH: Bypassing token verification — do NOT use in production")
+        return "dev-user-001"
+
     token = authorization.removeprefix("Bearer ").strip()
     if not token:
         raise HTTPException(status_code=401, detail="Missing token")
-
-    # In debug mode, accept any token and return a dev user ID
-    if settings.debug:
-        logger.warning("DEBUG AUTH: Bypassing token verification")
-        return "dev-user-001"
 
     # Try to decode as a Supabase JWT
     try:

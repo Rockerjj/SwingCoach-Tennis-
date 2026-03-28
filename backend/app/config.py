@@ -26,7 +26,19 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
 
+    def is_debug_auth_allowed(self) -> bool:
+        """Debug auth bypass requires BOTH debug=True AND explicit ALLOW_DEBUG_AUTH=true."""
+        import os
+        return self.debug and os.getenv("ALLOW_DEBUG_AUTH", "").lower() == "true"
+
 
 @lru_cache()
 def get_settings() -> Settings:
-    return Settings()
+    settings = Settings()
+    # Safety: warn loudly if debug is on
+    if settings.debug:
+        import logging
+        logging.getLogger(__name__).warning(
+            "⚠️  DEBUG MODE IS ON — ensure this is not a production deployment"
+        )
+    return settings
