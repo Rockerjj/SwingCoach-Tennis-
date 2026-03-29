@@ -40,7 +40,7 @@ struct PaywallView: View {
         guard let monthly = monthlyProduct, let annual = annualProduct else { return nil }
         let annualMonthly = annual.price / 12
         let savings = (monthly.price - annualMonthly) / monthly.price * 100
-        return Int(savings.rounded())
+        return NSDecimalNumber(decimal: savings).intValue
     }
 
     var body: some View {

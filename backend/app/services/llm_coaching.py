@@ -75,7 +75,7 @@ class LLMCoachingService:
             ],
             response_format={"type": "json_object"},
             temperature=0.3,
-            max_tokens=32000,
+            max_completion_tokens=32000,
         )
 
         choice = response.choices[0]
