@@ -277,6 +277,8 @@ struct AnalysisResultsView: View {
     @State private var showShareCard = false
     @State private var activeSection: SectionJumpBar.SectionTab = .overview
     @EnvironmentObject var authService: AuthService
+    @EnvironmentObject var subscriptionService: SubscriptionService
+    @State private var showPaywall = false
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
 
@@ -402,13 +404,27 @@ struct AnalysisResultsView: View {
         .sheet(isPresented: $showShareCard) {
             SessionShareSheet(session: session)
         }
+        .fullScreenCover(isPresented: $showPaywall) {
+            PaywallView()
+                .environmentObject(subscriptionService)
+        }
         .onChange(of: viewModel.isLoading) { wasLoading, isLoading in
             if wasLoading && !isLoading && session.status != .failed {
+                // Record usage + check paywall
+                subscriptionService.recordAnalysisUsed()
+
                 analytics.trackEvent(.analysisCompleted(
                     strokeCount: session.strokeAnalyses.count,
                     overallGrade: session.overallGrade ?? "N/A"
                 ))
-                if analytics.shouldShowFeedbackPrompt {
+
+                // If the user just used their last free analysis, show paywall after a beat
+                if subscriptionService.currentTier == .free && !subscriptionService.canAnalyze {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                        analytics.trackEvent(.paywallTriggered(freeAnalysesUsed: subscriptionService.freeAnalysesUsed))
+                        showPaywall = true
+                    }
+                } else if analytics.shouldShowFeedbackPrompt {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                         analytics.trackEvent(.feedbackPromptShown)
                         withAnimation { showFeedbackPrompt = true }
