@@ -273,6 +273,7 @@ struct AnalysisResultsView: View {
     @State private var selectedPhase: SwingPhase?
     @State private var showFeedbackPrompt = false
     @State private var showProComparison = false
+    @State private var showDrillPlan = false
     @State private var activeSection: SectionJumpBar.SectionTab = .overview
     @EnvironmentObject var authService: AuthService
     @Environment(\.dismiss) private var dismiss
@@ -344,10 +345,29 @@ struct AnalysisResultsView: View {
             }
             ToolbarItem(placement: .topBarTrailing) {
                 if session.status != .failed && !viewModel.isLoading {
-                    Button(action: shareAnalysis) {
-                        Image(systemName: "square.and.arrow.up")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(theme.textSecondary)
+                    HStack(spacing: Spacing.sm) {
+                        // Drill Plan button
+                        NavigationLink(destination: DrillPlanView(session: session)) {
+                            HStack(spacing: 4) {
+                                Image(systemName: "figure.tennis")
+                                    .font(.system(size: 13, weight: .semibold))
+                                Text("Drills")
+                                    .font(AppFont.body(size: 13, weight: .medium))
+                            }
+                            .foregroundStyle(theme.accent)
+                            .padding(.horizontal, Spacing.sm)
+                            .padding(.vertical, Spacing.xxs)
+                            .background(
+                                Capsule()
+                                    .fill(theme.accentMuted)
+                            )
+                        }
+
+                        Button(action: shareAnalysis) {
+                            Image(systemName: "square.and.arrow.up")
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundStyle(theme.textSecondary)
+                        }
                     }
                 }
             }
@@ -556,6 +576,37 @@ struct AnalysisResultsView: View {
                     // --- Drills / Tactical Notes ---
                     TacticalNotesCard(notes: session.tacticalNotes)
                         .id("section_drills")
+
+                    // --- Drill Plan CTA ---
+                    NavigationLink(destination: DrillPlanView(session: session)) {
+                        HStack(spacing: Spacing.sm) {
+                            Image(systemName: "figure.tennis")
+                                .font(.system(size: 18))
+                                .foregroundStyle(theme.accent)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Open Practice Plan")
+                                    .font(AppFont.body(size: 15, weight: .semibold))
+                                    .foregroundStyle(theme.textPrimary)
+                                Text("Take today's drills to the court")
+                                    .font(AppFont.body(size: 12))
+                                    .foregroundStyle(theme.textSecondary)
+                            }
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundStyle(theme.textTertiary)
+                        }
+                        .padding(Spacing.md)
+                        .background(
+                            RoundedRectangle(cornerRadius: Radius.lg)
+                                .fill(theme.surfacePrimary)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: Radius.lg)
+                                        .strokeBorder(theme.accent.opacity(0.3), lineWidth: 1)
+                                )
+                        )
+                    }
+                    .buttonStyle(.plain)
                 }
                 .frame(maxWidth: .infinity, alignment: .topLeading)
             }
