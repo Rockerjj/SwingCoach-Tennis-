@@ -221,6 +221,7 @@ final class StrokeDetector {
         let map = Dictionary(uniqueKeysWithValues: frame.joints.map { ($0.name, $0) })
 
         let wristName = handedness.dominantWrist
+        let elbowName = handedness == .right ? "right_elbow" : "left_elbow"
         guard let wrist = map[wristName],
               let nose = map["nose"],
               wrist.confidence >= minConfidence,
@@ -228,8 +229,14 @@ final class StrokeDetector {
             return "forehand"
         }
 
+        // Serve: wrist well above nose at contact
         if wrist.y > nose.y + 0.15 {
             return "serve"
+        }
+
+        // Volley detection: compact swing (short backswing duration) + wrist near chest height + minimal follow-through
+        if isVolleyLikely(at: idx, frames: frames, map: map, wrist: wrist) {
+            return "volley"
         }
 
         let isRight = handedness == .right
@@ -240,6 +247,55 @@ final class StrokeDetector {
         } else {
             return wrist.x < midX ? "forehand" : "backhand"
         }
+    }
+
+    /// Detect volleys by looking for compact, punch-like stroke characteristics:
+    /// 1. Short total swing duration (backswing → contact < 0.6s vs ~1.0s+ for groundstrokes)
+    /// 2. Wrist stays near chest/shoulder height (not low like groundstrokes)
+    /// 3. Low wrist travel distance (compact motion, no big loop)
+    private func isVolleyLikely(at idx: Int, frames: [FramePoseData], map: [String: JointData], wrist: JointData) -> Bool {
+        let contactTime = frames[idx].timestamp
+
+        // Check wrist is at roughly shoulder/chest height (not low like a groundstroke)
+        let shoulderY = ((map["left_shoulder"]?.y ?? 0.5) + (map["right_shoulder"]?.y ?? 0.5)) / 2
+        let hipY = ((map["left_hip"]?.y ?? 0.3) + (map["right_hip"]?.y ?? 0.3)) / 2
+        let chestY = (shoulderY + hipY) / 2
+
+        // Wrist should be between hip and above shoulder for a volley (net height)
+        let wristInVolleyZone = wrist.y >= hipY - 0.05 && wrist.y <= shoulderY + 0.10
+
+        guard wristInVolleyZone else { return false }
+
+        // Measure swing compactness: total wrist travel in the 0.5s before contact
+        let lookbackWindow = 0.5
+        let lookbackStart = contactTime - lookbackWindow
+
+        let recentFrames = frames.filter { $0.timestamp >= lookbackStart && $0.timestamp <= contactTime }
+        guard recentFrames.count >= 3 else { return false }
+
+        let wristName = handedness.dominantWrist
+        var totalTravel: Double = 0
+        for i in 1..<recentFrames.count {
+            let curr = recentFrames[i].joints.first { $0.name == wristName && $0.confidence >= minConfidence }
+            let prev = recentFrames[i - 1].joints.first { $0.name == wristName && $0.confidence >= minConfidence }
+            if let c = curr, let p = prev {
+                totalTravel += hypot(c.x - p.x, c.y - p.y)
+            }
+        }
+
+        // Volleys have compact motion — typically < 0.15 normalized distance
+        // Groundstrokes with full backswing are typically > 0.25
+        let isCompact = totalTravel < 0.18
+
+        // Also check: short time from first movement to contact (< 0.4s of actual motion)
+        let movingFrames = recentFrames.filter { f in
+            let w = f.joints.first { $0.name == wristName }
+            return w != nil && w!.confidence >= minConfidence
+        }
+        let swingDuration = (movingFrames.last?.timestamp ?? contactTime) - (movingFrames.first?.timestamp ?? contactTime)
+        let isQuick = swingDuration < 0.5
+
+        return isCompact && isQuick
     }
 
     func measureAngles(frame: FramePoseData) -> [String: MeasuredAngle] {

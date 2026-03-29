@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
 from app.routes import sessions, progress, users, feedback
+from app.middleware.rate_limit import RateLimitMiddleware
 
 logging.basicConfig(
     level=logging.INFO,
@@ -34,6 +35,9 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["Authorization", "Content-Type"],
 )
+
+# Rate limit: 10 analysis requests per user per hour
+app.add_middleware(RateLimitMiddleware, max_requests=10, window_seconds=3600)
 
 app.include_router(sessions.router, prefix="/api/v1")
 app.include_router(progress.router, prefix="/api/v1")
