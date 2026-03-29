@@ -67,6 +67,12 @@
 		F01D4278751F2DFBB2621892 /* FeedbackService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7811A06F978478D32276993 /* FeedbackService.swift */; };
 		F8B34770D71406488E66ADE7 /* StrokeAnalysisModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52B20C486E4DDFFAB3786FAD /* StrokeAnalysisModel.swift */; };
 		FECCC292B1482A2044723AF3 /* SubscriptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0D9F2A15A6BC7093DDF9E23 /* SubscriptionService.swift */; };
+		A1B2C3D4E5F6A7B8C9D0E1F2 /* DemoSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A2B3C4E5F6A7B8C9D0E1F2 /* DemoSession.swift */; };
+		A2B3C4D5E6F7A8B9C0D1E2F3 /* DemoAnalysisView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A3B4C5E6F7A8B9C0D1E2F3 /* DemoAnalysisView.swift */; };
+		A3B4C5D6E7F8A9B0C1D2E3F4 /* SkeletonWaitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3A4B5C6E7F8A9B0C1D2E3F4 /* SkeletonWaitView.swift */; };
+		A4B5C6D7E8F9A0B1C2D3E4F5 /* SessionShareCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A5B6C7E8F9A0B1C2D3E4F5 /* SessionShareCardView.swift */; };
+		A5B6C7D8E9F0A1B2C3D4E5F6 /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A6B7C8E9F0A1B2C3D4E5F6 /* PaywallView.swift */; };
+		A6B7C8D9E0F1A2B3C4D5E6F7 /* DrillPlanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6A7B8C9E0F1A2B3C4D5E6F7 /* DrillPlanView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -132,6 +138,12 @@
 		F69C954894BA2C837EF0C9BC /* ZoneIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoneIndicator.swift; sourceTree = "<group>"; };
 		F7811A06F978478D32276993 /* FeedbackService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackService.swift; sourceTree = "<group>"; };
 		FAFA957376E7CF08C013154F /* NetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitor.swift; sourceTree = "<group>"; };
+		D1A2B3C4E5F6A7B8C9D0E1F2 /* DemoSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoSession.swift; sourceTree = "<group>"; };
+		D2A3B4C5E6F7A8B9C0D1E2F3 /* DemoAnalysisView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoAnalysisView.swift; sourceTree = "<group>"; };
+		D3A4B5C6E7F8A9B0C1D2E3F4 /* SkeletonWaitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkeletonWaitView.swift; sourceTree = "<group>"; };
+		D4A5B6C7E8F9A0B1C2D3E4F5 /* SessionShareCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionShareCardView.swift; sourceTree = "<group>"; };
+		D5A6B7C8E9F0A1B2C3D4E5F6 /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallView.swift; sourceTree = "<group>"; };
+		D6A7B8C9E0F1A2B3C4D5E6F7 /* DrillPlanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrillPlanView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -172,6 +184,7 @@
 			isa = PBXGroup;
 			children = (
 				527389EFF23211D098DE73C7 /* AnalysisResultsView.swift */,
+				D6A7B8C9E0F1A2B3C4D5E6F7 /* DrillPlanView.swift */,
 				412881648BA5A288998A997D /* SessionsListView.swift */,
 				03FA3A4D886936D5B97764AE /* SwingAnalysisReportView.swift */,
 			);
@@ -201,6 +214,7 @@
 			isa = PBXGroup;
 			children = (
 				3184D5E34471901E174E1757 /* AnalysisResponse.swift */,
+				D1A2B3C4E5F6A7B8C9D0E1F2 /* DemoSession.swift */,
 				C45B5057646AA6C903DBE2AD /* PoseData.swift */,
 				C65D919DC64EC70453787CCF /* ProgressSnapshotModel.swift */,
 				AB542F02088934BE9D3757D3 /* SessionModel.swift */,
@@ -232,6 +246,8 @@
 				BD7C05C154F82A804E8D1347 /* ProComparisonView.swift */,
 				DEF7D7ADF16853A1D96535BC /* ScoreSparklineView.swift */,
 				2C8274D390CC24727D38E92C /* SectionJumpBar.swift */,
+				D4A5B6C7E8F9A0B1C2D3E4F5 /* SessionShareCardView.swift */,
+				D3A4B5C6E7F8A9B0C1D2E3F4 /* SkeletonWaitView.swift */,
 				C3F6E5A5292C83F9915E16A6 /* SwingPathOverlayView.swift */,
 				F69C954894BA2C837EF0C9BC /* ZoneIndicator.swift */,
 			);
@@ -286,6 +302,7 @@
 		8C955B024EA6925D9BC3272A /* Profile */ = {
 			isa = PBXGroup;
 			children = (
+				D5A6B7C8E9F0A1B2C3D4E5F6 /* PaywallView.swift */,
 				0F9B1947FDC7359E4A9EF789 /* ProfileView.swift */,
 			);
 			path = Profile;
@@ -345,6 +362,7 @@
 		FAC4FFF71E28056AFE77E0DD /* Onboarding */ = {
 			isa = PBXGroup;
 			children = (
+				D2A3B4C5E6F7A8B9C0D1E2F3 /* DemoAnalysisView.swift */,
 				094E44AE039923C9E51A9E4A /* OnboardingView.swift */,
 			);
 			path = Onboarding;
@@ -441,7 +459,10 @@
 				03DC25C0F12D0D84A9ED71A3 /* Color+Hex.swift in Sources */,
 				2814EE0217286EDB5E3CEF82 /* Constants.swift in Sources */,
 				B1ABADD10DF5681DB9D8746C /* CourtVisionTheme.swift in Sources */,
+				A1B2C3D4E5F6A7B8C9D0E1F2 /* DemoSession.swift in Sources */,
+				A2B3C4D5E6F7A8B9C0D1E2F3 /* DemoAnalysisView.swift in Sources */,
 				4FFE162779A31A539C8B403E /* DesignSystem.swift in Sources */,
+				A6B7C8D9E0F1A2B3C4D5E6F7 /* DrillPlanView.swift in Sources */,
 				AB07C80EEC70FA3F7FEA855A /* FeedbackPromptView.swift in Sources */,
 				F01D4278751F2DFBB2621892 /* FeedbackService.swift in Sources */,
 				2F4FFB9E53BF743B503E98C2 /* GrandSlamTheme.swift in Sources */,
@@ -460,6 +481,7 @@
 				8C03E81D17CCDEFCE40B139B /* PoseEstimationService.swift in Sources */,
 				16989566A6181A6A5DC87413 /* ProComparisonService.swift in Sources */,
 				0E8750A399BD9EED9B2D174C /* ProComparisonView.swift in Sources */,
+				A5B6C7D8E9F0A1B2C3D4E5F6 /* PaywallView.swift in Sources */,
 				11BAADE1F553DDF794BC6E8E /* ProfileView.swift in Sources */,
 				8BFAAA30384215AEC731C636 /* ProgressDashboardView.swift in Sources */,
 				1CC1428AE07C196360ECDE45 /* ProgressSnapshotModel.swift in Sources */,
@@ -470,7 +492,9 @@
 				CEB00A9E0365A9F74C4D5C18 /* ScoreSparklineView.swift in Sources */,
 				96A85B697AA23CEB1D8DE8CD /* SectionJumpBar.swift in Sources */,
 				E96E1AB48043D29423B89FBA /* SessionModel.swift in Sources */,
+				A4B5C6D7E8F9A0B1C2D3E4F5 /* SessionShareCardView.swift in Sources */,
 				5ABC7837E0006E6B7A01A088 /* SessionsListView.swift in Sources */,
+				A3B4C5D6E7F8A9B0C1D2E3F4 /* SkeletonWaitView.swift in Sources */,
 				A4AF513EFAAA9DD1ED26C16A /* ShareService.swift in Sources */,
 				26EA271DA27AEB8B58AE961C /* SignInView.swift in Sources */,
 				F8B34770D71406488E66ADE7 /* StrokeAnalysisModel.swift in Sources */,
