@@ -44,13 +44,13 @@ class LLMCoachingService:
 
         content: list[dict] = [{"type": "text", "text": user_prompt}]
 
-        # Limit images based on stroke count to stay within token budget
-        max_images = 6 if len(pose_payload.detected_strokes) > 3 else 10
-        image_detail = "low" if len(pose_payload.detected_strokes) > 4 else "high"
+        # GPT-5.4 handles more images and higher detail well
+        max_images = 8 if len(pose_payload.detected_strokes) > 3 else 12
+        image_detail = "high"
 
         for img_bytes in key_frame_images[:max_images]:
             try:
-                resized = self._resize_image(img_bytes, max_size=512)
+                resized = self._resize_image(img_bytes, max_size=1024)
                 b64 = base64.b64encode(resized).decode("utf-8")
                 content.append({
                     "type": "image_url",
