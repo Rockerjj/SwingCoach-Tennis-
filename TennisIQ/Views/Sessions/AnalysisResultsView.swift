@@ -655,44 +655,16 @@ struct AnalysisLoadingContent: View {
     private var loadingBody: some View {
         switch phase {
         case .extractingPoses:
-            VStack(spacing: Spacing.md) {
-                ProgressView(value: progress)
-                    .tint(theme.accent)
-                    .frame(width: 200)
-
-                Image(systemName: "figure.run")
-                    .font(.system(size: 48, weight: .thin))
-                    .foregroundStyle(theme.accent)
-
-                Text("Extracting Poses...")
-                    .font(AppFont.display(size: 20))
-                    .foregroundStyle(theme.textPrimary)
-
-                Text("Analyzing your body movements\nframe by frame")
-                    .font(AppFont.body(size: 14))
-                    .foregroundStyle(theme.textSecondary)
-                    .multilineTextAlignment(.center)
-            }
+            SkeletonWaitView(
+                phase: "Extracting poses...",
+                progress: progress
+            )
 
         case .sendingToAPI:
-            VStack(spacing: Spacing.md) {
-                ProgressView()
-                    .tint(theme.accent)
-                    .scaleEffect(1.5)
-
-                Image(systemName: "brain")
-                    .font(.system(size: 48, weight: .thin))
-                    .foregroundStyle(theme.accentSecondary)
-
-                Text("AI Coach Analyzing...")
-                    .font(AppFont.display(size: 20))
-                    .foregroundStyle(theme.textPrimary)
-
-                Text("Your coach is reviewing\nyour technique")
-                    .font(AppFont.body(size: 14))
-                    .foregroundStyle(theme.textSecondary)
-                    .multilineTextAlignment(.center)
-            }
+            SkeletonWaitView(
+                phase: "Analyzing with AI...",
+                progress: 1.0
+            )
 
         default:
             ProgressView()
