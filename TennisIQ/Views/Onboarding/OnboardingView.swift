@@ -3,6 +3,7 @@ import SwiftUI
 struct OnboardingView: View {
     @Binding var hasCompletedOnboarding: Bool
     @State private var currentPage = 0
+    @State private var showDemoAnalysis = false
     let theme = DesignSystem.current
 
     private let pages: [OnboardingPage] = [
@@ -41,6 +42,9 @@ struct OnboardingView: View {
 
                 bottomControls
             }
+        }
+        .sheet(isPresented: $showDemoAnalysis) {
+            DemoAnalysisView()
         }
     }
 
@@ -103,7 +107,17 @@ struct OnboardingView: View {
             }
             .padding(.horizontal, Spacing.lg)
 
-            if currentPage < pages.count - 1 {
+            if currentPage == pages.count - 1 {
+                Button(action: { showDemoAnalysis = true }) {
+                    HStack(spacing: Spacing.xs) {
+                        Image(systemName: "sparkles")
+                            .font(.system(size: 14))
+                        Text("See a sample analysis first")
+                            .font(AppFont.body(size: 15))
+                    }
+                    .foregroundStyle(theme.accent)
+                }
+            } else {
                 Button("Skip") {
                     hasCompletedOnboarding = true
                 }
