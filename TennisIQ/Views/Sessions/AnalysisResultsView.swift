@@ -274,6 +274,7 @@ struct AnalysisResultsView: View {
     @State private var showFeedbackPrompt = false
     @State private var showProComparison = false
     @State private var showDrillPlan = false
+    @State private var showShareCard = false
     @State private var activeSection: SectionJumpBar.SectionTab = .overview
     @EnvironmentObject var authService: AuthService
     @Environment(\.dismiss) private var dismiss
@@ -398,6 +399,9 @@ struct AnalysisResultsView: View {
         .onDisappear {
             playback.cleanup()
         }
+        .sheet(isPresented: $showShareCard) {
+            SessionShareSheet(session: session)
+        }
         .onChange(of: viewModel.isLoading) { wasLoading, isLoading in
             if wasLoading && !isLoading && session.status != .failed {
                 analytics.trackEvent(.analysisCompleted(
@@ -416,19 +420,7 @@ struct AnalysisResultsView: View {
 
     private func shareAnalysis() {
         analytics.trackEvent(.shareAnalysisTapped)
-        guard let stroke = selectedStroke ?? session.strokeAnalyses.first else { return }
-        guard let image = ShareService.shared.generateShareImage(
-            grade: stroke.grade,
-            strokeType: stroke.strokeType.displayName,
-            joints: playback.currentJoints,
-            videoSize: playback.videoNaturalSize
-        ) else { return }
-
-        guard let windowScene = UIApplication.shared.connectedScenes
-            .compactMap({ $0 as? UIWindowScene }).first,
-              let rootVC = windowScene.windows.first?.rootViewController else { return }
-
-        ShareService.shared.presentShareSheet(image: image, from: rootVC)
+        showShareCard = true
     }
 
     private var highlightedJointNames: Set<String> {
