@@ -5,12 +5,12 @@ struct ProgressDashboardView: View {
     @Query(sort: \ProgressSnapshotModel.snapshotDate, order: .reverse)
     private var snapshots: [ProgressSnapshotModel]
 
-    @Query(
-        filter: #Predicate<SessionModel> { $0.status.rawValue == "ready" },
-        sort: \SessionModel.recordedAt,
-        order: .reverse
-    )
-    private var recentSessions: [SessionModel]
+    @Query(sort: \SessionModel.recordedAt, order: .reverse)
+    private var allSessions: [SessionModel]
+
+    private var recentSessions: [SessionModel] {
+        allSessions.filter { $0.status == .ready }
+    }
 
     let theme = DesignSystem.current
 
