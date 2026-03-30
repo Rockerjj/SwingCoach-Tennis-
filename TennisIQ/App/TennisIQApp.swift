@@ -13,6 +13,7 @@ struct TennisIQApp: App {
             StrokeAnalysisModel.self,
             ProgressSnapshotModel.self,
             UserProfileModel.self,
+            BookmarkedInsight.self,
         ])
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
         do {

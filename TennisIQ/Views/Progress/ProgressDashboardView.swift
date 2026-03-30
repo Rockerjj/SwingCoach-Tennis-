@@ -16,20 +16,39 @@ struct ProgressDashboardView: View {
 
     private var latest: ProgressSnapshotModel? { snapshots.first }
 
+    enum ProgressTab: String, CaseIterable {
+        case trends = "Trends"
+        case sessions = "Sessions"
+        case saved = "Saved"
+    }
+
+    @State private var selectedTab: ProgressTab = .trends
+
     var body: some View {
         ZStack {
             theme.background.ignoresSafeArea()
 
-            if snapshots.isEmpty {
-                emptyProgressState
-            } else {
+            VStack(spacing: 0) {
+                // Segmented picker
+                Picker("", selection: $selectedTab) {
+                    ForEach(ProgressTab.allCases, id: \.self) { tab in
+                        Text(tab.rawValue).tag(tab)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .padding(.horizontal, Spacing.md)
+                .padding(.vertical, Spacing.sm)
+
                 ScrollView {
                     VStack(spacing: Spacing.md) {
-                        overallScoreCard
-                        strokeBreakdownGrid
-                        weeklyFocusCard
-                        progressChart
-                        sessionStreakCard
+                        switch selectedTab {
+                        case .trends:
+                            trendsContent
+                        case .sessions:
+                            sessionsContent
+                        case .saved:
+                            SavedInsightsView()
+                        }
                     }
                     .padding(Spacing.md)
                     .padding(.bottom, Spacing.xxl)
@@ -44,6 +63,49 @@ struct ProgressDashboardView: View {
         .toolbarBackground(theme.background, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbarColorScheme(.dark, for: .navigationBar)
+    }
+
+    // MARK: - Trends Tab
+    private var trendsContent: some View {
+        Group {
+            if snapshots.isEmpty {
+                emptyProgressState
+            } else {
+                overallScoreCard
+                strokeBreakdownGrid
+                weeklyFocusCard
+                progressChart
+                sessionStreakCard
+            }
+        }
+    }
+
+    // MARK: - Sessions Tab (grades over time per session)
+    private var sessionsContent: some View {
+        Group {
+            if recentSessions.isEmpty {
+                VStack(spacing: Spacing.md) {
+                    Image(systemName: "list.bullet.rectangle")
+                        .font(.system(size: 36, weight: .thin))
+                        .foregroundStyle(theme.textTertiary)
+                    Text("No analyzed sessions yet")
+                        .font(AppFont.body(size: 15))
+                        .foregroundStyle(theme.textSecondary)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.top, Spacing.xxl)
+            } else {
+                // Per-stroke grade history chart
+                if recentSessions.count >= 2 {
+                    StrokeGradeHistoryCard(sessions: Array(recentSessions.prefix(20).reversed()))
+                }
+
+                // Session list with grades
+                ForEach(recentSessions.prefix(30)) { session in
+                    SessionProgressRow(session: session)
+                }
+            }
+        }
     }
 
     // MARK: - Overall Score

@@ -1404,6 +1404,9 @@ struct CoachingCard: View {
     @State private var showMechanics = false
     @State private var showDrill = false
     @State private var showSources = false
+    @State private var isBookmarked = false
+    @State private var showBookmarkConfirm = false
+    @Environment(\.modelContext) private var modelContext
     private let theme = DesignSystem.current
 
     var body: some View {
@@ -1444,6 +1447,14 @@ struct CoachingCard: View {
 
                 GradeBadge(grade: stroke.grade)
 
+                // Bookmark button
+                Button(action: bookmarkStroke) {
+                    Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(isBookmarked ? theme.accent : theme.textTertiary)
+                }
+                .buttonStyle(.plain)
+
                 Image(systemName: "chevron.down")
                     .font(.system(size: 12, weight: .bold))
                     .foregroundStyle(theme.textTertiary)
@@ -1452,6 +1463,42 @@ struct CoachingCard: View {
             .padding(Spacing.md)
         }
         .buttonStyle(.plain)
+        .overlay(alignment: .top) {
+            if showBookmarkConfirm {
+                Text("Saved to Progress ✓")
+                    .font(AppFont.body(size: 12, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, Spacing.sm)
+                    .padding(.vertical, 4)
+                    .background(Capsule().fill(theme.success))
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .offset(y: -8)
+            }
+        }
+    }
+
+    private func bookmarkStroke() {
+        guard !isBookmarked else { return }
+
+        let insight = BookmarkedInsight(
+            strokeType: stroke.strokeType,
+            grade: stroke.grade,
+            coachingText: stroke.gradingRationale ?? stroke.mechanics?.contactPoint?.note ?? "No details",
+            keyAngles: stroke.overlayInstructions?.anglesToHighlight ?? [],
+            jointSnapshotJSON: stroke.jointSnapshotJSON,
+            sessionDate: stroke.session?.recordedAt ?? Date(),
+            phaseName: nil
+        )
+        modelContext.insert(insight)
+        try? modelContext.save()
+
+        withAnimation(.spring(response: 0.3)) {
+            isBookmarked = true
+            showBookmarkConfirm = true
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            withAnimation { showBookmarkConfirm = false }
+        }
     }
 
     private var expandedBody: some View {
