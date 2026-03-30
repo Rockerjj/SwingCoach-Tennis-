@@ -13,6 +13,7 @@ struct TennisIQApp: App {
             StrokeAnalysisModel.self,
             ProgressSnapshotModel.self,
             UserProfileModel.self,
+            BookmarkedInsight.self,
         ])
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
         do {
@@ -32,6 +33,10 @@ struct TennisIQApp: App {
                 .preferredColorScheme(.dark)
                 .onAppear {
                     analytics.trackEvent(.appOpened)
+                    // Wire offline retry service so pending sessions auto-retry on reconnect
+                    Task { @MainActor in
+                        OfflineRetryService.shared.configure(container: sharedModelContainer)
+                    }
                 }
         }
     }

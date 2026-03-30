@@ -44,12 +44,12 @@ class LLMCoachingService:
 
         content: list[dict] = [{"type": "text", "text": user_prompt}]
 
-        max_images = 5 if len(pose_payload.detected_strokes) > 3 else 8
-        image_detail = "low" if len(key_frame_images) > 6 else "high"
+        max_images = 12
+        image_detail = "high"
 
         for img_bytes in key_frame_images[:max_images]:
             try:
-                resized = self._resize_image(img_bytes, max_size=512)
+                resized = self._resize_image(img_bytes, max_size=1024)
                 b64 = base64.b64encode(resized).decode("utf-8")
                 content.append({
                     "type": "image_url",
@@ -74,7 +74,7 @@ class LLMCoachingService:
             ],
             response_format={"type": "json_object"},
             temperature=0.3,
-            max_completion_tokens=32000,
+            max_tokens=32000,
         )
 
         choice = response.choices[0]

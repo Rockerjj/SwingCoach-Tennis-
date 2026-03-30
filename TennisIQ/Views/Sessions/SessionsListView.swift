@@ -4,6 +4,8 @@ import SwiftData
 struct SessionsListView: View {
     @Query(sort: \SessionModel.recordedAt, order: .reverse) private var sessions: [SessionModel]
     @Environment(\.modelContext) private var modelContext
+    @StateObject private var retryService = OfflineRetryService.shared
+    @StateObject private var networkMonitor = NetworkMonitor.shared
     @State private var isRetryingFailed = false
     @State private var retryProgress = 0
     @State private var retryTotal = 0
@@ -50,6 +52,20 @@ struct SessionsListView: View {
                         .fill(theme.surfacePrimary)
                 )
                 .padding(.top, Spacing.sm)
+            } else if retryService.isRetrying {
+                HStack(spacing: Spacing.xs) {
+                    ProgressView()
+                        .scaleEffect(0.7)
+                        .tint(theme.accent)
+                    Text("Analyzing \(retryService.retryCount) pending session\(retryService.retryCount == 1 ? "" : "s")…")
+                        .font(AppFont.body(size: 12))
+                        .foregroundStyle(theme.textSecondary)
+                }
+                .padding(.horizontal, Spacing.sm)
+                .padding(.vertical, 6)
+                .background(Capsule().fill(theme.surfacePrimary))
+                .padding(.top, Spacing.sm)
+                .transition(.move(edge: .top).combined(with: .opacity))
             }
         }
     }

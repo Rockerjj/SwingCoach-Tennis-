@@ -39,6 +39,10 @@ final class AuthService: ObservableObject {
 
     init() {
         checkExistingSession()
+        // If a previous session failed Supabase exchange, retry on next launch
+        if keychain.read(key: "needs_supabase_exchange") == "true" {
+            Task { await retrySupabaseExchange() }
+        }
     }
 
     // MARK: - Session Check
@@ -139,6 +143,32 @@ final class AuthService: ObservableObject {
             // Store a flag so we can retry exchange later
             keychain.save(key: "needs_supabase_exchange", value: "true")
             self.error = .supabaseExchangeFailed("Signed in locally. Cloud sync will retry automatically.")
+        }
+    }
+
+    // MARK: - Retry Pending Supabase Exchange
+    /// Called on launch if a previous Apple Sign In couldn't exchange with Supabase.
+    /// Retries once when network is available.
+    private func retrySupabaseExchange() async {
+        guard NetworkMonitor.shared.isConnected else { return }
+        guard let appleToken = keychain.read(key: "apple_id_token"),
+              let appleUserID = keychain.read(key: "apple_user_id"),
+              !appleToken.isEmpty else { return }
+
+        let name = keychain.read(key: "display_name") ?? ""
+
+        do {
+            let session = try await supabaseClient.auth.signInWithIdToken(
+                credentials: .init(provider: .apple, idToken: appleToken)
+            )
+            keychain.save(key: "supabase_access_token", value: session.accessToken)
+            keychain.save(key: "supabase_refresh_token", value: session.refreshToken)
+            keychain.save(key: "supabase_user_id", value: session.user.id.uuidString)
+            keychain.delete(key: "needs_supabase_exchange")
+            currentUserID = session.user.id.uuidString
+        } catch {
+            // Still failing — will retry next launch
+            print("Deferred Supabase exchange still failing: \(error)")
         }
     }
 

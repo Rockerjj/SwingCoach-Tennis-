@@ -29,8 +29,34 @@ final class PoseEstimationService: ObservableObject {
     struct ExtractionResult {
         let frames: [FramePoseData]
         let keyFrames: [(timestamp: Double, image: UIImage)]
+        let keyFrameURLs: [(timestamp: Double, url: URL)]   // disk-backed, for low-memory access
         let duration: Double
         let detectedStrokes: [DetectedStroke]
+
+        /// Clean up temp key frame files after they have been sent to the API
+        func cleanupTempFiles() {
+            for item in keyFrameURLs {
+                try? FileManager.default.removeItem(at: item.url)
+            }
+        }
+    }
+
+    // MARK: - Temp directory for key frame images
+    private var keyFrameTempDir: URL {
+        FileManager.default.temporaryDirectory
+            .appendingPathComponent("tennique_keyframes", isDirectory: true)
+    }
+
+    private func prepareKeyFrameTempDir() {
+        try? FileManager.default.createDirectory(at: keyFrameTempDir, withIntermediateDirectories: true)
+    }
+
+    private func writeToDisk(_ image: UIImage, timestamp: Double) -> URL? {
+        let filename = "kf_\(Int(timestamp * 1000)).jpg"
+        let url = keyFrameTempDir.appendingPathComponent(filename)
+        guard let data = image.jpegData(compressionQuality: 0.72) else { return nil }
+        try? data.write(to: url)
+        return url
     }
 
     // MARK: - Main Extraction Pipeline
@@ -69,8 +95,11 @@ final class PoseEstimationService: ObservableObject {
         reader.add(readerOutput)
         reader.startReading()
 
+        prepareKeyFrameTempDir()
+
         var allFrames: [FramePoseData] = []
-        var keyFrames: [(timestamp: Double, image: UIImage)] = []
+        // Store URLs on disk instead of UIImages in memory
+        var keyFrameURLs: [(timestamp: Double, url: URL)] = []
         var frameIndex = 0
         var previousWristVelocity: Double = 0
         var lastStrokeTimestamp: Double = -10
@@ -99,9 +128,12 @@ final class PoseEstimationService: ObservableObject {
                 let isStrokeApex = (isHighVelocity || isDeceleration) && (timestamp - lastStrokeTimestamp) > minTimeBetweenStrokes
                 previousWristVelocity = wristVelocity
 
-                if isStrokeApex && keyFrames.count < AppConstants.Analysis.maxKeyFrames {
+                if isStrokeApex && keyFrameURLs.count < AppConstants.Analysis.maxKeyFrames {
+                    // Write to disk immediately — never hold >1 UIImage in memory at a time
                     let image = imageFromPixelBuffer(pixelBuffer)
-                    keyFrames.append((timestamp: timestamp, image: image))
+                    if let url = writeToDisk(image, timestamp: timestamp) {
+                        keyFrameURLs.append((timestamp: timestamp, url: url))
+                    }
                     lastStrokeTimestamp = timestamp
                 }
             }
@@ -118,26 +150,48 @@ final class PoseEstimationService: ObservableObject {
         let detector = StrokeDetector()
         let detectedStrokes = detector.detectStrokes(frames: allFrames)
 
+        // Reorder key frames to prioritize stroke contact points
         if !detectedStrokes.isEmpty {
-            var strokeKeyFrames: [(timestamp: Double, image: UIImage)] = []
+            var strokeKeyURLs: [(timestamp: Double, url: URL)] = []
             for stroke in detectedStrokes {
                 let contactTime = stroke.contactTimestamp
-                if let existingKF = keyFrames.first(where: { abs($0.timestamp - contactTime) < 0.2 }) {
-                    strokeKeyFrames.append(existingKF)
+                if let existingKF = keyFrameURLs.first(where: { abs($0.timestamp - contactTime) < 0.2 }) {
+                    strokeKeyURLs.append(existingKF)
                 }
             }
-            if !strokeKeyFrames.isEmpty {
-                keyFrames = strokeKeyFrames + keyFrames.filter { kf in
-                    !strokeKeyFrames.contains(where: { abs($0.timestamp - kf.timestamp) < 0.5 })
+            if !strokeKeyURLs.isEmpty {
+                let others = keyFrameURLs.filter { kf in
+                    !strokeKeyURLs.contains(where: { abs($0.timestamp - kf.timestamp) < 0.5 })
+                }
+                keyFrameURLs = strokeKeyURLs + others
+            }
+        }
+
+        // If we don't have enough key frames, extract evenly-spaced ones
+        if keyFrameURLs.count < 5 {
+            let evenlySpaced = try await extractEvenlySpacedKeyFrames(from: videoURL, count: 10, duration: duration)
+            // Write these to disk too
+            for kf in evenlySpaced {
+                if let url = writeToDisk(kf.image, timestamp: kf.timestamp) {
+                    keyFrameURLs.append((timestamp: kf.timestamp, url: url))
                 }
             }
         }
 
-        if keyFrames.count < 5 {
-            keyFrames = try await extractEvenlySpacedKeyFrames(from: videoURL, count: 10, duration: duration)
+        // Load images from disk for the API call (only when needed)
+        let keyFrames: [(timestamp: Double, image: UIImage)] = keyFrameURLs.compactMap { item in
+            guard let data = try? Data(contentsOf: item.url),
+                  let image = UIImage(data: data) else { return nil }
+            return (timestamp: item.timestamp, image: image)
         }
 
-        return ExtractionResult(frames: allFrames, keyFrames: keyFrames, duration: duration, detectedStrokes: detectedStrokes)
+        return ExtractionResult(
+            frames: allFrames,
+            keyFrames: keyFrames,
+            keyFrameURLs: keyFrameURLs,
+            duration: duration,
+            detectedStrokes: detectedStrokes
+        )
     }
 
     // MARK: - Pose Detection

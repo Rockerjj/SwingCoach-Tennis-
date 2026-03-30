@@ -96,6 +96,9 @@ final class AnalysisViewModel: ObservableObject {
 
             applyResults(response, extractionFrames: extraction.frames, to: session, context: context)
 
+            // Clean up temp key frame files now that they've been sent to the API
+            extraction.cleanupTempFiles()
+
             progressCancellable?.cancel()
             analysisPhase = .complete
             isLoading = false

@@ -67,6 +67,12 @@
 		F01D4278751F2DFBB2621892 /* FeedbackService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7811A06F978478D32276993 /* FeedbackService.swift */; };
 		F8B34770D71406488E66ADE7 /* StrokeAnalysisModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52B20C486E4DDFFAB3786FAD /* StrokeAnalysisModel.swift */; };
 		FECCC292B1482A2044723AF3 /* SubscriptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0D9F2A15A6BC7093DDF9E23 /* SubscriptionService.swift */; };
+		A0B1C2D3E4F5A6B7C8D9E0F1 /* AngleCorrectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A1B2C3E4F5A6B7C8D9E0F1 /* AngleCorrectionView.swift */; };
+		C1D2E3F4A5B6C7D8E9F0A1B2 /* OfflineRetryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D2E3F4A5B6C7D8E9F0A1B2 /* OfflineRetryService.swift */; };
+		B0C1D2E3F4A5B6C7D8E9F0A1 /* OfflineRetryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0C1D2E3F4A5B6C7D8E9F0A1 /* OfflineRetryService.swift */; };
+		B1C2D3E4F5A6B7C8D9E0F1A2 /* BookmarkedInsight.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1C2D3E4F5A6B7C8D9E0F1A2 /* BookmarkedInsight.swift */; };
+		B2C3D4E5F6A7B8C9D0E1F2A3 /* SavedInsightsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2C3D4E5F6A7B8C9D0E1F2A3 /* SavedInsightsView.swift */; };
+		B3C4D5E6F7A8B9C0D1E2F3A4 /* SessionProgressViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3C4D5E6F7A8B9C0D1E2F3A4 /* SessionProgressViews.swift */; };
 		A1B2C3D4E5F6A7B8C9D0E1F2 /* DemoSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A2B3C4E5F6A7B8C9D0E1F2 /* DemoSession.swift */; };
 		A2B3C4D5E6F7A8B9C0D1E2F3 /* DemoAnalysisView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A3B4C5E6F7A8B9C0D1E2F3 /* DemoAnalysisView.swift */; };
 		A3B4C5D6E7F8A9B0C1D2E3F4 /* SkeletonWaitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3A4B5C6E7F8A9B0C1D2E3F4 /* SkeletonWaitView.swift */; };
@@ -137,7 +143,13 @@
 		F3CDD641DA3F46B6758D70C3 /* UserProfileModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileModel.swift; sourceTree = "<group>"; };
 		F69C954894BA2C837EF0C9BC /* ZoneIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoneIndicator.swift; sourceTree = "<group>"; };
 		F7811A06F978478D32276993 /* FeedbackService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackService.swift; sourceTree = "<group>"; };
+		E0C1D2E3F4A5B6C7D8E9F0A1 /* OfflineRetryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineRetryService.swift; sourceTree = "<group>"; };
 		FAFA957376E7CF08C013154F /* NetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitor.swift; sourceTree = "<group>"; };
+		D0A1B2C3E4F5A6B7C8D9E0F1 /* AngleCorrectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AngleCorrectionView.swift; sourceTree = "<group>"; };
+		F1D2E3F4A5B6C7D8E9F0A1B2 /* OfflineRetryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineRetryService.swift; sourceTree = "<group>"; };
+		E1C2D3E4F5A6B7C8D9E0F1A2 /* BookmarkedInsight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarkedInsight.swift; sourceTree = "<group>"; };
+		E2C3D4E5F6A7B8C9D0E1F2A3 /* SavedInsightsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedInsightsView.swift; sourceTree = "<group>"; };
+		E3C4D5E6F7A8B9C0D1E2F3A4 /* SessionProgressViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionProgressViews.swift; sourceTree = "<group>"; };
 		D1A2B3C4E5F6A7B8C9D0E1F2 /* DemoSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoSession.swift; sourceTree = "<group>"; };
 		D2A3B4C5E6F7A8B9C0D1E2F3 /* DemoAnalysisView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoAnalysisView.swift; sourceTree = "<group>"; };
 		D3A4B5C6E7F8A9B0C1D2E3F4 /* SkeletonWaitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkeletonWaitView.swift; sourceTree = "<group>"; };
@@ -176,6 +188,8 @@
 			isa = PBXGroup;
 			children = (
 				0B8D0E45F450F615F6E128EC /* ProgressDashboardView.swift */,
+				E2C3D4E5F6A7B8C9D0E1F2A3 /* SavedInsightsView.swift */,
+				E3C4D5E6F7A8B9C0D1E2F3A4 /* SessionProgressViews.swift */,
 			);
 			path = Progress;
 			sourceTree = "<group>";
@@ -214,6 +228,7 @@
 			isa = PBXGroup;
 			children = (
 				3184D5E34471901E174E1757 /* AnalysisResponse.swift */,
+				E1C2D3E4F5A6B7C8D9E0F1A2 /* BookmarkedInsight.swift */,
 				D1A2B3C4E5F6A7B8C9D0E1F2 /* DemoSession.swift */,
 				C45B5057646AA6C903DBE2AD /* PoseData.swift */,
 				C65D919DC64EC70453787CCF /* ProgressSnapshotModel.swift */,
@@ -237,6 +252,7 @@
 		72C8CCBB21110646AF327E4F /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				D0A1B2C3E4F5A6B7C8D9E0F1 /* AngleCorrectionView.swift */,
 				9A24F290A8A8FDD57A8E52CF /* FeedbackPromptView.swift */,
 				B62CF863477F0A539F5EF6C9 /* HeroInsightCard.swift */,
 				7AAACC588C2F7A879D0CED36 /* KeyFixesCard.swift */,
@@ -279,6 +295,8 @@
 				F7811A06F978478D32276993 /* FeedbackService.swift */,
 				CF770FB15B1BCAD9680A0591 /* LiveSwingAnalyzer.swift */,
 				FAFA957376E7CF08C013154F /* NetworkMonitor.swift */,
+				E0C1D2E3F4A5B6C7D8E9F0A1 /* OfflineRetryService.swift */,
+				F1D2E3F4A5B6C7D8E9F0A1B2 /* OfflineRetryService.swift */,
 				7062F0D27CE2249742EA8C2B /* OverlayRenderer.swift */,
 				B5B535518DBC44C5C7DEA00D /* PoseEstimationService.swift */,
 				0387E07E847607E871D2C68D /* ProComparisonService.swift */,
@@ -459,7 +477,11 @@
 				03DC25C0F12D0D84A9ED71A3 /* Color+Hex.swift in Sources */,
 				2814EE0217286EDB5E3CEF82 /* Constants.swift in Sources */,
 				B1ABADD10DF5681DB9D8746C /* CourtVisionTheme.swift in Sources */,
+				A0B1C2D3E4F5A6B7C8D9E0F1 /* AngleCorrectionView.swift in Sources */,
+				B1C2D3E4F5A6B7C8D9E0F1A2 /* BookmarkedInsight.swift in Sources */,
 				A1B2C3D4E5F6A7B8C9D0E1F2 /* DemoSession.swift in Sources */,
+				B2C3D4E5F6A7B8C9D0E1F2A3 /* SavedInsightsView.swift in Sources */,
+				B3C4D5E6F7A8B9C0D1E2F3A4 /* SessionProgressViews.swift in Sources */,
 				A2B3C4D5E6F7A8B9C0D1E2F3 /* DemoAnalysisView.swift in Sources */,
 				4FFE162779A31A539C8B403E /* DesignSystem.swift in Sources */,
 				A6B7C8D9E0F1A2B3C4D5E6F7 /* DrillPlanView.swift in Sources */,
@@ -472,6 +494,8 @@
 				2C329E9AB45FC19844B30E78 /* LiveSwingAnalyzer.swift in Sources */,
 				C0E24905A277C542BAE2A773 /* MainTabView.swift in Sources */,
 				97BB78922BA20EE6C16B6948 /* NetworkMonitor.swift in Sources */,
+				B0C1D2E3F4A5B6C7D8E9F0A1 /* OfflineRetryService.swift in Sources */,
+				C1D2E3F4A5B6C7D8E9F0A1B2 /* OfflineRetryService.swift in Sources */,
 				A14C740EB3D847596EE7825F /* OnboardingView.swift in Sources */,
 				51C60956A3844E272168154C /* OverlayRenderer.swift in Sources */,
 				50C2E62466DEB4397E5B847B /* PhaseDetailCard.swift in Sources */,
