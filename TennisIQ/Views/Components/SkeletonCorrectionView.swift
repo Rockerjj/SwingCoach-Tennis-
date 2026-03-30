@@ -15,7 +15,7 @@ struct SkeletonCorrectionView: View {
     @State private var animationDirection: Double = 1.0
 
     private let theme = DesignSystem.current
-    private let parsedAngles: [ParsedAngle]
+    private let parsedAngles: [CorrectionAngle]
     private let correctedJoints: [JointData]
 
     init(videoURL: URL?, userJoints: [JointData], phaseTimestamp: Double, keyAngles: [String], phase: SwingPhase) {

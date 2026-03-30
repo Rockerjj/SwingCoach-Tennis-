@@ -29,8 +29,8 @@ enum SkeletonTopology {
     ]
 }
 
-/// Parsed angle measurement with ideal range
-struct ParsedAngle {
+/// Parsed angle measurement with ideal range (used by SkeletonCorrectionView)
+struct CorrectionAngle {
     let name: String
     let measured: Double
     let idealLow: Double
@@ -43,7 +43,7 @@ struct ParsedAngle {
 
 enum AngleParser {
     /// Parse strings like "Elbow: 102° (ideal: 155-175°)" or "Knee: 142° (ideal: 130-155°)"
-    static func parse(_ angleString: String) -> ParsedAngle? {
+    static func parse(_ angleString: String) -> CorrectionAngle? {
         let cleaned = angleString.replacingOccurrences(of: "°", with: "")
 
         // Extract the name (everything before the colon)
@@ -57,7 +57,7 @@ enum AngleParser {
 
         // Extract ideal range — numbers after "ideal:"
         guard let idealRange = afterColon.range(of: "ideal", options: .caseInsensitive) else {
-            return ParsedAngle(name: name, measured: measured, idealLow: measured, idealHigh: measured)
+            return CorrectionAngle(name: name, measured: measured, idealLow: measured, idealHigh: measured)
         }
 
         let afterIdeal = String(afterColon[idealRange.upperBound...])
@@ -65,7 +65,7 @@ enum AngleParser {
 
         guard idealNumbers.count >= 2 else { return nil }
 
-        return ParsedAngle(
+        return CorrectionAngle(
             name: name,
             measured: measured,
             idealLow: idealNumbers[0],
@@ -74,7 +74,7 @@ enum AngleParser {
     }
 
     /// Parse all key_angles from a PhaseDetail into structured data
-    static func parseAll(_ keyAngles: [String]) -> [ParsedAngle] {
+    static func parseAll(_ keyAngles: [String]) -> [CorrectionAngle] {
         keyAngles.compactMap { parse($0) }
     }
 
