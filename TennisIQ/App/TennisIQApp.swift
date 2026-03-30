@@ -33,6 +33,10 @@ struct TennisIQApp: App {
                 .preferredColorScheme(.dark)
                 .onAppear {
                     analytics.trackEvent(.appOpened)
+                    // Wire offline retry service so pending sessions auto-retry on reconnect
+                    Task { @MainActor in
+                        OfflineRetryService.shared.configure(container: sharedModelContainer)
+                    }
                 }
         }
     }
