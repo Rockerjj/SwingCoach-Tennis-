@@ -28,6 +28,7 @@ final class PlaybackViewModel: ObservableObject {
     private var rawTrajectoryBuffer: [CGPoint] = []
     private var previousSmoothedJoints: [String: (x: Double, y: Double)] = [:]
     private let smoothingFactor: Double = 0.35
+    private var allStrokes: [StrokeAnalysisModel] = []
 
     init(url: URL) {
         self.videoURL = url
@@ -36,6 +37,7 @@ final class PlaybackViewModel: ObservableObject {
 
     func configure(frames: [FramePoseData], strokes: [StrokeAnalysisModel]) {
         sortedFrames = frames.sorted { $0.timestamp < $1.timestamp }
+        allStrokes = strokes.sorted { $0.timestamp < $1.timestamp }
         strokeWindows = strokes.map { (start: max(0, $0.timestamp - 1.0), end: $0.timestamp + 1.0) }
         attachTimeObserver()
         loadVideoSize()
@@ -110,6 +112,14 @@ final class PlaybackViewModel: ObservableObject {
             }
         }
 
+        // Auto-highlight the stroke pill closest to the current playback time
+        if player.rate > 0, !allStrokes.isEmpty {
+            let nearest = allStrokes.min { abs($0.timestamp - seconds) < abs($1.timestamp - seconds) }
+            if let nearest, abs(nearest.timestamp - seconds) < 3.0, nearest.id != selectedStrokeID {
+                selectedStrokeID = nearest.id
+            }
+        }
+
         if autoSlowEnabled && inWindow {
             if player.rate != 0 && player.rate != 0.25 {
                 player.rate = 0.25
@@ -132,7 +142,14 @@ final class PlaybackViewModel: ObservableObject {
 
     func selectStroke(_ stroke: StrokeAnalysisModel) {
         selectedStrokeID = stroke.id
-        seekTo(timestamp: stroke.timestamp)
+        // Seek to the start of the swing (ready position), not the contact point.
+        // This lets the user watch the full stroke from preparation through follow-through.
+        if let breakdown = stroke.phaseBreakdown,
+           let readyDetail = breakdown.detail(for: .readyPosition) {
+            seekTo(timestamp: max(0, readyDetail.timestamp - 0.3))
+        } else {
+            seekTo(timestamp: max(0, stroke.timestamp - 1.5))
+        }
     }
 
     private func applySmoothingToJoints(_ joints: [JointData]) -> [JointData] {
@@ -397,6 +414,13 @@ struct AnalysisResultsView: View {
                 selectedStroke = session.strokeAnalyses.first
             }
             playback.configure(frames: session.poseFrames, strokes: session.strokeAnalyses)
+        }
+        .onChange(of: playback.selectedStrokeID) { _, newID in
+            guard let newID,
+                  newID != selectedStroke?.id,
+                  let match = session.strokeAnalyses.first(where: { $0.id == newID })
+            else { return }
+            selectedStroke = match
         }
         .onDisappear {
             playback.cleanup()

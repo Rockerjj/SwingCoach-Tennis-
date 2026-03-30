@@ -283,9 +283,9 @@ final class StrokeDetector {
             }
         }
 
-        // Volleys have compact motion — typically < 0.15 normalized distance
-        // Groundstrokes with full backswing are typically > 0.25
-        let isCompact = totalTravel < 0.18
+        // Volleys have very compact motion — typically < 0.10 normalized distance
+        // Groundstrokes with full backswing are typically > 0.20
+        let isCompact = totalTravel < 0.12
 
         // Also check: short time from first movement to contact (< 0.4s of actual motion)
         let movingFrames = recentFrames.filter { f in
@@ -293,7 +293,7 @@ final class StrokeDetector {
             return w != nil && w!.confidence >= minConfidence
         }
         let swingDuration = (movingFrames.last?.timestamp ?? contactTime) - (movingFrames.first?.timestamp ?? contactTime)
-        let isQuick = swingDuration < 0.5
+        let isQuick = swingDuration < 0.35
 
         return isCompact && isQuick
     }
