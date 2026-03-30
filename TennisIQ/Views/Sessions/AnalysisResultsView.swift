@@ -1461,6 +1461,12 @@ struct CoachingCard: View {
             // What to Fix — always visible
             WhatToFixSection(rationale: stroke.gradingRationale)
 
+            // Visual Angle Corrections — animated skeleton showing actual → ideal
+            if let joints = stroke.jointSnapshot, !joints.isEmpty,
+               let overlay = stroke.overlayInstructions {
+                AngleCorrectionStrip(joints: joints, angleStrings: overlay.anglesToHighlight)
+            }
+
             // Mechanics Breakdown — collapsed by default
             CollapsibleSection(title: "MECHANICS BREAKDOWN", icon: "gearshape.2", isExpanded: $showMechanics) {
                 MechanicsBreakdownSection(mechanics: stroke.mechanics, compactMode: true, scrollToPhases: scrollToPhases)
