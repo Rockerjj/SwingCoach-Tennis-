@@ -62,7 +62,7 @@ struct SkeletonCorrectionView: View {
             playbackControls
         }
         .padding(Spacing.md)
-        .background(theme.cardBackground)
+        .background(theme.surfacePrimary)
         .clipShape(RoundedRectangle(cornerRadius: Radius.lg))
         .task {
             await extractFrame()
