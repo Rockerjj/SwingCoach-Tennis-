@@ -67,6 +67,7 @@
 		F01D4278751F2DFBB2621892 /* FeedbackService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7811A06F978478D32276993 /* FeedbackService.swift */; };
 		F8B34770D71406488E66ADE7 /* StrokeAnalysisModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52B20C486E4DDFFAB3786FAD /* StrokeAnalysisModel.swift */; };
 		FECCC292B1482A2044723AF3 /* SubscriptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0D9F2A15A6BC7093DDF9E23 /* SubscriptionService.swift */; };
+		A0B1C2D3E4F5A6B7C8D9E0F1 /* AngleCorrectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A1B2C3E4F5A6B7C8D9E0F1 /* AngleCorrectionView.swift */; };
 		A1B2C3D4E5F6A7B8C9D0E1F2 /* DemoSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A2B3C4E5F6A7B8C9D0E1F2 /* DemoSession.swift */; };
 		A2B3C4D5E6F7A8B9C0D1E2F3 /* DemoAnalysisView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A3B4C5E6F7A8B9C0D1E2F3 /* DemoAnalysisView.swift */; };
 		A3B4C5D6E7F8A9B0C1D2E3F4 /* SkeletonWaitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3A4B5C6E7F8A9B0C1D2E3F4 /* SkeletonWaitView.swift */; };
@@ -138,6 +139,7 @@
 		F69C954894BA2C837EF0C9BC /* ZoneIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoneIndicator.swift; sourceTree = "<group>"; };
 		F7811A06F978478D32276993 /* FeedbackService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackService.swift; sourceTree = "<group>"; };
 		FAFA957376E7CF08C013154F /* NetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitor.swift; sourceTree = "<group>"; };
+		D0A1B2C3E4F5A6B7C8D9E0F1 /* AngleCorrectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AngleCorrectionView.swift; sourceTree = "<group>"; };
 		D1A2B3C4E5F6A7B8C9D0E1F2 /* DemoSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoSession.swift; sourceTree = "<group>"; };
 		D2A3B4C5E6F7A8B9C0D1E2F3 /* DemoAnalysisView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoAnalysisView.swift; sourceTree = "<group>"; };
 		D3A4B5C6E7F8A9B0C1D2E3F4 /* SkeletonWaitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkeletonWaitView.swift; sourceTree = "<group>"; };
@@ -237,6 +239,7 @@
 		72C8CCBB21110646AF327E4F /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				D0A1B2C3E4F5A6B7C8D9E0F1 /* AngleCorrectionView.swift */,
 				9A24F290A8A8FDD57A8E52CF /* FeedbackPromptView.swift */,
 				B62CF863477F0A539F5EF6C9 /* HeroInsightCard.swift */,
 				7AAACC588C2F7A879D0CED36 /* KeyFixesCard.swift */,
@@ -459,6 +462,7 @@
 				03DC25C0F12D0D84A9ED71A3 /* Color+Hex.swift in Sources */,
 				2814EE0217286EDB5E3CEF82 /* Constants.swift in Sources */,
 				B1ABADD10DF5681DB9D8746C /* CourtVisionTheme.swift in Sources */,
+				A0B1C2D3E4F5A6B7C8D9E0F1 /* AngleCorrectionView.swift in Sources */,
 				A1B2C3D4E5F6A7B8C9D0E1F2 /* DemoSession.swift in Sources */,
 				A2B3C4D5E6F7A8B9C0D1E2F3 /* DemoAnalysisView.swift in Sources */,
 				4FFE162779A31A539C8B403E /* DesignSystem.swift in Sources */,
