@@ -310,6 +310,25 @@ struct AnalysisResultsView: View {
         return FileManager.default.fileExists(atPath: fileURL.path) ? fileURL : nil
     }
 
+    @ViewBuilder
+    private func correctionView(for phase: SwingPhase, detail: PhaseDetail, poseFrames: [FramePoseData]) -> some View {
+        let phaseJoints = poseFrames
+            .min(by: { abs($0.timestamp - detail.timestamp) < abs($1.timestamp - detail.timestamp) })?
+            .joints ?? []
+
+        if !phaseJoints.isEmpty {
+            SkeletonCorrectionView(
+                videoURL: resolvedVideoURL,
+                userJoints: phaseJoints,
+                phaseTimestamp: detail.timestamp,
+                keyAngles: detail.keyAngles,
+                phase: phase
+            )
+            .padding(.horizontal, Spacing.md)
+            .padding(.top, Spacing.sm)
+        }
+    }
+
     init(session: SessionModel) {
         self.session = session
         _viewModel = StateObject(wrappedValue: AnalysisViewModel(session: session))
@@ -599,23 +618,7 @@ struct AnalysisResultsView: View {
                                let detail = breakdown.detail(for: phase),
                                detail.status != .inZone,
                                !detail.keyAngles.isEmpty {
-                                let phaseJoints = session.poseFrames
-                                    .min(by: { abs($0.timestamp - detail.timestamp) < abs($1.timestamp - detail.timestamp) })?
-                                    .joints ?? []
-
-                                if !phaseJoints.isEmpty {
-                                    SkeletonCorrectionView(
-                                        videoURL: resolvedVideoURL,
-                                        userJoints: phaseJoints,
-                                        phaseTimestamp: detail.timestamp,
-                                        keyAngles: detail.keyAngles,
-                                        phase: phase
-                                    )
-                                    .padding(.horizontal, Spacing.md)
-                                    .padding(.top, Spacing.sm)
-                                    .transition(.opacity.combined(with: .scale(scale: 0.95)))
-                                    .animation(.easeInOut(duration: 0.3), value: selectedPhase)
-                                }
+                                correctionView(for: phase, detail: detail, poseFrames: session.poseFrames)
                             }
                         }
                     }
