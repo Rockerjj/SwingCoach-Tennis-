@@ -67,23 +67,30 @@ final class AnalysisViewModel: ObservableObject {
                 try? context.save()
             }
 
+            let sampledStrokes = selectRepresentativeStrokes(from: extraction.detectedStrokes)
+            let sampledKeyFrames = filterKeyFrames(extraction.keyFrames, for: sampledStrokes)
+
+            // Only send frames near sampled strokes to reduce payload size
+            let relevantFrames = extraction.frames.filter { frame in
+                sampledStrokes.contains { abs($0.contactTimestamp - frame.timestamp) < 2.0 }
+            }
+
             let payload = SessionPosePayload(
                 sessionID: session.id.uuidString,
                 durationSeconds: session.durationSeconds,
                 fps: AppConstants.Camera.processingFPS,
-                frames: extraction.frames,
-                keyFrameTimestamps: extraction.keyFrames.map(\.timestamp),
+                frames: relevantFrames,
+                keyFrameTimestamps: sampledKeyFrames.map(\.timestamp),
                 skillLevel: UserDefaults.standard.string(forKey: "skillLevel") ?? "beginner",
                 handedness: Handedness.current.rawValue,
-                detectedStrokes: extraction.detectedStrokes
+                detectedStrokes: sampledStrokes
             )
 
-            // Use Supabase JWT if available, fall back to Apple token or dev token
             let authToken = AuthService().authToken
 
             let response = try await apiService.analyzeSession(
                 posePayload: payload,
-                keyFrameImages: extraction.keyFrames.map { (timestamp: $0.timestamp, image: $0.image) },
+                keyFrameImages: sampledKeyFrames.map { (timestamp: $0.timestamp, image: $0.image) },
                 authToken: authToken
             )
 
@@ -147,6 +154,49 @@ final class AnalysisViewModel: ObservableObject {
     private func nearestFrame(to timestamp: Double, from frames: [FramePoseData]) -> FramePoseData? {
         guard !frames.isEmpty else { return nil }
         return frames.min { abs($0.timestamp - timestamp) < abs($1.timestamp - timestamp) }
+    }
+
+    // MARK: - Representative Stroke Sampling
+
+    /// For longer sessions with many strokes, pick one representative per stroke type.
+    /// Selects the stroke with the most visible (high-confidence) angle measurements,
+    /// so GPT gets the clearest data to work with.
+    private func selectRepresentativeStrokes(from strokes: [DetectedStroke], maxPerType: Int = 2) -> [DetectedStroke] {
+        guard strokes.count > 4 else { return strokes }
+
+        var grouped: [String: [DetectedStroke]] = [:]
+        for stroke in strokes {
+            grouped[stroke.type, default: []].append(stroke)
+        }
+
+        var selected: [DetectedStroke] = []
+        for (_, typeStrokes) in grouped {
+            let ranked = typeStrokes.sorted { a, b in
+                visibleAngleCount(a) > visibleAngleCount(b)
+            }
+            selected.append(contentsOf: ranked.prefix(maxPerType))
+        }
+
+        return selected.sorted { $0.contactTimestamp < $1.contactTimestamp }
+    }
+
+    private func visibleAngleCount(_ stroke: DetectedStroke) -> Int {
+        stroke.phases.values.reduce(0) { count, phase in
+            count + phase.angles.values.filter(\.visible).count
+        }
+    }
+
+    /// Keep only key frames that are near the selected strokes' contact points.
+    private func filterKeyFrames(
+        _ keyFrames: [(timestamp: Double, image: UIImage)],
+        for strokes: [DetectedStroke]
+    ) -> [(timestamp: Double, image: UIImage)] {
+        let contactTimes = strokes.map(\.contactTimestamp)
+        let relevant = keyFrames.filter { kf in
+            contactTimes.contains { abs($0 - kf.timestamp) < 1.5 }
+        }
+        if relevant.count >= 2 { return Array(relevant.prefix(6)) }
+        return Array(keyFrames.prefix(6))
     }
 
     enum AnalysisError: LocalizedError {

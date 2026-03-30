@@ -33,7 +33,8 @@ ANALYSIS_PROMPT_TEMPLATE = """Evaluate this tennis session. Player skill level: 
 
 ## Session Info
 - Duration: {duration_seconds}s
-- Strokes detected on-device: {stroke_count}
+- Total strokes detected on-device: {stroke_count}
+- Representative strokes sent for analysis (best data quality per stroke type):
 
 ## Pre-Computed Stroke Data
 The following strokes were detected by on-device pose analysis. Timestamps and angles are REAL MEASUREMENTS from the video -- use them as-is.
