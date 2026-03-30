@@ -593,6 +593,30 @@ struct AnalysisResultsView: View {
                                 videoURL: resolvedVideoURL,
                                 poseFrames: session.poseFrames
                             )
+
+                            // Correction animation for out-of-zone phases
+                            if let phase = selectedPhase,
+                               let detail = breakdown.detail(for: phase),
+                               detail.status != .inZone,
+                               !detail.keyAngles.isEmpty {
+                                let phaseJoints = session.poseFrames
+                                    .min(by: { abs($0.timestamp - detail.timestamp) < abs($1.timestamp - detail.timestamp) })?
+                                    .joints ?? []
+
+                                if !phaseJoints.isEmpty {
+                                    SkeletonCorrectionView(
+                                        videoURL: resolvedVideoURL,
+                                        userJoints: phaseJoints,
+                                        phaseTimestamp: detail.timestamp,
+                                        keyAngles: detail.keyAngles,
+                                        phase: phase
+                                    )
+                                    .padding(.horizontal, Spacing.md)
+                                    .padding(.top, Spacing.sm)
+                                    .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                                    .animation(.easeInOut(duration: 0.3), value: selectedPhase)
+                                }
+                            }
                         }
                     }
                     .id("section_phases")
