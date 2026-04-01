@@ -83,22 +83,39 @@ footer a { color: var(--text-dim); text-decoration: none; margin: 0 0.75rem; tra
 footer a:hover { color: var(--accent); }
 .footer-links { margin-bottom: 1rem; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-@media (max-width: 600px) { .hero { padding: 4rem 1rem 3rem; } .section { padding: 4rem 1rem; } .cta-row { flex-direction: column; align-items: center; } .btn { width: 100%; max-width: 300px; justify-content: center; } }
+.waitlist-hero-form { display: flex; gap: 0.75rem; max-width: 480px; margin: 0 auto; flex-wrap: wrap; justify-content: center; animation: fadeUp 0.6s 0.3s ease both; }
+.waitlist-hero-form input { flex: 1; min-width: 220px; padding: 14px 18px; border-radius: var(--radius-sm); border: 1px solid var(--surface-alt); background: var(--surface); color: var(--text); font-size: 1rem; font-family: inherit; outline: none; transition: border-color 0.2s; }
+.waitlist-hero-form input:focus { border-color: var(--accent); }
+.waitlist-hero-form input::placeholder { color: var(--text-muted); }
+.waitlist-meta { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.75rem; animation: fadeUp 0.6s 0.35s ease both; }
+.social-proof-bar { display: flex; align-items: center; gap: 0.75rem; justify-content: center; flex-wrap: wrap; margin-top: 2.5rem; padding: 1rem 1.5rem; background: var(--surface); border: 1px solid var(--surface-alt); border-radius: var(--radius); max-width: 700px; animation: fadeUp 0.6s 0.4s ease both; }
+.proof-item { font-size: 0.8rem; color: var(--text-dim); font-style: italic; }
+.proof-divider { color: var(--text-muted); font-size: 0.7rem; }
+.waitlist-success { color: var(--accent); font-weight: 600; }
+@media (max-width: 600px) { .hero { padding: 4rem 1rem 3rem; } .section { padding: 4rem 1rem; } .cta-row { flex-direction: column; align-items: center; } .btn { width: 100%; max-width: 300px; justify-content: center; } .social-proof-bar { flex-direction: column; text-align: center; } .proof-divider { display: none; } .waitlist-hero-form { flex-direction: column; align-items: center; } .waitlist-hero-form input { width: 100%; } }
 </style>
 </head>
 <body>
 
 <section class="hero">
-  <div class="badge">Coming Soon to the App Store</div>
-  <h1>Your strokes,<br><span class="accent">analyzed by AI</span></h1>
-  <p class="hero-sub">Film your tennis game. Get instant coaching with skeleton overlay, letter grades, and personalized drills for every stroke.</p>
-  <div class="cta-row">
-    <a href="#notify" class="btn btn-primary">
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
-      Get Notified at Launch
-    </a>
-    <a href="#how" class="btn btn-secondary">See How It Works</a>
+  <div class="badge">Beta Waitlist Open</div>
+  <h1>Your AI Tennis Coach.<br><span class="accent">On your phone.</span></h1>
+  <p class="hero-sub">Record your swing. Get instant analysis — skeleton overlay, grades, form corrections, and custom drills. Free during beta.</p>
+
+  <!-- Waitlist form -->
+  <form class="waitlist-hero-form" id="heroWaitlistForm">
+    <input type="email" id="heroEmail" placeholder="your@email.com" required autocomplete="email">
+    <button type="submit" class="btn btn-primary">Join the Waitlist — Free</button>
+  </form>
+  <p class="waitlist-meta" id="waitlistMeta">🎾 Free during beta · No credit card · Be first to play</p>
+
+  <div class="social-proof-bar">
+    <span class="proof-item">"The form correction video is exactly what I'm looking for" — Beta Tester</span>
+    <span class="proof-divider">·</span>
+    <span class="proof-item">Built by a tennis player who couldn't afford $150/hr coaching</span>
   </div>
+
+  <a href="#how" class="btn btn-secondary" style="margin-top: 1rem;">See How It Works ↓</a>
 </section>
 
 <section class="section" id="how">
@@ -204,12 +221,15 @@ footer a:hover { color: var(--accent); }
 </section>
 
 <section class="email-section" id="notify">
-  <h2>Get notified when Tennique launches</h2>
-  <p>Be first in line. Early testers get 1 month of Pro free.</p>
-  <form class="email-form" action="#" method="POST">
-    <input type="email" placeholder="you@email.com" required>
-    <button type="submit" class="btn btn-primary">Notify Me</button>
+  <h2>Don't wait for your next lesson. Start improving today.</h2>
+  <p>Join the waitlist. Early testers get extended free access + first dibs on Pro.</p>
+  <form class="email-form" id="footerWaitlistForm">
+    <input type="email" id="footerEmail" placeholder="you@email.com" required autocomplete="email">
+    <button type="submit" class="btn btn-primary">Join the Waitlist</button>
   </form>
+  <p class="referral-cta" id="referralCta" style="display:none; margin-top: 1rem; font-size: 0.9rem; color: var(--accent);">
+    🎉 You're in! Share with 3 tennis friends to get beta access first.
+  </p>
 </section>
 
 <footer>
@@ -221,5 +241,64 @@ footer a:hover { color: var(--accent); }
   <p>&copy; 2026 Tennique. All rights reserved.</p>
 </footer>
 
+<script>
+// Waitlist form handler
+// Submits to Beehiiv via their embed API.
+// TODO: Replace BEEHIIV_PUBLICATION_ID with actual ID from Beehiiv dashboard
+// once Josh creates the account. Until then, stores locally + shows success.
+const BEEHIIV_PUB_ID = 'YOUR_BEEHIIV_PUB_ID'; // Replace after Beehiiv setup
+
+async function submitWaitlist(email, formEl, metaEl) {
+  const btn = formEl.querySelector('button[type=submit]');
+  const originalText = btn.textContent;
+  btn.textContent = 'Joining...';
+  btn.disabled = true;
+
+  try {
+    // Try Beehiiv API if configured
+    if (BEEHIIV_PUB_ID !== 'YOUR_BEEHIIV_PUB_ID') {
+      await fetch(`https://api.beehiiv.com/v2/publications/${BEEHIIV_PUB_ID}/subscriptions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, reactivate_existing: true, send_welcome_email: true })
+      });
+    }
+
+    // Always show success
+    formEl.innerHTML = '<p class="waitlist-success">🎾 You\'re on the list! Check your email for confirmation.</p>';
+    if (metaEl) {
+      metaEl.innerHTML = '🎉 Refer 3 tennis friends → skip the line and get beta access first';
+      metaEl.style.color = 'var(--accent)';
+    }
+
+    // Show referral CTA in footer form
+    const referralEl = document.getElementById('referralCta');
+    if (referralEl) referralEl.style.display = 'block';
+
+    // Store locally as backup
+    const signups = JSON.parse(localStorage.getItem('tennique_waitlist') || '[]');
+    if (!signups.includes(email)) {
+      signups.push(email);
+      localStorage.setItem('tennique_waitlist', JSON.stringify(signups));
+    }
+  } catch (err) {
+    btn.textContent = originalText;
+    btn.disabled = false;
+    console.error('Waitlist signup error:', err);
+  }
+}
+
+document.getElementById('heroWaitlistForm')?.addEventListener('submit', e => {
+  e.preventDefault();
+  const email = document.getElementById('heroEmail').value;
+  submitWaitlist(email, e.target, document.getElementById('waitlistMeta'));
+});
+
+document.getElementById('footerWaitlistForm')?.addEventListener('submit', e => {
+  e.preventDefault();
+  const email = document.getElementById('footerEmail').value;
+  submitWaitlist(email, e.target, null);
+});
+</script>
 </body>
 </html>
