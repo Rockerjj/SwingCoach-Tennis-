@@ -66,8 +66,20 @@ struct AngleCorrectionView: View {
     }
 
     /// Current display angle (interpolated between actual and ideal)
+    /// Clamped to 0-360 to prevent nonsensical negative values from display
     private var displayAngle: Double {
-        actualAngle + (idealAngle - actualAngle) * animationProgress
+        let raw = actualAngle + (idealAngle - actualAngle) * animationProgress
+        return max(0, min(360, raw))
+    }
+
+    /// Sanitized actual angle — clamp negative/impossible values
+    private var sanitizedActualAngle: Double {
+        max(0, min(360, actualAngle))
+    }
+
+    /// Sanitized ideal angle
+    private var sanitizedIdealAngle: Double {
+        max(0, min(360, idealAngle))
     }
 
     /// Build the interpolated joint positions
@@ -139,11 +151,11 @@ struct AngleCorrectionView: View {
 
             // Label row
             HStack(spacing: Spacing.sm) {
-                // Actual angle badge
+                // Actual angle badge — use sanitized value (clamp negatives)
                 AngleBadge(
                     label: "Your \(label)",
-                    angle: actualAngle,
-                    color: angleDiffSeverityColor(actual: actualAngle, ideal: idealAngle),
+                    angle: sanitizedActualAngle,
+                    color: angleDiffSeverityColor(actual: sanitizedActualAngle, ideal: sanitizedIdealAngle),
                     isActive: animationProgress < 0.5
                 )
 
@@ -154,7 +166,7 @@ struct AngleCorrectionView: View {
                 // Ideal angle badge
                 AngleBadge(
                     label: "Ideal \(label)",
-                    angle: idealAngle,
+                    angle: sanitizedIdealAngle,
                     color: theme.success,
                     isActive: animationProgress >= 0.5
                 )

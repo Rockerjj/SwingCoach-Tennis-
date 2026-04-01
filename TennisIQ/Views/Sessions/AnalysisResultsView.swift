@@ -1716,6 +1716,7 @@ struct ExpandableMechanicRow: View {
     let detail: MechanicDetail
     var compactMode: Bool = false
     @State private var isExpanded = false
+    @State private var showingSheet = false
     private let theme = DesignSystem.current
 
     var body: some View {
@@ -1729,12 +1730,19 @@ struct ExpandableMechanicRow: View {
             RoundedRectangle(cornerRadius: Radius.sm)
                 .fill(theme.surfaceSecondary)
         )
+        // In compact mode, show a sheet with the full detail on tap
+        .sheet(isPresented: $showingSheet) {
+            MechanicDetailSheet(name: name, detail: detail)
+        }
     }
 
     private var mechanicHeader: some View {
         Button(action: {
-            guard !compactMode else { return }
-            withAnimation(.easeInOut(duration: 0.15)) { isExpanded.toggle() }
+            if compactMode {
+                showingSheet = true
+            } else {
+                withAnimation(.easeInOut(duration: 0.15)) { isExpanded.toggle() }
+            }
         }) {
             HStack {
                 Text(name)
@@ -1799,6 +1807,125 @@ struct ExpandableMechanicRow: View {
         .padding(.horizontal, Spacing.sm)
         .padding(.bottom, Spacing.sm)
         .transition(.opacity)
+    }
+}
+
+// MARK: - Mechanic Detail Sheet (shown when tapping a grade in compact mode)
+
+struct MechanicDetailSheet: View {
+    let name: String
+    let detail: MechanicDetail
+    @Environment(\.dismiss) private var dismiss
+    private let theme = DesignSystem.current
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: Spacing.md) {
+                    // Score header
+                    HStack(spacing: Spacing.md) {
+                        ScoreBar(score: detail.score)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(name)
+                                .font(AppFont.body(size: 18, weight: .bold))
+                                .foregroundStyle(theme.textPrimary)
+                            Text(scoreLabel(detail.score))
+                                .font(AppFont.body(size: 13))
+                                .foregroundStyle(scoreColor(detail.score))
+                        }
+                        Spacer()
+                    }
+                    .padding(Spacing.md)
+                    .background(RoundedRectangle(cornerRadius: Radius.md).fill(theme.surfaceSecondary))
+
+                    // Analysis note
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
+                        Label("Analysis", systemImage: "text.magnifyingglass")
+                            .font(AppFont.body(size: 12, weight: .bold))
+                            .foregroundStyle(theme.textTertiary)
+                        Text(detail.note)
+                            .font(AppFont.body(size: 14))
+                            .foregroundStyle(theme.textPrimary)
+                            .lineSpacing(3)
+                    }
+                    .padding(Spacing.md)
+                    .background(RoundedRectangle(cornerRadius: Radius.md).fill(theme.surfaceSecondary))
+
+                    // Why this score
+                    if let why = detail.whyScore, !why.isEmpty {
+                        VStack(alignment: .leading, spacing: Spacing.xs) {
+                            Label("Why this score", systemImage: "questionmark.circle")
+                                .font(AppFont.body(size: 12, weight: .bold))
+                                .foregroundStyle(theme.textTertiary)
+                            Text(why)
+                                .font(AppFont.body(size: 14))
+                                .foregroundStyle(theme.textPrimary)
+                                .lineSpacing(3)
+                        }
+                        .padding(Spacing.md)
+                        .background(RoundedRectangle(cornerRadius: Radius.md).fill(theme.surfaceSecondary))
+                    }
+
+                    // Coaching cue
+                    if let cue = detail.improveCue, !cue.isEmpty {
+                        VStack(alignment: .leading, spacing: Spacing.xs) {
+                            Label("Coaching Cue", systemImage: "quote.bubble")
+                                .font(AppFont.body(size: 12, weight: .bold))
+                                .foregroundStyle(theme.accent)
+                            Text(cue)
+                                .font(AppFont.body(size: 14))
+                                .foregroundStyle(theme.textPrimary)
+                                .lineSpacing(3)
+                        }
+                        .padding(Spacing.md)
+                        .background(RoundedRectangle(cornerRadius: Radius.md).fill(theme.accentMuted))
+                    }
+
+                    // Drill
+                    if let drill = detail.drill, !drill.isEmpty {
+                        VStack(alignment: .leading, spacing: Spacing.xs) {
+                            Label("Practice Drill", systemImage: "figure.tennis")
+                                .font(AppFont.body(size: 12, weight: .bold))
+                                .foregroundStyle(theme.accentSecondary)
+                            Text(drill)
+                                .font(AppFont.body(size: 14))
+                                .foregroundStyle(theme.textPrimary)
+                                .lineSpacing(3)
+                        }
+                        .padding(Spacing.md)
+                        .background(RoundedRectangle(cornerRadius: Radius.md).fill(theme.surfaceSecondary))
+                    }
+                }
+                .padding(Spacing.md)
+            }
+            .background(theme.background)
+            .navigationTitle(name)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") { dismiss() }
+                        .foregroundStyle(theme.accent)
+                }
+            }
+        }
+    }
+
+    private func scoreLabel(_ score: Int) -> String {
+        switch score {
+        case 8...10: return "Strong"
+        case 6...7: return "Solid"
+        case 4...5: return "Developing"
+        case 1...3: return "Needs Work"
+        default: return "Score: \(score)/10"
+        }
+    }
+
+    private func scoreColor(_ score: Int) -> Color {
+        switch score {
+        case 7...10: return theme.success
+        case 4...6: return theme.warning
+        default: return theme.error
+        }
     }
 }
 
@@ -1922,17 +2049,9 @@ struct DrillSection: View {
 
     var body: some View {
         if let text = plan, !text.isEmpty {
+            // Note: No header here — DrillSection is always wrapped in CollapsibleSection
+            // which already shows the "PRACTICE DRILL" title. Adding it here caused a duplicate.
             VStack(alignment: .leading, spacing: Spacing.xs) {
-                HStack(spacing: 5) {
-                    Image(systemName: "play.circle.fill")
-                        .font(.system(size: 10, weight: .bold))
-                        .foregroundStyle(theme.accent)
-                    Text("PRACTICE DRILL")
-                        .font(AppFont.body(size: 11, weight: .bold))
-                        .foregroundStyle(theme.accent)
-                        .tracking(0.5)
-                }
-
                 VStack(alignment: .leading, spacing: Spacing.sm) {
                     if !steps.isEmpty {
                         ForEach(steps, id: \.number) { step in
@@ -1975,20 +2094,44 @@ struct DrillSection: View {
                             .lineSpacing(3)
                     }
 
-                    // Watch Demo button (placeholder)
-                    HStack(spacing: Spacing.xxs) {
-                        Image(systemName: "play.fill")
-                            .font(.system(size: 12))
-                        Text("Watch Demo")
-                            .font(AppFont.body(size: 14, weight: .semibold))
+                    // Watch Demo — link to YouTube drill video based on drill content
+                    if let url = DrillVideoMatcher.youtubeURL(for: text) {
+                        Link(destination: url) {
+                            HStack(spacing: Spacing.xxs) {
+                                Image(systemName: "play.fill")
+                                    .font(.system(size: 12))
+                                Text("Watch Drill Demo")
+                                    .font(AppFont.body(size: 14, weight: .semibold))
+                            }
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 44)
+                            .background(
+                                RoundedRectangle(cornerRadius: Radius.sm)
+                                    .fill(theme.accent)
+                            )
+                        }
+                    } else {
+                        // Fallback: search YouTube for this drill
+                        if let query = text.components(separatedBy: ".").first?.trimmingCharacters(in: .whitespaces),
+                           let searchURL = URL(string: "https://www.youtube.com/results?search_query=tennis+\(query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "drill")") {
+                            Link(destination: searchURL) {
+                                HStack(spacing: Spacing.xxs) {
+                                    Image(systemName: "magnifyingglass")
+                                        .font(.system(size: 12))
+                                    Text("Search Drill on YouTube")
+                                        .font(AppFont.body(size: 14, weight: .semibold))
+                                }
+                                .foregroundStyle(.white)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 44)
+                                .background(
+                                    RoundedRectangle(cornerRadius: Radius.sm)
+                                        .fill(theme.accent.opacity(0.7))
+                                )
+                            }
+                        }
                     }
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 44)
-                    .background(
-                        RoundedRectangle(cornerRadius: Radius.sm)
-                            .fill(theme.accent)
-                    )
                 }
                 .padding(Spacing.sm)
                 .background(
@@ -2689,7 +2832,10 @@ struct WireframeOverlayView: View {
         let magBC = sqrt(bc.x * bc.x + bc.y * bc.y)
         guard magBA > 0, magBC > 0 else { return nil }
         let cosAngle = max(-1, min(1, dot / (magBA * magBC)))
-        return acos(cosAngle) * 180 / .pi
+        let degrees = acos(cosAngle) * 180 / .pi
+        // Clamp to 0-180 range — dot product angle is always in [0, 180]
+        // but ensure no floating point edge cases produce negatives
+        return max(0, min(180, degrees))
     }
 
     private func computeShoulderRotation(_ map: [String: JointData]) -> Double? {
@@ -2697,7 +2843,8 @@ struct WireframeOverlayView: View {
         let dx = rs.x - ls.x
         let dy = rs.y - ls.y
         let angle = atan2(abs(dy), abs(dx)) * 180 / .pi
-        return 90 - angle
+        // Clamp: shoulder rotation should be 0-90°, never negative
+        return max(0, 90 - angle)
     }
 
     private struct CropInfo {
@@ -2732,8 +2879,14 @@ struct WireframeOverlayView: View {
     }
 
     private func toScreen(_ joint: JointData, crop: CropInfo) -> CGPoint {
-        let videoX = joint.y * videoNaturalSize.width
-        let videoY = joint.x * videoNaturalSize.height
+        // Vision returns normalized coordinates with origin at bottom-left:
+        //   joint.x = horizontal position (0 = left, 1 = right)
+        //   joint.y = vertical position (0 = bottom, 1 = top)
+        // We need to flip Y for screen coordinates (origin at top-left).
+        // Previous code had X and Y swapped, causing the skeleton to be
+        // placed off the body entirely.
+        let videoX = joint.x * videoNaturalSize.width
+        let videoY = (1.0 - joint.y) * videoNaturalSize.height
         return CGPoint(
             x: videoX * crop.scale + crop.offsetX,
             y: videoY * crop.scale + crop.offsetY
