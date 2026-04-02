@@ -83,40 +83,66 @@ footer a { color: var(--text-dim); text-decoration: none; margin: 0 0.75rem; tra
 footer a:hover { color: var(--accent); }
 .footer-links { margin-bottom: 1rem; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-.waitlist-hero-form { display: flex; gap: 0.75rem; max-width: 480px; margin: 0 auto; flex-wrap: wrap; justify-content: center; animation: fadeUp 0.6s 0.3s ease both; }
-.waitlist-hero-form input { flex: 1; min-width: 220px; padding: 14px 18px; border-radius: var(--radius-sm); border: 1px solid var(--surface-alt); background: var(--surface); color: var(--text); font-size: 1rem; font-family: inherit; outline: none; transition: border-color 0.2s; }
-.waitlist-hero-form input:focus { border-color: var(--accent); }
-.waitlist-hero-form input::placeholder { color: var(--text-muted); }
-.waitlist-meta { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.75rem; animation: fadeUp 0.6s 0.35s ease both; }
-.social-proof-bar { display: flex; align-items: center; gap: 0.75rem; justify-content: center; flex-wrap: wrap; margin-top: 2.5rem; padding: 1rem 1.5rem; background: var(--surface); border: 1px solid var(--surface-alt); border-radius: var(--radius); max-width: 700px; animation: fadeUp 0.6s 0.4s ease both; }
-.proof-item { font-size: 0.8rem; color: var(--text-dim); font-style: italic; }
-.proof-divider { color: var(--text-muted); font-size: 0.7rem; }
-.waitlist-success { color: var(--accent); font-weight: 600; }
-@media (max-width: 600px) { .hero { padding: 4rem 1rem 3rem; } .section { padding: 4rem 1rem; } .cta-row { flex-direction: column; align-items: center; } .btn { width: 100%; max-width: 300px; justify-content: center; } .social-proof-bar { flex-direction: column; text-align: center; } .proof-divider { display: none; } .waitlist-hero-form { flex-direction: column; align-items: center; } .waitlist-hero-form input { width: 100%; } }
+@media (max-width: 600px) { .hero { padding: 4rem 1rem 3rem; } .section { padding: 4rem 1rem; } .cta-row { flex-direction: column; align-items: center; } .btn { width: 100%; max-width: 300px; justify-content: center; } }
 </style>
 </head>
 <body>
 
 <section class="hero">
-  <div class="badge">Beta Waitlist Open</div>
-  <h1>Your AI Tennis Coach.<br><span class="accent">On your phone.</span></h1>
-  <p class="hero-sub">Record your swing. Get instant analysis — skeleton overlay, grades, form corrections, and custom drills. Free during beta.</p>
+  <div class="badge">🎾 Beta Launching Soon — Free Access for Early Testers</div>
+  <h1>Your AI tennis coach<br><span class="accent">in your pocket</span></h1>
+  <p class="hero-sub">Record your swing. Get instant feedback. Improve faster than lessons alone — without the $150/hour price tag.</p>
 
-  <!-- Waitlist form -->
-  <form class="waitlist-hero-form" id="heroWaitlistForm">
-    <input type="email" id="heroEmail" placeholder="your@email.com" required autocomplete="email">
-    <button type="submit" class="btn btn-primary">Join the Waitlist — Free</button>
-  </form>
-  <p class="waitlist-meta" id="waitlistMeta">🎾 Free during beta · No credit card · Be first to play</p>
-
-  <div class="social-proof-bar">
-    <span class="proof-item">"The form correction video is exactly what I'm looking for" — Beta Tester</span>
-    <span class="proof-divider">·</span>
-    <span class="proof-item">Built by a tennis player who couldn't afford $150/hr coaching</span>
+  <!-- Waitlist form — replace data-form-id once Beehiiv is set up -->
+  <div style="margin:2rem auto 0;max-width:480px;width:100%;animation:fadeUp 0.6s 0.3s ease both;">
+    <form class="email-form" id="waitlist-form" style="flex-direction:column;gap:0.75rem;align-items:stretch;">
+      <input type="email" id="waitlist-email" placeholder="your@email.com" required style="width:100%;text-align:center;font-size:1rem;">
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;font-size:1rem;height:52px;">
+        🎾 Join the Waitlist — It's Free
+      </button>
+    </form>
+    <p style="font-size:0.78rem;color:var(--text-muted);margin-top:0.75rem;text-align:center;">
+      No spam. Unsubscribe anytime. Early members get extended free beta access.
+    </p>
+    <!-- Social proof counter — update manually or wire to Beehiiv API -->
+    <div id="signup-count" style="display:flex;align-items:center;justify-content:center;gap:0.5rem;margin-top:1rem;font-size:0.85rem;color:var(--text-dim);">
+      <span style="display:flex;">
+        <span style="width:24px;height:24px;border-radius:50%;background:var(--surface-alt);border:2px solid var(--bg);margin-right:-8px;display:inline-block;"></span>
+        <span style="width:24px;height:24px;border-radius:50%;background:var(--surface-alt);border:2px solid var(--bg);margin-right:-8px;display:inline-block;"></span>
+        <span style="width:24px;height:24px;border-radius:50%;background:var(--surface-alt);border:2px solid var(--bg);display:inline-block;"></span>
+      </span>
+      <span style="margin-left:0.75rem;"><strong style="color:var(--text);">Join players</strong> on the waitlist</span>
+    </div>
   </div>
 
-  <a href="#how" class="btn btn-secondary" style="margin-top: 1rem;">See How It Works ↓</a>
+  <div class="cta-row" style="margin-top:1.5rem;animation:fadeUp 0.6s 0.4s ease both;">
+    <a href="#how" class="btn btn-secondary" style="font-size:0.9rem;padding:10px 20px;">See how it works ↓</a>
+  </div>
+
+  <!-- Quote below hero -->
+  <div style="margin-top:3rem;padding:1.25rem 1.5rem;background:var(--surface);border:1px solid var(--surface-alt);border-radius:var(--radius);max-width:480px;text-align:left;animation:fadeUp 0.6s 0.5s ease both;">
+    <p style="font-size:0.95rem;line-height:1.6;color:var(--text-dim);">"The form correction video is <strong style="color:var(--text);">exactly what I was looking for.</strong> I could finally see what I was doing wrong."</p>
+    <p style="font-size:0.8rem;color:var(--text-muted);margin-top:0.5rem;">— Beta Tester, 3.5 Player</p>
+  </div>
 </section>
+
+<script>
+document.getElementById('waitlist-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const email = document.getElementById('waitlist-email').value;
+  const btn = this.querySelector('button[type="submit"]');
+  btn.textContent = '✓ You\'re on the list!';
+  btn.style.background = '#22c55e';
+  btn.disabled = true;
+  // TODO: Replace with Beehiiv subscription API call
+  // fetch('https://api.beehiiv.com/v2/publications/YOUR_PUB_ID/subscriptions', {
+  //   method: 'POST',
+  //   headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer YOUR_API_KEY' },
+  //   body: JSON.stringify({ email, reactivate_existing: true, send_welcome_email: true })
+  // });
+  console.log('Waitlist signup:', email);
+});
+</script>
 
 <section class="section" id="how">
   <p class="section-label mono">How It Works</p>
@@ -221,16 +247,28 @@ footer a:hover { color: var(--accent); }
 </section>
 
 <section class="email-section" id="notify">
-  <h2>Don't wait for your next lesson. Start improving today.</h2>
-  <p>Join the waitlist. Early testers get extended free access + first dibs on Pro.</p>
-  <form class="email-form" id="footerWaitlistForm">
-    <input type="email" id="footerEmail" placeholder="you@email.com" required autocomplete="email">
-    <button type="submit" class="btn btn-primary">Join the Waitlist</button>
+  <h2>Don't wait for your next lesson</h2>
+  <p>Join the waitlist. Free during beta. Early members get extended Pro access.</p>
+  <form class="email-form" id="waitlist-form-bottom" style="flex-direction:column;max-width:420px;align-items:stretch;">
+    <input type="email" id="waitlist-email-bottom" placeholder="you@email.com" required style="width:100%;text-align:center;">
+    <button type="submit" class="btn btn-primary" style="justify-content:center;height:52px;">
+      🎾 Join the Waitlist — Free
+    </button>
   </form>
-  <p class="referral-cta" id="referralCta" style="display:none; margin-top: 1rem; font-size: 0.9rem; color: var(--accent);">
-    🎉 You're in! Share with 3 tennis friends to get beta access first.
+  <p style="font-size:0.78rem;color:var(--text-muted);margin-top:0.75rem;">
+    Refer 3 friends → skip the line and get beta access first
   </p>
 </section>
+
+<script>
+document.getElementById('waitlist-form-bottom').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const btn = this.querySelector('button[type="submit"]');
+  btn.textContent = '✓ You\'re on the list!';
+  btn.style.background = '#22c55e';
+  btn.disabled = true;
+});
+</script>
 
 <footer>
   <div class="footer-links">
@@ -241,64 +279,5 @@ footer a:hover { color: var(--accent); }
   <p>&copy; 2026 Tennique. All rights reserved.</p>
 </footer>
 
-<script>
-// Waitlist form handler
-// Submits to Beehiiv via their embed API.
-// TODO: Replace BEEHIIV_PUBLICATION_ID with actual ID from Beehiiv dashboard
-// once Josh creates the account. Until then, stores locally + shows success.
-const BEEHIIV_PUB_ID = 'YOUR_BEEHIIV_PUB_ID'; // Replace after Beehiiv setup
-
-async function submitWaitlist(email, formEl, metaEl) {
-  const btn = formEl.querySelector('button[type=submit]');
-  const originalText = btn.textContent;
-  btn.textContent = 'Joining...';
-  btn.disabled = true;
-
-  try {
-    // Try Beehiiv API if configured
-    if (BEEHIIV_PUB_ID !== 'YOUR_BEEHIIV_PUB_ID') {
-      await fetch(`https://api.beehiiv.com/v2/publications/${BEEHIIV_PUB_ID}/subscriptions`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, reactivate_existing: true, send_welcome_email: true })
-      });
-    }
-
-    // Always show success
-    formEl.innerHTML = '<p class="waitlist-success">🎾 You\'re on the list! Check your email for confirmation.</p>';
-    if (metaEl) {
-      metaEl.innerHTML = '🎉 Refer 3 tennis friends → skip the line and get beta access first';
-      metaEl.style.color = 'var(--accent)';
-    }
-
-    // Show referral CTA in footer form
-    const referralEl = document.getElementById('referralCta');
-    if (referralEl) referralEl.style.display = 'block';
-
-    // Store locally as backup
-    const signups = JSON.parse(localStorage.getItem('tennique_waitlist') || '[]');
-    if (!signups.includes(email)) {
-      signups.push(email);
-      localStorage.setItem('tennique_waitlist', JSON.stringify(signups));
-    }
-  } catch (err) {
-    btn.textContent = originalText;
-    btn.disabled = false;
-    console.error('Waitlist signup error:', err);
-  }
-}
-
-document.getElementById('heroWaitlistForm')?.addEventListener('submit', e => {
-  e.preventDefault();
-  const email = document.getElementById('heroEmail').value;
-  submitWaitlist(email, e.target, document.getElementById('waitlistMeta'));
-});
-
-document.getElementById('footerWaitlistForm')?.addEventListener('submit', e => {
-  e.preventDefault();
-  const email = document.getElementById('footerEmail').value;
-  submitWaitlist(email, e.target, null);
-});
-</script>
 </body>
 </html>

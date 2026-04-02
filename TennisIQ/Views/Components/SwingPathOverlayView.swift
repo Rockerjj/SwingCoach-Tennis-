@@ -132,8 +132,9 @@ struct SwingPathOverlayView: View {
     }
 
     private func toScreen(_ pt: CGPoint, crop: CropInfo) -> CGPoint {
-        let videoX = pt.y * videoNaturalSize.width
-        let videoY = pt.x * videoNaturalSize.height
+        // Fix: X and Y were swapped. Vision uses (x=horizontal, y=vertical, bottom-origin).
+        let videoX = pt.x * videoNaturalSize.width
+        let videoY = (1.0 - pt.y) * videoNaturalSize.height
         return CGPoint(
             x: videoX * crop.scale + crop.offsetX,
             y: videoY * crop.scale + crop.offsetY
