@@ -594,13 +594,7 @@ struct AnalysisResultsView: View {
                                 poseFrames: session.poseFrames
                             )
 
-                            // Correction animation for out-of-zone phases
-                            if let phase = selectedPhase,
-                               let detail = breakdown.detail(for: phase),
-                               detail.status != .inZone,
-                               !detail.keyAngles.isEmpty {
-                                correctionView(for: phase, detail: detail, poseFrames: session.poseFrames)
-                            }
+                        
                         }
                     }
                     .id("section_phases")

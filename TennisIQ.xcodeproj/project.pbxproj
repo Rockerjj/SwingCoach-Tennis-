@@ -110,7 +110,7 @@
 		517F0AD0E8823B360FD5DF24 /* BookmarkedInsight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarkedInsight.swift; sourceTree = "<group>"; };
 		527389EFF23211D098DE73C7 /* AnalysisResultsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisResultsView.swift; sourceTree = "<group>"; };
 		52B20C486E4DDFFAB3786FAD /* StrokeAnalysisModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StrokeAnalysisModel.swift; sourceTree = "<group>"; };
-		5610F855E169537F79B3D956 /* TennisIQ.storekit */ = {isa = PBXFileReference; path = TennisIQ.storekit; sourceTree = "<group>"; };
+		5610F855E169537F79B3D956 /* TennisIQ.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = TennisIQ.storekit; sourceTree = "<group>"; };
 		59075BA16CA9C10AE0674DD1 /* GrandSlamTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GrandSlamTheme.swift; sourceTree = "<group>"; };
 		590FC9F3405246D6A0A375A4 /* LiveFeedbackOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveFeedbackOverlayView.swift; sourceTree = "<group>"; };
 		5A1C5318D1BA8F08711D6E58 /* RecordViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordViewModel.swift; sourceTree = "<group>"; };
@@ -146,10 +146,10 @@
 		D9765FE60DBE1E3F218E7DF9 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		D9B3A1A3CF5E4B315EE77A91 /* DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystem.swift; sourceTree = "<group>"; };
 		DEF7D7ADF16853A1D96535BC /* ScoreSparklineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScoreSparklineView.swift; sourceTree = "<group>"; };
-		DEF9AFAE8D6C8A12B5120558 /* TennisIQ.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = TennisIQ.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		DEF9AFAE8D6C8A12B5120558 /* TennisIQ.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TennisIQ.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0936ABE30EF28A2BF3B4294 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		E46A42D98AB9BC3C04C6B062 /* CameraService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraService.swift; sourceTree = "<group>"; };
-		E4E8C4AF0A8E42144F03FC73 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		E4E8C4AF0A8E42144F03FC73 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		E6A5536E2F240904D190FC57 /* RallyTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RallyTheme.swift; sourceTree = "<group>"; };
 		EBD3465DC4CB4CA615288D0F /* SkeletonWaitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkeletonWaitView.swift; sourceTree = "<group>"; };
 		F3CDD641DA3F46B6758D70C3 /* UserProfileModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileModel.swift; sourceTree = "<group>"; };
@@ -672,6 +672,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = J898LJ34V9;
 				INFOPLIST_FILE = TennisIQ/Resources/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -692,6 +693,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = J898LJ34V9;
 				INFOPLIST_FILE = TennisIQ/Resources/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
