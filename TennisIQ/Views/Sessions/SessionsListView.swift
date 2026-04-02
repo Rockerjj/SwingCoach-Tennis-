@@ -163,6 +163,18 @@ struct SessionRowView: View {
 
             Spacer()
 
+            if session.status == .ready {
+                let scores = session.strokeAnalyses
+                    .sorted(by: { $0.timestamp < $1.timestamp })
+                    .compactMap { stroke -> Double? in
+                        guard let avg = stroke.mechanics?.averageScore else { return nil }
+                        return avg * 10
+                    }
+                if scores.count >= 2 {
+                    ScoreSparklineView(scores: scores, width: 60, height: 28)
+                }
+            }
+
             if let grade = session.overallGrade {
                 gradeView(grade)
             }

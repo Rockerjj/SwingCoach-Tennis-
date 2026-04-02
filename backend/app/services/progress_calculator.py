@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from supabase import Client
 
 logger = logging.getLogger(__name__)
@@ -9,7 +9,7 @@ class ProgressCalculator:
     def __init__(self, supabase: Client):
         self.supabase = supabase
 
-    async def update_progress(self, user_id: str, session_id: str) -> dict:
+    def update_progress(self, user_id: str, session_id: str) -> dict:
         result = (
             self.supabase.table("stroke_analyses")
             .select("*")
@@ -38,7 +38,7 @@ class ProgressCalculator:
             for stype, scores in stroke_scores.items()
         }
 
-        thirty_days_ago = (datetime.utcnow() - timedelta(days=30)).isoformat()
+        thirty_days_ago = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
         history_result = (
             self.supabase.table("progress_snapshots")
             .select("*")
@@ -68,7 +68,7 @@ class ProgressCalculator:
 
         snapshot = {
             "user_id": user_id,
-            "snapshot_date": datetime.utcnow().date().isoformat(),
+            "snapshot_date": datetime.now(timezone.utc).date().isoformat(),
             "overall_score": round(overall, 1),
             "forehand_score": round(session_stroke_avgs.get("forehand", 0), 1),
             "backhand_score": round(session_stroke_avgs.get("backhand", 0), 1),
@@ -80,7 +80,7 @@ class ProgressCalculator:
         self.supabase.table("progress_snapshots").upsert(snapshot).execute()
         return {**snapshot, "weekly_focus": focus}
 
-    async def get_progress(self, user_id: str) -> dict:
+    def get_progress(self, user_id: str) -> dict:
         latest = (
             self.supabase.table("progress_snapshots")
             .select("*")
@@ -90,7 +90,7 @@ class ProgressCalculator:
             .execute()
         )
 
-        ninety_days_ago = (datetime.utcnow() - timedelta(days=90)).isoformat()
+        ninety_days_ago = (datetime.now(timezone.utc) - timedelta(days=90)).isoformat()
         history = (
             self.supabase.table("progress_snapshots")
             .select("snapshot_date, overall_score")
@@ -100,8 +100,8 @@ class ProgressCalculator:
             .execute()
         )
 
-        week_ago = (datetime.utcnow() - timedelta(days=7)).isoformat()
-        month_ago = (datetime.utcnow() - timedelta(days=30)).isoformat()
+        week_ago = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
+        month_ago = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
 
         weekly_sessions = (
             self.supabase.table("sessions")

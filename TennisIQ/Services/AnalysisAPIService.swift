@@ -119,8 +119,21 @@ final class AnalysisAPIService {
         var request = URLRequest(url: url)
         request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
 
-        let (data, _) = try await session.data(for: request)
-        return try JSONDecoder().decode(ProgressData.self, from: data)
+        let (data, response) = try await session.data(for: request)
+
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw APIError.analysisFailed("Invalid response")
+        }
+
+        switch httpResponse.statusCode {
+        case 200...299:
+            return try JSONDecoder().decode(ProgressData.self, from: data)
+        case 401:
+            throw APIError.unauthorized
+        default:
+            let message = String(data: data, encoding: .utf8) ?? "Unknown error"
+            throw APIError.analysisFailed(message)
+        }
     }
 }
 

@@ -8,9 +8,9 @@ router = APIRouter(prefix="/progress", tags=["progress"])
 
 
 @router.get("")
-async def get_progress(
+def get_progress(
     user_id: str = Depends(get_current_user_id),
     supabase: Client = Depends(get_supabase),
 ):
     calculator = ProgressCalculator(supabase)
-    return await calculator.get_progress(user_id)
+    return calculator.get_progress(user_id)

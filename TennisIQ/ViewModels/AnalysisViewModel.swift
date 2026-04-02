@@ -99,6 +99,10 @@ final class AnalysisViewModel: ObservableObject {
             // Clean up temp key frame files now that they've been sent to the API
             extraction.cleanupTempFiles()
 
+            // Sync progress data so the dashboard updates immediately
+            let progressVM = ProgressViewModel()
+            await progressVM.sync(context: context)
+
             progressCancellable?.cancel()
             analysisPhase = .complete
             isLoading = false

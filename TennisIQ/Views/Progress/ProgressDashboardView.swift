@@ -8,6 +8,9 @@ struct ProgressDashboardView: View {
     @Query(sort: \SessionModel.recordedAt, order: .reverse)
     private var allSessions: [SessionModel]
 
+    @Environment(\.modelContext) private var modelContext
+    @StateObject private var progressVM = ProgressViewModel()
+
     private var recentSessions: [SessionModel] {
         allSessions.filter { $0.status == .ready }
     }
@@ -63,6 +66,23 @@ struct ProgressDashboardView: View {
         .toolbarBackground(theme.background, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbarColorScheme(.dark, for: .navigationBar)
+        .task {
+            await progressVM.sync(context: modelContext)
+        }
+        .refreshable {
+            await progressVM.sync(context: modelContext)
+        }
+        .overlay {
+            if progressVM.isLoading && snapshots.isEmpty {
+                VStack(spacing: Spacing.md) {
+                    ProgressView()
+                        .tint(theme.accent)
+                    Text("Loading progress...")
+                        .font(AppFont.body(size: 14))
+                        .foregroundStyle(theme.textSecondary)
+                }
+            }
+        }
     }
 
     // MARK: - Trends Tab

@@ -109,6 +109,13 @@ struct StrokeMechanics: Codable {
         case stance
         case toss
     }
+
+    var averageScore: Double? {
+        let all = [backswing, contactPoint, followThrough, stance, toss]
+            .compactMap { $0?.score }
+        guard !all.isEmpty else { return nil }
+        return Double(all.reduce(0, +)) / Double(all.count)
+    }
 }
 
 struct MechanicDetail: Codable {

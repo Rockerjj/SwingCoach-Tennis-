@@ -87,7 +87,7 @@ async def analyze_session(
             }).eq("id", session_id).execute()
 
             calculator = ProgressCalculator(supabase)
-            await calculator.update_progress(user_id, session_id)
+            calculator.update_progress(user_id, session_id)
 
         return result
 
