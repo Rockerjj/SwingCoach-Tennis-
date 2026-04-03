@@ -1,4 +1,4 @@
-# App Store Connect Metadata -- Tennis IQ
+# App Store Connect Metadata — Tennique
 
 Copy this into App Store Connect when creating the app listing.
 
@@ -6,8 +6,8 @@ Copy this into App Store Connect when creating the app listing.
 
 ## App Information
 
-- **Bundle ID**: `com.tennisiq.app`
-- **SKU**: `tennisiq`
+- **Bundle ID**: `com.tennique.app`
+- **SKU**: `tennique-v1`
 - **Primary Language**: English (US)
 - **Primary Category**: Health & Fitness
 - **Secondary Category**: Sports
@@ -20,12 +20,12 @@ Copy this into App Store Connect when creating the app listing.
 
 ### Title (30 chars max)
 ```
-Tennis IQ - Improve Fast
+Tennique - AI Tennis Coach
 ```
 
 ### Subtitle (30 chars max)
 ```
-AI Stroke Analysis & Coaching
+Swing Analysis & Coaching
 ```
 
 ### Keywords (100 chars max, comma-separated, no spaces after commas)
@@ -33,18 +33,18 @@ AI Stroke Analysis & Coaching
 tennis,coach,ai,stroke,analysis,serve,forehand,backhand,training,lessons,practice,technique,improve
 ```
 
-### Promotional Text (170 chars max -- can be updated without app review)
+### Promotional Text (170 chars max — can be updated without app review)
 ```
 Film your strokes. Get instant AI coaching. See your skeleton overlay, grades, and personalized drills for every forehand, backhand, and serve. 3 free analyses to start.
 ```
 
 ### Description (4000 chars max)
 ```
-Stop guessing if your form is right. Tennis IQ uses advanced computer vision and GPT-4o to analyze every stroke you hit -- frame by frame -- and gives you the same level of feedback a private coach would.
+Stop guessing if your form is right. Tennique uses advanced computer vision and AI to analyze every stroke you hit — frame by frame — and gives you the same level of feedback a private coach would.
 
 HOW IT WORKS
 1. Set up your phone courtside and hit Record
-2. Play your game naturally -- forehands, backhands, serves, volleys
+2. Play your game naturally — forehands, backhands, serves, volleys
 3. Get instant AI analysis with a full-body skeleton overlay on your video
 4. See letter grades (A through F) for each stroke with detailed coaching breakdowns
 
@@ -66,14 +66,14 @@ PRICING
 - 3 free analyses to see the magic
 - Monthly or Annual subscription for unlimited analysis
 
-Built with Apple Vision pose estimation (on-device, private) and GPT-4o coaching intelligence. Your videos never leave your device unless you choose to share them.
+Built with Apple Vision pose estimation (on-device, private) and AI coaching intelligence. Your videos never leave your device unless you choose to share them.
 
-Questions? Reach us at support@tennisiq.com
+Questions? Reach us at support@tennique.app
 ```
 
 ### What's New (for v1.0.0)
 ```
-Welcome to Tennis IQ! This is our first release featuring:
+Welcome to Tennique! First release featuring:
 - AI-powered stroke analysis with skeleton overlay
 - Coaching feedback with letter grades for every stroke
 - Mechanics breakdown (backswing, contact point, follow-through, stance, toss)
@@ -87,9 +87,9 @@ Welcome to Tennis IQ! This is our first release featuring:
 ## Screenshots Required
 
 Upload for these device sizes:
-- 6.7" (iPhone 15 Pro Max / 16 Pro Max) -- REQUIRED
+- 6.7" (iPhone 15 Pro Max / 16 Pro Max) — REQUIRED
 - 6.5" (iPhone 14 Plus / 15 Plus)
-- 5.5" (iPhone 8 Plus) -- if supporting older devices
+- 5.5" (iPhone 8 Plus) — if supporting older devices
 
 ### Screenshot Sequence (5 screens)
 
@@ -112,7 +112,7 @@ Upload for these device sizes:
 
 ## App Preview Video (optional but recommended)
 
-- 15-30 seconds showing: Record -> Analyze -> See skeleton -> Read coaching
+- 15-30 seconds showing: Record → Analyze → See skeleton → Read coaching
 - Dimensions: 1290 x 2796 (6.7") or 1284 x 2778 (6.1")
 - Format: H.264, AAC audio, .mp4 or .mov
 
@@ -122,31 +122,31 @@ Upload for these device sizes:
 
 Create these in App Store Connect > Subscriptions:
 
-### Subscription Group: "TennisIQ Premium"
+### Subscription Group: "Tennique Pro"
 
 | Product | Product ID | Price | Period | Level |
 |---------|-----------|-------|--------|-------|
-| Monthly Premium | `tennisiq_monthly` | $6.99 | 1 Month | 1 |
-| Annual Premium | `tennisiq_annual` | $49.99 | 1 Year | 1 |
+| Monthly Pro | `tennique_monthly` | $6.99 | 1 Month | 1 |
+| Annual Pro | `tennique_annual` | $49.99 | 1 Year | 1 |
 
 - Family Sharing: No
-- Free Trial: Consider adding 7-day free trial to annual plan
-- Subscription Group Display Name: "TennisIQ Premium"
+- Free Trial: 7-day free trial on annual plan
+- Subscription Group Display Name: "Tennique Pro"
 
 ---
 
 ## Review Information
 
 ### Contact Info
-- First Name: [Your first name]
-- Last Name: [Your last name]
-- Phone: [Your phone]
-- Email: support@tennisiq.com
+- First Name: Josh
+- Last Name: Rockers
+- Phone: (862) 603-9889
+- Email: support@tennique.app
 
 ### Demo Account
 - Not required (app supports guest mode)
 
 ### Notes for Reviewer
 ```
-This app uses the device camera to record tennis sessions. It then uses Apple Vision framework for on-device pose estimation and sends extracted pose data (not video) to our API for AI coaching analysis. The app requires a physical tennis court environment to demonstrate full functionality, but you can test the UI flow, onboarding, and subscription screens without recording. Guest mode is available -- no sign-in required to explore the app.
+This app uses the device camera to record tennis sessions. It then uses Apple Vision framework for on-device pose estimation and sends extracted pose data (not video) to our API for AI coaching analysis. The app requires a physical tennis court environment to demonstrate full functionality, but you can test the UI flow, onboarding, and subscription screens without recording. Guest mode is available — no sign-in required to explore the app.
 ```

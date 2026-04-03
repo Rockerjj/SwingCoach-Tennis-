@@ -5,7 +5,9 @@
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleName</key>
-	<string>$(PRODUCT_NAME)</string>
+	<string>Tennique</string>
+	<key>CFBundleDisplayName</key>
+	<string>Tennique</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>CFBundleShortVersionString</key>
@@ -20,11 +22,11 @@
 		<true/>
 	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>Tennis IQ needs camera access to record your tennis sessions for AI analysis.</string>
+	<string>Tennique needs camera access to record your tennis sessions for AI analysis.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Tennis IQ uses the microphone to capture audio during your session.</string>
+	<string>Tennique uses the microphone to capture audio during your session.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Tennis IQ saves analyzed videos to your photo library.</string>
+	<string>Tennique saves analyzed videos to your photo library.</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>UILaunchStoryboardName</key>

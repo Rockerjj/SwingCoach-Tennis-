@@ -6,7 +6,7 @@ import os
 final class AnalyticsService: ObservableObject {
     static let shared = AnalyticsService()
 
-    private let logger = Logger(subsystem: "com.tennisiq.app", category: "Analytics")
+    private let logger = Logger(subsystem: "com.tennique.app", category: "Analytics")
     private let defaults = UserDefaults.standard
 
     private init() {}
