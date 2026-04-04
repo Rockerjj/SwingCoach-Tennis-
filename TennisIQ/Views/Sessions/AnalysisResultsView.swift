@@ -2888,14 +2888,13 @@ struct WireframeOverlayView: View {
     }
 
     private func toScreen(_ joint: JointData, crop: CropInfo) -> CGPoint {
-        // Vision returns normalized coordinates with origin at bottom-left:
-        //   joint.x = horizontal position (0 = left, 1 = right)
-        //   joint.y = vertical position (0 = bottom, 1 = top)
-        // We need to flip Y for screen coordinates (origin at top-left).
-        // Previous code had X and Y swapped, causing the skeleton to be
-        // placed off the body entirely.
-        let videoX = joint.x * videoNaturalSize.width
-        let videoY = (1.0 - joint.y) * videoNaturalSize.height
+        // Vision returns normalized coords in the raw pixel buffer space.
+        // For portrait iPhone video, the raw buffer is landscape (1920x1080)
+        // with a 90° rotation applied on display. Vision's x maps to the
+        // vertical axis and y maps to the horizontal axis after rotation.
+        // videoNaturalSize is already the display size (e.g. 1080x1920).
+        let videoX = joint.y * videoNaturalSize.width
+        let videoY = joint.x * videoNaturalSize.height
         return CGPoint(
             x: videoX * crop.scale + crop.offsetX,
             y: videoY * crop.scale + crop.offsetY

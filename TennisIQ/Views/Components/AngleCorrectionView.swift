@@ -86,10 +86,10 @@ struct AngleCorrectionView: View {
         let t = animationProgress
         if t < 0.5 {
             let p = t / 0.5
-            return Color(red: 1.0, green: p * 0.7, blue: 0)
+            return Color(red: 0.85, green: p * 0.4, blue: 0)
         } else {
             let p = (t - 0.5) / 0.5
-            return Color(red: 1.0 - p * 0.7, green: 0.7 + p * 0.3, blue: p * 0.3)
+            return Color(red: 0.85 - p * 0.65, green: 0.4 + p * 0.25, blue: p * 0.15)
         }
     }
 
@@ -204,7 +204,9 @@ struct AngleCorrectionView: View {
 
         func pt(_ name: String) -> CGPoint? {
             guard let n = jointMap[name] else { return nil }
-            return CGPoint(x: n.x * size.width, y: (1.0 - n.y) * size.height)
+            // Vision coords are in raw buffer space; for portrait video,
+            // x maps to vertical and y maps to horizontal after rotation
+            return CGPoint(x: n.y * size.width, y: n.x * size.height)
         }
 
         let defaultColor = Color.white.opacity(0.35)

@@ -264,8 +264,10 @@ struct PhaseFrameCaptureView: View {
 
     private func toScreen(_ joint: JointData, crop: CropInfo, videoSize: CGSize) -> CGPoint {
         // Fix: X and Y were swapped. Vision uses (x=horizontal, y=vertical, bottom-origin).
-        let videoX = joint.x * videoSize.width
-        let videoY = (1.0 - joint.y) * videoSize.height
+        // Vision coords are in raw buffer space; for portrait video,
+        // x maps to vertical and y maps to horizontal after rotation
+        let videoX = joint.y * videoSize.width
+        let videoY = joint.x * videoSize.height
         return CGPoint(
             x: videoX * crop.scale + crop.offsetX,
             y: videoY * crop.scale + crop.offsetY
