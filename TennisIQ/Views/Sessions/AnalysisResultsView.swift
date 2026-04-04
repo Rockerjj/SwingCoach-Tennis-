@@ -600,7 +600,7 @@ struct AnalysisResultsView: View {
                     .id("section_phases")
 
                     // --- Coaching Section ---
-                    StrokeCardsSection(strokes: session.strokeAnalyses, scrollToPhases: {
+                    StrokeCardsSection(strokes: session.strokeAnalyses, videoURL: resolvedVideoURL, scrollToPhases: {
                         withAnimation(.easeInOut(duration: 0.3)) {
                             scrollProxy.scrollTo("section_phases", anchor: .top)
                         }
@@ -1385,12 +1385,13 @@ struct CompactSessionSummaryCard: View {
 
 struct StrokeCardsSection: View {
     let strokes: [StrokeAnalysisModel]
+    var videoURL: URL? = nil
     var scrollToPhases: (() -> Void)? = nil
 
     var body: some View {
         VStack(spacing: Spacing.sm) {
             ForEach(strokes) { stroke in
-                CoachingCard(stroke: stroke, scrollToPhases: scrollToPhases)
+                CoachingCard(stroke: stroke, videoURL: videoURL, scrollToPhases: scrollToPhases)
             }
         }
         .padding(Spacing.md)
@@ -1401,6 +1402,7 @@ struct StrokeCardsSection: View {
 
 struct CoachingCard: View {
     let stroke: StrokeAnalysisModel
+    var videoURL: URL? = nil
     var scrollToPhases: (() -> Void)? = nil
     @State private var isExpanded = false
     @State private var showMechanics = false
@@ -1510,10 +1512,15 @@ struct CoachingCard: View {
             // What to Fix — always visible
             WhatToFixSection(rationale: stroke.gradingRationale)
 
-            // Visual Angle Corrections — animated skeleton showing actual → ideal
+            // Visual Angle Corrections — animated skeleton on real video frame
             if let joints = stroke.jointSnapshot, !joints.isEmpty,
                let overlay = stroke.overlayInstructions {
-                AngleCorrectionStrip(joints: joints, angleStrings: overlay.anglesToHighlight)
+                AngleCorrectionStrip(
+                    joints: joints,
+                    angleStrings: overlay.anglesToHighlight,
+                    videoURL: videoURL,
+                    timestamp: stroke.timestamp
+                )
             }
 
             // Mechanics Breakdown — collapsed by default
