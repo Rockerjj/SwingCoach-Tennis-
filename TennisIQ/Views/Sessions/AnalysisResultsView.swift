@@ -1437,7 +1437,8 @@ struct StrokeTypeSummaryCard: View {
                         joints: joints,
                         angleStrings: overlay.anglesToHighlight,
                         videoURL: videoURL,
-                        timestamp: summary.worstStroke.timestamp
+                        fallbackTimestamp: summary.worstStroke.timestamp,
+                        jointResolver: summary.worstStroke.correctionJoints(at:)
                     )
                 }
 
@@ -1564,15 +1565,13 @@ struct StrokeTypeSummaryCard: View {
                 .lineSpacing(3)
                 .lineLimit(4)
 
-            // YouTube link for this drill
-            if let url = DrillVideoMatcher.youtubeURL(for: drill) {
-                Link(destination: url) {
-                    drillLinkLabel(title: "Watch Drill Demo", icon: "play.fill", full: true)
-                }
-            } else {
-                Link(destination: DrillVideoMatcher.youtubeSearchURL(for: drill)) {
-                    drillLinkLabel(title: "Search Drill on YouTube", icon: "magnifyingglass", full: false)
-                }
+            let destination = DrillVideoMatcher.destination(for: drill)
+            Link(destination: destination.url) {
+                drillLinkLabel(
+                    title: destination.title,
+                    icon: destination.icon,
+                    full: destination.isCuratedMatch
+                )
             }
         }
         .padding(Spacing.sm)
@@ -1739,7 +1738,8 @@ struct CoachingCard: View {
                     joints: joints,
                     angleStrings: overlay.anglesToHighlight,
                     videoURL: videoURL,
-                    timestamp: stroke.timestamp
+                    fallbackTimestamp: stroke.timestamp,
+                    jointResolver: stroke.correctionJoints(at:)
                 )
             }
 
@@ -2323,40 +2323,21 @@ struct DrillSection: View {
                             .lineSpacing(3)
                     }
 
-                    // Watch Demo — link to YouTube drill video based on drill content
-                    if let url = DrillVideoMatcher.youtubeURL(for: text) {
-                        Link(destination: url) {
-                            HStack(spacing: Spacing.xxs) {
-                                Image(systemName: "play.fill")
-                                    .font(.system(size: 12))
-                                Text("Watch Drill Demo")
-                                    .font(AppFont.body(size: 14, weight: .semibold))
-                            }
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 44)
-                            .background(
-                                RoundedRectangle(cornerRadius: Radius.sm)
-                                    .fill(theme.accent)
-                            )
+                    let destination = DrillVideoMatcher.destination(for: text)
+                    Link(destination: destination.url) {
+                        HStack(spacing: Spacing.xxs) {
+                            Image(systemName: destination.icon)
+                                .font(.system(size: 12))
+                            Text(destination.title)
+                                .font(AppFont.body(size: 14, weight: .semibold))
                         }
-                    } else {
-                        // Fallback: always-valid YouTube search URL
-                        Link(destination: DrillVideoMatcher.youtubeSearchURL(for: text)) {
-                            HStack(spacing: Spacing.xxs) {
-                                Image(systemName: "magnifyingglass")
-                                    .font(.system(size: 12))
-                                Text("Search Drill on YouTube")
-                                    .font(AppFont.body(size: 14, weight: .semibold))
-                            }
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 44)
-                            .background(
-                                RoundedRectangle(cornerRadius: Radius.sm)
-                                    .fill(theme.accent.opacity(0.7))
-                            )
-                        }
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 44)
+                        .background(
+                            RoundedRectangle(cornerRadius: Radius.sm)
+                                .fill(theme.accent.opacity(destination.isCuratedMatch ? 1.0 : 0.7))
+                        )
                     }
                 }
                 .padding(Spacing.sm)

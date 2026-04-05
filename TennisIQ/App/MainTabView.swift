@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct MainTabView: View {
-    @State private var selectedTab: Tab = .record
+    @State private var selectedTab: Tab = .sessions
     private let theme = DesignSystem.current
 
     enum Tab: String, CaseIterable {

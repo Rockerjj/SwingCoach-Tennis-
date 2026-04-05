@@ -43,8 +43,11 @@ struct OnboardingView: View {
                 bottomControls
             }
         }
-        .sheet(isPresented: $showDemoAnalysis) {
-            DemoAnalysisView()
+        .fullScreenCover(isPresented: $showDemoAnalysis) {
+            DemoAnalysisView(
+                ctaTitle: "Get Started",
+                onComplete: { hasCompletedOnboarding = true }
+            )
         }
     }
 
@@ -97,7 +100,7 @@ struct OnboardingView: View {
             }
 
             Button(action: advance) {
-                Text(currentPage == pages.count - 1 ? "Get Started" : "Continue")
+                Text(currentPage == pages.count - 1 ? "See Demo Analysis" : "Continue")
                     .font(AppFont.body(size: 17, weight: .semibold))
                     .foregroundStyle(theme.textOnAccent)
                     .frame(maxWidth: .infinity)
@@ -108,15 +111,11 @@ struct OnboardingView: View {
             .padding(.horizontal, Spacing.lg)
 
             if currentPage == pages.count - 1 {
-                Button(action: { showDemoAnalysis = true }) {
-                    HStack(spacing: Spacing.xs) {
-                        Image(systemName: "sparkles")
-                            .font(.system(size: 14))
-                        Text("See a sample analysis first")
-                            .font(AppFont.body(size: 15))
-                    }
-                    .foregroundStyle(theme.accent)
+                Button("Skip Demo") {
+                    hasCompletedOnboarding = true
                 }
+                .font(AppFont.body(size: 15))
+                .foregroundStyle(theme.textTertiary)
             } else {
                 Button("Skip") {
                     hasCompletedOnboarding = true
@@ -132,7 +131,7 @@ struct OnboardingView: View {
         if currentPage < pages.count - 1 {
             withAnimation { currentPage += 1 }
         } else {
-            hasCompletedOnboarding = true
+            showDemoAnalysis = true
         }
     }
 }

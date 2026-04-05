@@ -360,25 +360,51 @@ struct AngleCorrectionView: View {
 
 // MARK: - Angle String Parser
 
-struct ParsedAngle {
+struct ParsedAngle: Identifiable {
+    let rawString: String
+    let phaseName: String?
+    let timestamp: Double?
     let jointName: String
     let actual: Double
     let idealLow: Double
     let idealHigh: Double
+    var id: String { rawString }
     var idealMidpoint: Double { (idealLow + idealHigh) / 2 }
 
     static func parse(_ str: String) -> ParsedAngle? {
-        let pattern = #"^(.+?):\s*([\d.]+)°?\s*\(ideal:\s*([\d.]+)\s*-\s*([\d.]+)°?\)"#
+        let pattern = #"^(?:(.+?)\s+t=([\d.]+)s\s*-\s*)?(.+?):\s*([\d.]+)°?\s*\(ideal:\s*([\d.]+)\s*-\s*([\d.]+)\s*°?\+?\)"#
         guard let regex = try? NSRegularExpression(pattern: pattern),
               let match = regex.firstMatch(in: str, range: NSRange(str.startIndex..., in: str)),
-              match.numberOfRanges >= 5 else { return nil }
+              match.numberOfRanges >= 7 else { return nil }
 
-        let name = String(str[Range(match.range(at: 1), in: str)!]).trimmingCharacters(in: .whitespaces)
-        guard let actual = Double(str[Range(match.range(at: 2), in: str)!]),
-              let low = Double(str[Range(match.range(at: 3), in: str)!]),
-              let high = Double(str[Range(match.range(at: 4), in: str)!]) else { return nil }
+        let phaseName = Range(match.range(at: 1), in: str)
+            .map { String(str[$0]).trimmingCharacters(in: .whitespacesAndNewlines) }
+        let timestamp = Range(match.range(at: 2), in: str)
+            .flatMap { Double(str[$0]) }
+        let nameRange = Range(match.range(at: 3), in: str)
+        let actualRange = Range(match.range(at: 4), in: str)
+        let lowRange = Range(match.range(at: 5), in: str)
+        let highRange = Range(match.range(at: 6), in: str)
 
-        return ParsedAngle(jointName: name, actual: actual, idealLow: low, idealHigh: high)
+        guard let nameRange,
+              let actualRange,
+              let lowRange,
+              let highRange else { return nil }
+
+        let jointName = String(str[nameRange]).trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let actual = Double(str[actualRange]),
+              let low = Double(str[lowRange]),
+              let high = Double(str[highRange]) else { return nil }
+
+        return ParsedAngle(
+            rawString: str,
+            phaseName: phaseName,
+            timestamp: timestamp,
+            jointName: jointName,
+            actual: actual,
+            idealLow: low,
+            idealHigh: high
+        )
     }
 }
 
@@ -388,7 +414,8 @@ struct AngleCorrectionStrip: View {
     let joints: [JointData]
     let angleStrings: [String]
     var videoURL: URL? = nil
-    var timestamp: Double = 0
+    var fallbackTimestamp: Double = 0
+    var jointResolver: ((Double?) -> [JointData])? = nil
 
     private let theme = DesignSystem.current
 
@@ -398,6 +425,15 @@ struct AngleCorrectionStrip: View {
     }
 
     @State private var currentPage = 0
+
+    private func resolvedJoints(for parsed: ParsedAngle) -> [JointData] {
+        let resolved = jointResolver?(parsed.timestamp) ?? joints
+        return resolved.isEmpty ? joints : resolved
+    }
+
+    private func frameTimestamp(for parsed: ParsedAngle) -> Double {
+        parsed.timestamp ?? fallbackTimestamp
+    }
 
     var body: some View {
         if !outOfRangeAngles.isEmpty {
@@ -422,15 +458,15 @@ struct AngleCorrectionStrip: View {
 
                 // Full-width, swipeable pages instead of side-by-side scroll
                 TabView(selection: $currentPage) {
-                    ForEach(Array(outOfRangeAngles.enumerated()), id: \.element.jointName) { index, parsed in
+                    ForEach(Array(outOfRangeAngles.enumerated()), id: \.element.id) { index, parsed in
                         AngleCorrectionView(
-                            joints: joints,
+                            joints: resolvedJoints(for: parsed),
                             jointName: parsed.jointName,
                             actualAngle: parsed.actual,
                             idealAngle: parsed.idealMidpoint,
                             label: parsed.jointName,
                             videoURL: videoURL,
-                            timestamp: timestamp
+                            timestamp: frameTimestamp(for: parsed)
                         )
                         .tag(index)
                     }
