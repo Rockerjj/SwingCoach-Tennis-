@@ -1,4 +1,4 @@
-# App Store Connect Metadata -- Tennis IQ
+# App Store Connect Metadata — Tennique
 
 Copy this into App Store Connect when creating the app listing.
 
@@ -6,8 +6,8 @@ Copy this into App Store Connect when creating the app listing.
 
 ## App Information
 
-- **Bundle ID**: `com.tennisiq.app`
-- **SKU**: `tennisiq`
+- **Bundle ID**: `com.tennique.app`
+- **SKU**: `tennique-v1`
 - **Primary Language**: English (US)
 - **Primary Category**: Health & Fitness
 - **Secondary Category**: Sports
@@ -20,12 +20,12 @@ Copy this into App Store Connect when creating the app listing.
 
 ### Title (30 chars max)
 ```
-Tennis IQ - Improve Fast
+Tennique - AI Tennis Coach
 ```
 
 ### Subtitle (30 chars max)
 ```
-AI Stroke Analysis & Coaching
+Film Swings. Fix Your Game.
 ```
 
 ### Keywords (100 chars max, comma-separated, no spaces after commas)
@@ -33,120 +33,123 @@ AI Stroke Analysis & Coaching
 tennis,coach,ai,stroke,analysis,serve,forehand,backhand,training,lessons,practice,technique,improve
 ```
 
-### Promotional Text (170 chars max -- can be updated without app review)
+### Promotional Text (170 chars max — can be updated without app review)
 ```
-Film your strokes. Get instant AI coaching. See your skeleton overlay, grades, and personalized drills for every forehand, backhand, and serve. 3 free analyses to start.
+Film your strokes. Get instant AI coaching with skeleton overlays, grades, and personalized drills for every swing. 3 free analyses to start. No coach required.
 ```
 
 ### Description (4000 chars max)
 ```
-Stop guessing if your form is right. Tennis IQ uses advanced computer vision and GPT-4o to analyze every stroke you hit -- frame by frame -- and gives you the same level of feedback a private coach would.
+Stop guessing if your form is right.
+
+Tennique uses Apple Vision body tracking and GPT-5.4 to analyze every stroke you hit — frame by frame — and gives you the kind of feedback that used to require a $120/hour private coach.
 
 HOW IT WORKS
-1. Set up your phone courtside and hit Record
-2. Play your game naturally -- forehands, backhands, serves, volleys
-3. Get instant AI analysis with a full-body skeleton overlay on your video
-4. See letter grades (A through F) for each stroke with detailed coaching breakdowns
+1. Prop your phone up courtside and hit Record
+2. Play your game naturally — forehands, backhands, serves, volleys
+3. Get instant AI analysis with a real-time skeleton overlay on your video
+4. See coaching grades for each stroke with specific feedback on what to fix
 
-WHAT YOU GET
-- Real-time skeleton overlay showing your body mechanics during every stroke
-- Individual grades for backswing, contact point, follow-through, stance, and toss
-- Coaching cues that explain exactly what to fix and how
-- Practice drills tailored to your specific weaknesses
-- Progress tracking that shows your improvement over time
-- Tactical gameplay notes to sharpen your match strategy
+WHAT YOUR COACH TELLS YOU
+• "Get your racket back earlier — it should be ready before the ball bounces"
+• "Your shoulder turn is too small — show your back to your opponent"
+• "Great contact point — arm is extended, ball is well out in front"
+• A specific drill for every issue, with reps and what to focus on
+• Your best swing highlighted so you know what you're doing right
+
+NOT WHAT YOU GET
+• No confusing angle measurements or physics jargon
+• No generic "looks good" feedback
+• No guessing what to practice next
+
+FEATURES
+• Real-time skeleton overlay during recording with live coaching cues
+• Voice feedback speaks coaching tips while you play ("Extend through the ball!")
+• AI grades every phase: ready position, backswing, contact, follow-through, recovery
+• Visual corrections showing your skeleton morphing to the ideal position
+• One hero coaching cue per stroke type — the single most important thing to fix
+• Your best swing highlighted alongside what needs work
+• Practice drills with YouTube demo videos
+• Progress tracking over time
+• Share cards for social media
 
 WHO IT'S FOR
-- Recreational players who want to improve without expensive private lessons
-- Competitive players looking for objective feedback on their technique
-- Tennis coaches who want to supplement their teaching with AI analysis
-- Anyone who has ever wondered "is my form actually good?"
+• Recreational players who want to improve without expensive lessons
+• Competitive players who want data between coaching sessions
+• Coaches who want a tool to show students what to fix
+• Anyone who's ever wondered "what am I doing wrong?"
 
 PRICING
-- 3 free analyses to see the magic
-- Monthly or Annual subscription for unlimited analysis
+• 3 free analyses — no credit card required
+• Tennique Pro: unlimited analyses, priority processing
 
-Built with Apple Vision pose estimation (on-device, private) and GPT-4o coaching intelligence. Your videos never leave your device unless you choose to share them.
-
-Questions? Reach us at support@tennisiq.com
+REQUIREMENTS
+• iPhone 12 or newer (iOS 17+)
+• Works best with phone propped 10-15 feet away at waist height
+• Front or back camera
 ```
 
-### What's New (for v1.0.0)
+### What's New (for version updates)
 ```
-Welcome to Tennis IQ! This is our first release featuring:
-- AI-powered stroke analysis with skeleton overlay
-- Coaching feedback with letter grades for every stroke
-- Mechanics breakdown (backswing, contact point, follow-through, stance, toss)
-- Progress tracking dashboard
-- Three beautiful design themes
-- Sign in with Apple & guest mode
+Welcome to Tennique! Your AI tennis coach is ready. Film your strokes and get instant coaching feedback with skeleton overlays, grades, and personalized drills.
 ```
 
 ---
 
-## Screenshots Required
-
-Upload for these device sizes:
-- 6.7" (iPhone 15 Pro Max / 16 Pro Max) -- REQUIRED
-- 6.5" (iPhone 14 Plus / 15 Plus)
-- 5.5" (iPhone 8 Plus) -- if supporting older devices
-
-### Screenshot Sequence (5 screens)
-
-1. **Hero Shot**: Recording screen with camera preview active
-   - Caption: "Film Your Game. Get AI Coaching."
-
-2. **Skeleton Overlay**: Video playback showing pose skeleton on player
-   - Caption: "See What Your Coach Sees"
-
-3. **Coaching Cards**: Expanded coaching card showing grade + mechanics breakdown
-   - Caption: "Every Stroke, Graded & Explained"
-
-4. **Progress Dashboard**: Progress view with circular gauges and improvement chart
-   - Caption: "Track Your Improvement Over Time"
-
-5. **Session Overview**: Session summary with overall grade and stroke timeline
-   - Caption: "Your Personal AI Tennis Coach"
-
----
-
-## App Preview Video (optional but recommended)
-
-- 15-30 seconds showing: Record -> Analyze -> See skeleton -> Read coaching
-- Dimensions: 1290 x 2796 (6.7") or 1284 x 2778 (6.1")
-- Format: H.264, AAC audio, .mp4 or .mov
-
----
-
-## StoreKit Product Configuration
-
-Create these in App Store Connect > Subscriptions:
-
-### Subscription Group: "TennisIQ Premium"
-
-| Product | Product ID | Price | Period | Level |
-|---------|-----------|-------|--------|-------|
-| Monthly Premium | `tennisiq_monthly` | $6.99 | 1 Month | 1 |
-| Annual Premium | `tennisiq_annual` | $49.99 | 1 Year | 1 |
-
-- Family Sharing: No
-- Free Trial: Consider adding 7-day free trial to annual plan
-- Subscription Group Display Name: "TennisIQ Premium"
-
----
-
-## Review Information
-
-### Contact Info
-- First Name: [Your first name]
-- Last Name: [Your last name]
-- Phone: [Your phone]
-- Email: support@tennisiq.com
-
-### Demo Account
-- Not required (app supports guest mode)
-
-### Notes for Reviewer
+## Review Notes (for Apple Review Team)
 ```
-This app uses the device camera to record tennis sessions. It then uses Apple Vision framework for on-device pose estimation and sends extracted pose data (not video) to our API for AI coaching analysis. The app requires a physical tennis court environment to demonstrate full functionality, but you can test the UI flow, onboarding, and subscription screens without recording. Guest mode is available -- no sign-in required to explore the app.
+Tennique is an AI-powered tennis coaching app. Users record themselves playing tennis, and the app uses Apple's Vision framework for body pose detection and OpenAI's GPT-5.4 for coaching analysis.
+
+To test:
+1. Open the app and complete onboarding (or tap "See a sample analysis" to see demo results)
+2. Grant camera permission
+3. Record a short video (any movement works for testing — tennis court not required)
+4. Wait for AI analysis (~30 seconds)
+5. Review coaching results, grades, and drills
+
+The app offers 3 free analyses before requiring a subscription.
+
+Backend API: https://tennique-api-production.up.railway.app
+No login required for basic use (guest mode available).
 ```
+
+---
+
+## App Store Screenshots
+
+### Required sizes:
+- iPhone 6.7" (1290 x 2796) — iPhone 15 Pro Max
+- iPhone 6.1" (1179 x 2556) — iPhone 15 Pro
+
+### Screenshot sequence (5-8 screens):
+1. **Hero:** Phone showing skeleton overlay on tennis video — "AI Coach in Your Pocket"
+2. **Recording:** Live recording screen with coaching cue overlay — "Real-Time Feedback While You Play"
+3. **Results:** Coaching card with grade and hero cue — "Know Exactly What to Fix"
+4. **Correction:** Skeleton morphing from red to green — "See the Fix, Not Just Hear It"
+5. **Drill:** Practice plan with YouTube link — "Take It to the Court"
+6. **Progress:** Progress dashboard with trends — "Track Your Improvement"
+
+---
+
+## Subscription Products (App Store Connect → In-App Purchases)
+
+### Tennique Pro Monthly
+- **Reference Name**: Tennique Pro Monthly
+- **Product ID**: `tennique_pro_monthly`
+- **Price**: $9.99/month
+- **Subscription Group**: Tennique Pro
+- **Description**: Unlimited AI analysis, priority processing, all coaching features
+
+### Tennique Pro Annual
+- **Reference Name**: Tennique Pro Annual
+- **Product ID**: `tennique_pro_annual`
+- **Price**: $59.99/year (saves 50%)
+- **Subscription Group**: Tennique Pro
+- **Description**: Everything in monthly, best value — save 50%
+
+---
+
+## Privacy Policy & Terms
+- Privacy Policy: https://tennique.app/privacy
+- Terms of Service: https://tennique.app/terms
+- Support Email: support@tennique.app
