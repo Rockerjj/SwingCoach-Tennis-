@@ -93,6 +93,19 @@ struct AngleCorrectionView: View {
         }
     }
 
+    /// Compute the angle (in degrees) between three points using the same formula
+    /// as WireframeOverlayView.computeAngle — dot product in Vision's raw coordinate space.
+    private func computeAngle(_ a: CGPoint, _ b: CGPoint, _ c: CGPoint) -> Double {
+        let ba = (x: a.x - b.x, y: a.y - b.y)
+        let bc = (x: c.x - b.x, y: c.y - b.y)
+        let dot = ba.x * bc.x + ba.y * bc.y
+        let magBA = sqrt(ba.x * ba.x + ba.y * ba.y)
+        let magBC = sqrt(bc.x * bc.x + bc.y * bc.y)
+        guard magBA > 0, magBC > 0 else { return 0 }
+        let cosAngle = max(-1, min(1, dot / (magBA * magBC)))
+        return acos(cosAngle) * 180 / .pi
+    }
+
     private func interpolatedJoints() -> [String: CGPoint] {
         var map: [String: CGPoint] = [:]
         for j in joints {
@@ -100,13 +113,39 @@ struct AngleCorrectionView: View {
         }
 
         guard let chain = angleChain,
-              let b = map[chain.b], let c = map[chain.c] else { return map }
+              let a = map[chain.a], let b = map[chain.b], let c = map[chain.c] else { return map }
 
-        let angleDiff = sanitizedIdeal - sanitizedActual
-        let rotationRadians = (angleDiff * animationProgress) * .pi / 180.0
+        // Compute the current angle from the actual joint positions
+        let currentAngle = computeAngle(a, b, c)
 
+        // Determine how far we need to rotate to reach the ideal angle.
+        // A positive angleDiff means the angle needs to INCREASE (open up),
+        // which in screen space means rotating the distal joint (c) AWAY from
+        // the proximal joint (a). We use a small probe rotation to determine
+        // which rotation direction (CW vs CCW) actually increases the angle.
+        let targetAngle = currentAngle + (sanitizedIdeal - currentAngle) * animationProgress
+
+        // Probe: rotate c by +1° around b and see if the angle increases
+        let probeRad = 1.0 * .pi / 180.0
         let dx = c.x - b.x
         let dy = c.y - b.y
+        let probePt = CGPoint(
+            x: b.x + dx * cos(probeRad) - dy * sin(probeRad),
+            y: b.y + dx * sin(probeRad) + dy * cos(probeRad)
+        )
+        let probeAngle = computeAngle(a, b, probePt)
+        let positiveRotationIncreasesAngle = probeAngle > currentAngle
+
+        // Compute required rotation in the correct direction
+        let angleDelta = targetAngle - currentAngle
+        let rotationDegrees: Double
+        if positiveRotationIncreasesAngle {
+            rotationDegrees = angleDelta
+        } else {
+            rotationDegrees = -angleDelta
+        }
+
+        let rotationRadians = rotationDegrees * .pi / 180.0
         let cosR = cos(rotationRadians)
         let sinR = sin(rotationRadians)
         map[chain.c] = CGPoint(x: b.x + dx * cosR - dy * sinR, y: b.y + dx * sinR + dy * cosR)
@@ -156,26 +195,7 @@ struct AngleCorrectionView: View {
             }
             .clipShape(RoundedRectangle(cornerRadius: Radius.md))
 
-            // Label row
-            HStack(spacing: Spacing.sm) {
-                AngleBadge(
-                    label: "Your \(coachLabel)",
-                    angle: sanitizedActual,
-                    color: angleSeverityColor,
-                    isActive: animationProgress < 0.5
-                )
-
-                Image(systemName: "arrow.right")
-                    .font(.system(size: 12, weight: .bold))
-                    .foregroundStyle(theme.textTertiary)
-
-                AngleBadge(
-                    label: "Ideal \(coachLabel)",
-                    angle: sanitizedIdeal,
-                    color: theme.success,
-                    isActive: animationProgress >= 0.5
-                )
-            }
+            // Coach tip is now the only annotation — angle badges removed for cleaner UX
         }
         .task {
             await extractFrame()
@@ -184,18 +204,7 @@ struct AngleCorrectionView: View {
         .onDisappear { timer?.invalidate() }
     }
 
-    private var coachLabel: String {
-        let lower = label.lowercased()
-        if lower.contains("arm") || lower.contains("extension") { return "Contact\n\(label.lowercased())" }
-        return "Contact\n\(label.lowercased())"
-    }
-
-    private var angleSeverityColor: Color {
-        let diff = abs(sanitizedActual - sanitizedIdeal)
-        if diff < 10 { return theme.success }
-        if diff < 25 { return theme.warning }
-        return theme.error
-    }
+    // coachLabel and angleSeverityColor removed — angle badges no longer shown
 
     // MARK: - Coordinate Mapping
 
@@ -347,37 +356,7 @@ struct AngleCorrectionView: View {
     }
 }
 
-// MARK: - Angle Badge
-
-private struct AngleBadge: View {
-    let label: String
-    let angle: Double
-    let color: Color
-    let isActive: Bool
-
-    var body: some View {
-        VStack(spacing: 2) {
-            Text(label)
-                .font(AppFont.body(size: 10, weight: .semibold))
-                .foregroundStyle(isActive ? color : .white.opacity(0.4))
-                .multilineTextAlignment(.center)
-            Text("\(Int(angle))°")
-                .font(AppFont.mono(size: 16))
-                .foregroundStyle(isActive ? color : .white.opacity(0.4))
-        }
-        .padding(.horizontal, Spacing.sm)
-        .padding(.vertical, Spacing.xs)
-        .background(
-            RoundedRectangle(cornerRadius: Radius.sm)
-                .fill(color.opacity(isActive ? 0.15 : 0.05))
-                .overlay(
-                    RoundedRectangle(cornerRadius: Radius.sm)
-                        .strokeBorder(color.opacity(isActive ? 0.4 : 0.1), lineWidth: 1)
-                )
-        )
-        .animation(.easeInOut(duration: 0.3), value: isActive)
-    }
-}
+// AngleBadge removed — replaced by coach tip capsule overlay
 
 // MARK: - Angle String Parser
 
