@@ -248,31 +248,54 @@ footer a:hover { color: var(--text); }
 </footer>
 
 <script>
+// Beehiiv's API blocks CORS from browsers, so we use an iframe-based approach.
+// We submit to a hidden iframe targeting Beehiiv's subscribe page.
 function handleWaitlistSubmit(e) {
   e.preventDefault();
   const form = e.target;
   const emailInput = form.querySelector('input[type="email"]');
   const email = emailInput.value;
   const btn = form.querySelector('button[type="submit"]');
-  const originalText = btn.textContent;
   btn.textContent = 'Joining...';
   btn.disabled = true;
 
-  fetch('https://api.beehiiv.com/v2/publications/54bab0e6-2682-4401-99db-5ac33ebf4057/subscriptions', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: email, reactivate_existing: true, send_welcome_email: true, utm_source: 'website', utm_medium: 'waitlist' })
-  })
-  .then(() => {
-    btn.textContent = '✓ You\'re on the list!';
-    btn.style.background = '#22C55E';
-    btn.style.color = 'white';
-  })
-  .catch(() => {
-    btn.textContent = '✓ You\'re on the list!';
-    btn.style.background = '#22C55E';
-    btn.style.color = 'white';
-  });
+  // Create a hidden iframe + form to POST to Beehiiv's subscribe endpoint (no CORS issues)
+  const iframeName = 'beehiiv_submit_' + Date.now();
+  const iframe = document.createElement('iframe');
+  iframe.name = iframeName;
+  iframe.style.display = 'none';
+  document.body.appendChild(iframe);
+
+  const hiddenForm = document.createElement('form');
+  hiddenForm.method = 'POST';
+  hiddenForm.action = 'https://embeds.beehiiv.com/54bab0e6-2682-4401-99db-5ac33ebf4057';
+  hiddenForm.target = iframeName;
+
+  const emailField = document.createElement('input');
+  emailField.type = 'hidden';
+  emailField.name = 'email';
+  emailField.value = email;
+  hiddenForm.appendChild(emailField);
+
+  const utmField = document.createElement('input');
+  utmField.type = 'hidden';
+  utmField.name = 'utm_source';
+  utmField.value = 'website';
+  hiddenForm.appendChild(utmField);
+
+  document.body.appendChild(hiddenForm);
+  hiddenForm.submit();
+
+  // Show success immediately — Beehiiv handles the rest in the iframe
+  btn.textContent = '✓ You\'re on the list!';
+  btn.style.background = '#22C55E';
+  btn.style.color = 'white';
+
+  // Clean up after a delay
+  setTimeout(() => {
+    iframe.remove();
+    hiddenForm.remove();
+  }, 5000);
 }
 
 document.getElementById('waitlist-form').addEventListener('submit', handleWaitlistSubmit);
