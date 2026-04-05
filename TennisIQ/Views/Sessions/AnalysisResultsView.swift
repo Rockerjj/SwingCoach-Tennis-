@@ -2121,24 +2121,21 @@ struct DrillSection: View {
                             )
                         }
                     } else {
-                        // Fallback: search YouTube for this drill
-                        if let query = text.components(separatedBy: ".").first?.trimmingCharacters(in: .whitespaces),
-                           let searchURL = URL(string: "https://www.youtube.com/results?search_query=tennis+\(query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "drill")") {
-                            Link(destination: searchURL) {
-                                HStack(spacing: Spacing.xxs) {
-                                    Image(systemName: "magnifyingglass")
-                                        .font(.system(size: 12))
-                                    Text("Search Drill on YouTube")
-                                        .font(AppFont.body(size: 14, weight: .semibold))
-                                }
-                                .foregroundStyle(.white)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 44)
-                                .background(
-                                    RoundedRectangle(cornerRadius: Radius.sm)
-                                        .fill(theme.accent.opacity(0.7))
-                                )
+                        // Fallback: always-valid YouTube search URL
+                        Link(destination: DrillVideoMatcher.youtubeSearchURL(for: text)) {
+                            HStack(spacing: Spacing.xxs) {
+                                Image(systemName: "magnifyingglass")
+                                    .font(.system(size: 12))
+                                Text("Search Drill on YouTube")
+                                    .font(AppFont.body(size: 14, weight: .semibold))
                             }
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 44)
+                            .background(
+                                RoundedRectangle(cornerRadius: Radius.sm)
+                                    .fill(theme.accent.opacity(0.7))
+                            )
                         }
                     }
                 }
