@@ -1564,15 +1564,18 @@ struct StrokeTypeSummaryCard: View {
                 .lineSpacing(3)
                 .lineLimit(4)
 
-            // YouTube link for this drill
+            // YouTube link for this drill — use Button + UIApplication.open
+            // instead of Link, because Link taps get swallowed by parent tap gestures
             if let url = DrillVideoMatcher.youtubeURL(for: drill) {
-                Link(destination: url) {
+                Button { UIApplication.shared.open(url) } label: {
                     drillLinkLabel(title: "Watch Drill Demo", icon: "play.fill", full: true)
                 }
+                .buttonStyle(.plain)
             } else {
-                Link(destination: DrillVideoMatcher.youtubeSearchURL(for: drill)) {
+                Button { UIApplication.shared.open(DrillVideoMatcher.youtubeSearchURL(for: drill)) } label: {
                     drillLinkLabel(title: "Search Drill on YouTube", icon: "magnifyingglass", full: false)
                 }
+                .buttonStyle(.plain)
             }
         }
         .padding(Spacing.sm)
@@ -2323,9 +2326,9 @@ struct DrillSection: View {
                             .lineSpacing(3)
                     }
 
-                    // Watch Demo — link to YouTube drill video based on drill content
+                    // Watch Demo — use Button + UIApplication.open to avoid Link tap swallowing
                     if let url = DrillVideoMatcher.youtubeURL(for: text) {
-                        Link(destination: url) {
+                        Button { UIApplication.shared.open(url) } label: {
                             HStack(spacing: Spacing.xxs) {
                                 Image(systemName: "play.fill")
                                     .font(.system(size: 12))
@@ -2340,9 +2343,10 @@ struct DrillSection: View {
                                     .fill(theme.accent)
                             )
                         }
+                        .buttonStyle(.plain)
                     } else {
                         // Fallback: always-valid YouTube search URL
-                        Link(destination: DrillVideoMatcher.youtubeSearchURL(for: text)) {
+                        Button { UIApplication.shared.open(DrillVideoMatcher.youtubeSearchURL(for: text)) } label: {
                             HStack(spacing: Spacing.xxs) {
                                 Image(systemName: "magnifyingglass")
                                     .font(.system(size: 12))
@@ -2357,6 +2361,7 @@ struct DrillSection: View {
                                     .fill(theme.accent.opacity(0.7))
                             )
                         }
+                        .buttonStyle(.plain)
                     }
                 }
                 .padding(Spacing.sm)

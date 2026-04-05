@@ -3,7 +3,8 @@ import AVFoundation
 
 // MARK: - Angle Correction Animation View
 // Shows the actual video frame with skeleton overlay, then morphs
-// the relevant joint toward the ideal angle. Includes coach-style tips.
+// the relevant joint toward the ideal angle. The skeleton visibly moves
+// from the player's actual position to the ideal coaching position.
 
 struct AngleCorrectionView: View {
     let joints: [JointData]
@@ -17,7 +18,6 @@ struct AngleCorrectionView: View {
     @State private var animationProgress: Double = 0
     @State private var frameImage: UIImage?
     @State private var timer: Timer?
-    @State private var direction: Double = 1.0
 
     let theme = DesignSystem.current
 
@@ -68,16 +68,14 @@ struct AngleCorrectionView: View {
         let lower = jointName.lowercased()
         let diff = sanitizedIdeal - sanitizedActual
 
-        if lower.contains("elbow") {
+        if lower.contains("elbow") || lower.contains("arm") || lower.contains("extension") {
             return diff > 0 ? "Straighten your arm through contact" : "Keep a slight bend at contact"
         } else if lower.contains("knee") {
             return diff > 0 ? "Stay taller through your legs" : "Bend your knees more — load the legs"
         } else if lower.contains("hip") {
             return diff > 0 ? "Open your hips toward the net" : "Stay more sideways through contact"
-        } else if lower.contains("arm") || lower.contains("extension") {
-            return diff > 0 ? "Reach further — extend through the ball" : "Don't overextend, keep control"
         } else if lower.contains("shoulder") {
-            return diff > 0 ? "Turn your shoulders perpendicular to the net" : "Don't over-rotate on the takeback"
+            return diff > 0 ? "Turn your shoulders more" : "Don't over-rotate on the takeback"
         }
         return diff > 0 ? "Open up more through this position" : "Stay more compact here"
     }
@@ -93,11 +91,26 @@ struct AngleCorrectionView: View {
         }
     }
 
-    /// Compute the angle (in degrees) between three points using the same formula
-    /// as WireframeOverlayView.computeAngle — dot product in Vision's raw coordinate space.
-    private func computeAngle(_ a: CGPoint, _ b: CGPoint, _ c: CGPoint) -> Double {
-        let ba = (x: a.x - b.x, y: a.y - b.y)
-        let bc = (x: c.x - b.x, y: c.y - b.y)
+    // MARK: - Screen-Space Interpolation
+    // Instead of rotating in Vision's raw coordinate space (which gets flipped
+    // by the portrait x/y swap), we:
+    // 1. Convert all joints to screen coordinates first
+    // 2. Compute the actual angle in screen space
+    // 3. Rotate the distal joint (c) around the pivot (b) in screen space
+    // 4. Draw directly — no coordinate transform confusion
+
+    private func screenJoints(size: CGSize) -> [String: CGPoint] {
+        var map: [String: CGPoint] = [:]
+        for j in joints {
+            // Vision portrait mapping: x→vertical, y→horizontal
+            map[j.name] = CGPoint(x: j.y * size.width, y: j.x * size.height)
+        }
+        return map
+    }
+
+    private func computeScreenAngle(_ a: CGPoint, _ b: CGPoint, _ c: CGPoint) -> Double {
+        let ba = CGPoint(x: a.x - b.x, y: a.y - b.y)
+        let bc = CGPoint(x: c.x - b.x, y: c.y - b.y)
         let dot = ba.x * bc.x + ba.y * bc.y
         let magBA = sqrt(ba.x * ba.x + ba.y * ba.y)
         let magBC = sqrt(bc.x * bc.x + bc.y * bc.y)
@@ -106,97 +119,95 @@ struct AngleCorrectionView: View {
         return acos(cosAngle) * 180 / .pi
     }
 
-    private func interpolatedJoints() -> [String: CGPoint] {
-        var map: [String: CGPoint] = [:]
-        for j in joints {
-            map[j.name] = CGPoint(x: j.x, y: j.y)
-        }
+    private func interpolatedScreenJoints(size: CGSize) -> [String: CGPoint] {
+        var map = screenJoints(size: size)
 
         guard let chain = angleChain,
-              let a = map[chain.a], let b = map[chain.b], let c = map[chain.c] else { return map }
+              let a = map[chain.a], let b = map[chain.b], let c = map[chain.c]
+        else { return map }
 
-        // Compute the current angle from the actual joint positions
-        let currentAngle = computeAngle(a, b, c)
+        let currentAngle = computeScreenAngle(a, b, c)
+        guard currentAngle > 0 else { return map }
 
-        // Determine how far we need to rotate to reach the ideal angle.
-        // A positive angleDiff means the angle needs to INCREASE (open up),
-        // which in screen space means rotating the distal joint (c) AWAY from
-        // the proximal joint (a). We use a small probe rotation to determine
-        // which rotation direction (CW vs CCW) actually increases the angle.
+        // How much we need the angle to change
         let targetAngle = currentAngle + (sanitizedIdeal - currentAngle) * animationProgress
+        let angleDelta = targetAngle - currentAngle
 
-        // Probe: rotate c by +1° around b and see if the angle increases
-        let probeRad = 1.0 * .pi / 180.0
+        // Determine rotation direction: probe +1° in screen space
         let dx = c.x - b.x
         let dy = c.y - b.y
-        let probePt = CGPoint(
+        let probeRad = 1.0 * .pi / 180.0
+        let probeC = CGPoint(
             x: b.x + dx * cos(probeRad) - dy * sin(probeRad),
             y: b.y + dx * sin(probeRad) + dy * cos(probeRad)
         )
-        let probeAngle = computeAngle(a, b, probePt)
-        let positiveRotationIncreasesAngle = probeAngle > currentAngle
+        let probeAngle = computeScreenAngle(a, b, probeC)
+        let posRotIncreases = probeAngle > currentAngle
 
-        // Compute required rotation in the correct direction
-        let angleDelta = targetAngle - currentAngle
-        let rotationDegrees: Double
-        if positiveRotationIncreasesAngle {
-            rotationDegrees = angleDelta
-        } else {
-            rotationDegrees = -angleDelta
-        }
+        let rotDeg = posRotIncreases ? angleDelta : -angleDelta
+        let rotRad = rotDeg * .pi / 180.0
 
-        let rotationRadians = rotationDegrees * .pi / 180.0
-        let cosR = cos(rotationRadians)
-        let sinR = sin(rotationRadians)
-        map[chain.c] = CGPoint(x: b.x + dx * cosR - dy * sinR, y: b.y + dx * sinR + dy * cosR)
+        let cosR = cos(rotRad)
+        let sinR = sin(rotRad)
+
+        // Move joint C (the distal joint)
+        let newC = CGPoint(
+            x: b.x + dx * cosR - dy * sinR,
+            y: b.y + dx * sinR + dy * cosR
+        )
+        map[chain.c] = newC
+
+        // For arm chains (shoulder-elbow-wrist), also propagate:
+        // If chain is shoulder-elbow-wrist, we rotated the wrist around the elbow.
+        // But if chain is shoulder-elbow-wrist and we want to straighten the ARM,
+        // we should check if there are downstream joints to also move.
+        // For elbow angle: a=shoulder, b=elbow, c=wrist — wrist moves. Good.
+        // For arm extension: same chain. Good.
+
         return map
     }
 
     var body: some View {
-        VStack(spacing: Spacing.xs) {
-            ZStack {
-                // Background: real video frame or dark fallback
-                if let image = frameImage {
-                    Image(uiImage: image)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(height: 220)
-                        .clipped()
-                        .overlay(Color.black.opacity(0.25))
-                } else {
-                    RoundedRectangle(cornerRadius: Radius.md)
-                        .fill(Color.black.opacity(0.85))
-                        .frame(height: 220)
-                }
-
-                // Skeleton + angle overlay
-                Canvas { context, size in
-                    drawSkeletonWithAngle(context: context, size: size)
-                }
-                .frame(height: 220)
-
-                // Coach tip overlay
-                VStack {
-                    Spacer()
-                    HStack {
-                        Text(coachTip)
-                            .font(AppFont.body(size: 12, weight: .semibold))
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 6)
-                            .background(
-                                Capsule().fill(skeletonColor.opacity(0.85))
-                            )
-                        Spacer()
-                    }
-                    .padding(8)
-                }
-                .frame(height: 220)
+        ZStack {
+            // Background: real video frame or dark fallback
+            if let image = frameImage {
+                Image(uiImage: image)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(height: 240)
+                    .clipped()
+                    .overlay(Color.black.opacity(0.25))
+            } else {
+                RoundedRectangle(cornerRadius: Radius.md)
+                    .fill(Color.black.opacity(0.85))
+                    .frame(height: 240)
             }
-            .clipShape(RoundedRectangle(cornerRadius: Radius.md))
 
-            // Coach tip is now the only annotation — angle badges removed for cleaner UX
+            // Skeleton + angle overlay
+            Canvas { context, size in
+                drawSkeleton(context: context, size: size)
+            }
+            .frame(height: 240)
+
+            // Coach tip overlay at bottom
+            VStack {
+                Spacer()
+                HStack {
+                    Text(coachTip)
+                        .font(AppFont.body(size: 13, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(
+                            Capsule().fill(skeletonColor.opacity(0.9))
+                        )
+                    Spacer()
+                }
+                .padding(10)
+            }
+            .frame(height: 240)
         }
+        .clipShape(RoundedRectangle(cornerRadius: Radius.md))
         .task {
             await extractFrame()
             startAnimation()
@@ -204,19 +215,10 @@ struct AngleCorrectionView: View {
         .onDisappear { timer?.invalidate() }
     }
 
-    // coachLabel and angleSeverityColor removed — angle badges no longer shown
-
     // MARK: - Drawing
 
-    private func drawSkeletonWithAngle(context: GraphicsContext, size: CGSize) {
-        let jointMap = interpolatedJoints()
-
-        func pt(_ name: String) -> CGPoint? {
-            guard let n = jointMap[name] else { return nil }
-            // Vision coords are in raw buffer space; for portrait video,
-            // x maps to vertical and y maps to horizontal after rotation
-            return CGPoint(x: n.y * size.width, y: n.x * size.height)
-        }
+    private func drawSkeleton(context: GraphicsContext, size: CGSize) {
+        let jointMap = interpolatedScreenJoints(size: size)
 
         let defaultColor = Color.white.opacity(0.35)
         let highlightedJoints: Set<String> = {
@@ -224,43 +226,46 @@ struct AngleCorrectionView: View {
             return [chain.a, chain.b, chain.c]
         }()
 
+        // Draw bones
         for (a, b) in Self.bones {
-            guard let pa = pt(a), let pb = pt(b) else { continue }
+            guard let pa = jointMap[a], let pb = jointMap[b] else { continue }
             let isHighlighted = highlightedJoints.contains(a) || highlightedJoints.contains(b)
             var path = Path()
             path.move(to: pa)
             path.addLine(to: pb)
 
             if isHighlighted {
+                // Glow + solid line for highlighted bones
                 context.stroke(path, with: .color(skeletonColor.opacity(0.4)),
-                    style: StrokeStyle(lineWidth: 8, lineCap: .round))
+                    style: StrokeStyle(lineWidth: 10, lineCap: .round))
                 context.stroke(path, with: .color(skeletonColor),
-                    style: StrokeStyle(lineWidth: 3, lineCap: .round))
+                    style: StrokeStyle(lineWidth: 4, lineCap: .round))
             } else {
                 context.stroke(path, with: .color(defaultColor),
                     style: StrokeStyle(lineWidth: 1.5, lineCap: .round))
             }
         }
 
-        for (name, _) in jointMap {
-            guard let p = pt(name) else { continue }
+        // Draw joint dots
+        for (name, pt) in jointMap {
             let isHighlighted = highlightedJoints.contains(name)
-            let r: CGFloat = isHighlighted ? 5 : 3
+            let r: CGFloat = isHighlighted ? 6 : 3
             let color = isHighlighted ? skeletonColor : defaultColor
-            let rect = CGRect(x: p.x - r, y: p.y - r, width: r * 2, height: r * 2)
+            let rect = CGRect(x: pt.x - r, y: pt.y - r, width: r * 2, height: r * 2)
             context.fill(Path(ellipseIn: rect), with: .color(color))
         }
 
-        if let chain = angleChain, let pivot = pt(chain.b) {
-            let bubbleCenter = CGPoint(x: pivot.x + 30, y: pivot.y - 22)
+        // Angle bubble at the pivot joint
+        if let chain = angleChain, let pivot = jointMap[chain.b] {
+            let bubbleCenter = CGPoint(x: pivot.x + 35, y: pivot.y - 25)
             let displayStr = "\(Int(displayAngle))°"
-            let bubbleRect = CGRect(x: bubbleCenter.x - 22, y: bubbleCenter.y - 13,
-                                    width: 44, height: 26)
+            let bubbleRect = CGRect(x: bubbleCenter.x - 24, y: bubbleCenter.y - 14,
+                                    width: 48, height: 28)
             context.fill(Path(roundedRect: bubbleRect, cornerRadius: 8),
                          with: .color(skeletonColor.opacity(0.9)))
             context.draw(
                 Text(displayStr)
-                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .font(.system(size: 14, weight: .bold, design: .rounded))
                     .foregroundStyle(.white),
                 at: bubbleCenter
             )
@@ -271,24 +276,34 @@ struct AngleCorrectionView: View {
 
     private func startAnimation() {
         let fps = 30.0
-        let duration = 2.0
-        let totalFrames = Int(fps * duration)
-        let holdFrames = Int(fps * 1.2)
+        let forwardDuration = 2.0
+        let holdDuration = 1.5
+        let totalForwardFrames = Int(fps * forwardDuration)
+        let holdFrames = Int(fps * holdDuration)
+        let cycleLength = totalForwardFrames + holdFrames + totalForwardFrames + holdFrames
         var frameCount = 0
 
         timer = Timer.scheduledTimer(withTimeInterval: 1.0 / fps, repeats: true) { _ in
             frameCount += 1
-            let cycleLength = totalFrames + holdFrames
             let pos = frameCount % cycleLength
 
-            if pos < totalFrames {
-                let raw = Double(pos) / Double(totalFrames)
+            if pos < totalForwardFrames {
+                // Animate forward: actual → ideal
+                let raw = Double(pos) / Double(totalForwardFrames)
                 let eased = raw < 0.5 ? 2 * raw * raw : -1 + (4 - 2 * raw) * raw
-                animationProgress = direction > 0 ? eased : 1.0 - eased
-            }
-
-            if pos == cycleLength - 1 {
-                direction *= -1
+                animationProgress = eased
+            } else if pos < totalForwardFrames + holdFrames {
+                // Hold at ideal
+                animationProgress = 1.0
+            } else if pos < totalForwardFrames + holdFrames + totalForwardFrames {
+                // Animate back: ideal → actual
+                let backPos = pos - totalForwardFrames - holdFrames
+                let raw = Double(backPos) / Double(totalForwardFrames)
+                let eased = raw < 0.5 ? 2 * raw * raw : -1 + (4 - 2 * raw) * raw
+                animationProgress = 1.0 - eased
+            } else {
+                // Hold at actual
+                animationProgress = 0.0
             }
         }
     }
@@ -300,7 +315,7 @@ struct AngleCorrectionView: View {
         let asset = AVURLAsset(url: url)
         let generator = AVAssetImageGenerator(asset: asset)
         generator.appliesPreferredTrackTransform = true
-        generator.maximumSize = CGSize(width: 500, height: 0)
+        generator.maximumSize = CGSize(width: 600, height: 0)
         generator.requestedTimeToleranceBefore = .zero
         generator.requestedTimeToleranceAfter = .zero
 
@@ -311,8 +326,6 @@ struct AngleCorrectionView: View {
         } catch { }
     }
 }
-
-// AngleBadge removed — replaced by coach tip capsule overlay
 
 // MARK: - Angle String Parser
 
@@ -338,7 +351,7 @@ struct ParsedAngle {
     }
 }
 
-// MARK: - Angle Correction Strip
+// MARK: - Angle Correction Strip (Full-Width Swipeable Pages)
 
 struct AngleCorrectionStrip: View {
     let joints: [JointData]
@@ -376,7 +389,7 @@ struct AngleCorrectionStrip: View {
                     }
                 }
 
-                // Full-width, swipeable pages instead of side-by-side scroll
+                // Full-width, swipeable pages
                 TabView(selection: $currentPage) {
                     ForEach(Array(outOfRangeAngles.enumerated()), id: \.element.jointName) { index, parsed in
                         AngleCorrectionView(
@@ -392,8 +405,7 @@ struct AngleCorrectionStrip: View {
                     }
                 }
                 .tabViewStyle(.page(indexDisplayMode: outOfRangeAngles.count > 1 ? .automatic : .never))
-                .frame(height: 240)
-
+                .frame(height: 260)
             }
         }
     }
