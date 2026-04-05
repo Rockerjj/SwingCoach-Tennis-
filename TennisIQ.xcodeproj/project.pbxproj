@@ -12,6 +12,7 @@
 		07A8CEFE4DC505D3F41ECC9F /* DrillPlanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2001D4D59679927ACD1FFDAA /* DrillPlanView.swift */; };
 		094C8A26FEBAA5FBAB468E80 /* HeroInsightCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B62CF863477F0A539F5EF6C9 /* HeroInsightCard.swift */; };
 		0E559D5CA8718ADA1EBE5E1F /* DrillVideoMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 436C47F34EFE8F2A43CA7F60 /* DrillVideoMatcher.swift */; };
+		359723393214313343135154 /* StrokeAggregator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 427270281189534436833457 /* StrokeAggregator.swift */; };
 		0E8750A399BD9EED9B2D174C /* ProComparisonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD7C05C154F82A804E8D1347 /* ProComparisonView.swift */; };
 		10D27F43FFD2E1A3BBF04260 /* serena_serve.json in Resources */ = {isa = PBXBuildFile; fileRef = 600B168B3A2455C1C93C82FE /* serena_serve.json */; };
 		11BAADE1F553DDF794BC6E8E /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F9B1947FDC7359E4A9EF789 /* ProfileView.swift */; };
@@ -104,6 +105,7 @@
 		412881648BA5A288998A997D /* SessionsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionsListView.swift; sourceTree = "<group>"; };
 		4135897B9F9E86F8F57A0046 /* TennisIQApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennisIQApp.swift; sourceTree = "<group>"; };
 		436C47F34EFE8F2A43CA7F60 /* DrillVideoMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrillVideoMatcher.swift; sourceTree = "<group>"; };
+		427270281189534436833457 /* StrokeAggregator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StrokeAggregator.swift; sourceTree = "<group>"; };
 		45E1478F4FA082B4B3728C3F /* Color+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Hex.swift"; sourceTree = "<group>"; };
 		4B4957EA42286EFDA023EF41 /* PhaseFrameCaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhaseFrameCaptureView.swift; sourceTree = "<group>"; };
 		4DFEFE336346EB99AA24E40B /* AnalyticsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsService.swift; sourceTree = "<group>"; };
@@ -223,6 +225,7 @@
 				45E1478F4FA082B4B3728C3F /* Color+Hex.swift */,
 				D9765FE60DBE1E3F218E7DF9 /* Constants.swift */,
 				436C47F34EFE8F2A43CA7F60 /* DrillVideoMatcher.swift */,
+				427270281189534436833457 /* StrokeAggregator.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -487,6 +490,7 @@
 				4FFE162779A31A539C8B403E /* DesignSystem.swift in Sources */,
 				07A8CEFE4DC505D3F41ECC9F /* DrillPlanView.swift in Sources */,
 				0E559D5CA8718ADA1EBE5E1F /* DrillVideoMatcher.swift in Sources */,
+				359723393214313343135154 /* StrokeAggregator.swift in Sources */,
 				AB07C80EEC70FA3F7FEA855A /* FeedbackPromptView.swift in Sources */,
 				F01D4278751F2DFBB2621892 /* FeedbackService.swift in Sources */,
 				2F4FFB9E53BF743B503E98C2 /* GrandSlamTheme.swift in Sources */,

@@ -1381,20 +1381,240 @@ struct CompactSessionSummaryCard: View {
     }
 }
 
-// MARK: - Stroke Cards Section
+// MARK: - Stroke Cards Section (aggregated by type)
 
 struct StrokeCardsSection: View {
     let strokes: [StrokeAnalysisModel]
     var videoURL: URL? = nil
     var scrollToPhases: (() -> Void)? = nil
 
+    private var summaries: [StrokeTypeSummary] {
+        StrokeAggregator.aggregate(strokes)
+    }
+
     var body: some View {
         VStack(spacing: Spacing.sm) {
-            ForEach(strokes) { stroke in
-                CoachingCard(stroke: stroke, videoURL: videoURL, scrollToPhases: scrollToPhases)
+            ForEach(summaries) { summary in
+                StrokeTypeSummaryCard(
+                    summary: summary,
+                    videoURL: videoURL,
+                    scrollToPhases: scrollToPhases
+                )
             }
         }
         .padding(Spacing.md)
+    }
+}
+
+// MARK: - Stroke Type Summary Card
+
+struct StrokeTypeSummaryCard: View {
+    let summary: StrokeTypeSummary
+    var videoURL: URL? = nil
+    var scrollToPhases: (() -> Void)? = nil
+    @State private var showAllStrokes = false
+    private let theme = DesignSystem.current
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // Header: stroke type + average score
+            cardHeader
+
+            Divider().foregroundStyle(theme.surfaceSecondary)
+
+            VStack(alignment: .leading, spacing: Spacing.md) {
+                // Hero coaching cue
+                Text(summary.heroCoachingCue)
+                    .font(AppFont.body(size: 16, weight: .bold))
+                    .foregroundStyle(theme.textPrimary)
+                    .lineSpacing(3)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                // Skeleton correction visual from worst swing
+                if let joints = summary.worstStroke.jointSnapshot, !joints.isEmpty,
+                   let overlay = summary.worstStroke.overlayInstructions {
+                    AngleCorrectionStrip(
+                        joints: joints,
+                        angleStrings: overlay.anglesToHighlight,
+                        videoURL: videoURL,
+                        timestamp: summary.worstStroke.timestamp
+                    )
+                }
+
+                // Best swing highlight
+                if summary.strokes.count > 1 {
+                    bestSwingHighlight
+                }
+
+                // One drill inline
+                if let drill = summary.topDrill, !drill.isEmpty {
+                    inlineDrill(drill)
+                }
+
+                // "See all N forehands →" disclosure
+                if summary.strokes.count > 1 {
+                    seeAllButton
+                }
+            }
+            .padding(Spacing.md)
+
+            // Expanded individual cards
+            if showAllStrokes {
+                Divider().foregroundStyle(theme.surfaceSecondary)
+                VStack(spacing: Spacing.sm) {
+                    ForEach(summary.strokes) { stroke in
+                        CoachingCard(stroke: stroke, videoURL: videoURL, scrollToPhases: scrollToPhases)
+                    }
+                }
+                .padding(Spacing.sm)
+            }
+        }
+        .background(
+            RoundedRectangle(cornerRadius: Radius.md)
+                .fill(theme.surfacePrimary)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: Radius.md))
+    }
+
+    private var cardHeader: some View {
+        HStack {
+            Image(systemName: summary.strokeType.icon)
+                .font(.system(size: 16))
+                .foregroundStyle(theme.accent)
+                .frame(width: 32, height: 32)
+                .background(theme.accentMuted)
+                .clipShape(RoundedRectangle(cornerRadius: Radius.sm))
+
+            Text(summary.strokeType.displayName)
+                .font(AppFont.body(size: 17, weight: .bold))
+                .foregroundStyle(theme.textPrimary)
+
+            Text("· \(Int(summary.averageScore.rounded()))/100")
+                .font(AppFont.mono(size: 15, weight: .semibold))
+                .foregroundStyle(theme.textSecondary)
+
+            Spacer()
+
+            if let phaseName = summary.worstPhaseName {
+                Text(phaseName)
+                    .font(AppFont.body(size: 11, weight: .semibold))
+                    .foregroundStyle(theme.warning)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(
+                        Capsule().fill(theme.warning.opacity(0.12))
+                    )
+            }
+        }
+        .padding(Spacing.md)
+    }
+
+    private var bestSwingHighlight: some View {
+        HStack(spacing: Spacing.sm) {
+            Text("🌟")
+                .font(.system(size: 16))
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Your best \(summary.strokeType.displayName.lowercased())")
+                    .font(AppFont.body(size: 13, weight: .semibold))
+                    .foregroundStyle(theme.textPrimary)
+
+                if let note = summary.bestStroke.gradingRationale {
+                    Text(note.components(separatedBy: ".").first ?? note)
+                        .font(AppFont.body(size: 12))
+                        .foregroundStyle(theme.textSecondary)
+                        .lineLimit(2)
+                } else {
+                    Text("Grade: \(summary.bestStroke.grade.uppercased()) at \(String(format: "%.1fs", summary.bestStroke.timestamp))")
+                        .font(AppFont.body(size: 12))
+                        .foregroundStyle(theme.textSecondary)
+                }
+            }
+
+            Spacer()
+
+            GradeBadge(grade: summary.bestStroke.grade)
+        }
+        .padding(Spacing.sm)
+        .background(
+            RoundedRectangle(cornerRadius: Radius.sm)
+                .fill(theme.success.opacity(0.08))
+                .overlay(
+                    RoundedRectangle(cornerRadius: Radius.sm)
+                        .strokeBorder(theme.success.opacity(0.2), lineWidth: 1)
+                )
+        )
+    }
+
+    private func inlineDrill(_ drill: String) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            HStack(spacing: 5) {
+                Image(systemName: "figure.tennis")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(theme.accent)
+                Text("PRACTICE DRILL")
+                    .font(AppFont.body(size: 11, weight: .bold))
+                    .foregroundStyle(theme.textTertiary)
+                    .tracking(0.5)
+            }
+
+            Text(drill)
+                .font(AppFont.body(size: 13))
+                .foregroundStyle(theme.textPrimary)
+                .lineSpacing(3)
+                .lineLimit(4)
+
+            // YouTube link for this drill
+            if let url = DrillVideoMatcher.youtubeURL(for: drill) {
+                Link(destination: url) {
+                    drillLinkLabel(title: "Watch Drill Demo", icon: "play.fill", full: true)
+                }
+            } else {
+                Link(destination: DrillVideoMatcher.youtubeSearchURL(for: drill)) {
+                    drillLinkLabel(title: "Search Drill on YouTube", icon: "magnifyingglass", full: false)
+                }
+            }
+        }
+        .padding(Spacing.sm)
+        .background(
+            RoundedRectangle(cornerRadius: Radius.sm)
+                .fill(theme.accentMuted)
+        )
+    }
+
+    private func drillLinkLabel(title: String, icon: String, full: Bool) -> some View {
+        HStack(spacing: Spacing.xxs) {
+            Image(systemName: icon)
+                .font(.system(size: 12))
+            Text(title)
+                .font(AppFont.body(size: 14, weight: .semibold))
+        }
+        .foregroundStyle(.white)
+        .frame(maxWidth: .infinity)
+        .frame(height: 40)
+        .background(
+            RoundedRectangle(cornerRadius: Radius.sm)
+                .fill(theme.accent.opacity(full ? 1.0 : 0.7))
+        )
+    }
+
+    private var seeAllButton: some View {
+        Button {
+            withAnimation(.easeInOut(duration: 0.25)) {
+                showAllStrokes.toggle()
+            }
+        } label: {
+            HStack(spacing: Spacing.xxs) {
+                Text(showAllStrokes
+                     ? "Hide individual \(summary.strokeType.displayName.lowercased())s"
+                     : "See all \(summary.strokes.count) \(summary.strokeType.displayName.lowercased())s")
+                    .font(AppFont.body(size: 14, weight: .medium))
+                Image(systemName: showAllStrokes ? "chevron.up" : "chevron.right")
+                    .font(.system(size: 11, weight: .semibold))
+            }
+            .foregroundStyle(theme.accent)
+        }
+        .buttonStyle(.plain)
     }
 }
 
