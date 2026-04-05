@@ -197,16 +197,60 @@ struct AngleCorrectionView: View {
         return theme.error
     }
 
+    // MARK: - Coordinate Mapping
+
+    private struct CropInfo {
+        let scale: CGFloat
+        let offsetX: CGFloat
+        let offsetY: CGFloat
+    }
+
+    private func aspectFillCrop(imageSize: CGSize, viewSize: CGSize) -> CropInfo {
+        guard imageSize.width > 0, imageSize.height > 0 else {
+            return CropInfo(scale: 1, offsetX: 0, offsetY: 0)
+        }
+        let imageAspect = imageSize.width / imageSize.height
+        let viewAspect = viewSize.width / viewSize.height
+
+        let scale: CGFloat
+        let offsetX: CGFloat
+        let offsetY: CGFloat
+
+        if imageAspect < viewAspect {
+            scale = viewSize.width / imageSize.width
+            offsetX = 0
+            offsetY = (viewSize.height - imageSize.height * scale) / 2.0
+        } else {
+            scale = viewSize.height / imageSize.height
+            offsetX = (viewSize.width - imageSize.width * scale) / 2.0
+            offsetY = 0
+        }
+        return CropInfo(scale: scale, offsetX: offsetX, offsetY: offsetY)
+    }
+
+    private func toScreen(_ n: CGPoint, crop: CropInfo, imageSize: CGSize) -> CGPoint {
+        // Vision coords are in raw buffer space; for portrait video,
+        // x maps to vertical and y maps to horizontal after rotation.
+        // imageSize is the displayed image size (after rotation).
+        let videoX = n.y * imageSize.width
+        let videoY = n.x * imageSize.height
+        return CGPoint(
+            x: videoX * crop.scale + crop.offsetX,
+            y: videoY * crop.scale + crop.offsetY
+        )
+    }
+
     // MARK: - Drawing
 
     private func drawSkeletonWithAngle(context: GraphicsContext, size: CGSize) {
         let jointMap = interpolatedJoints()
+        let imageSize = frameImage.map { CGSize(width: $0.size.width, height: $0.size.height) }
+            ?? CGSize(width: 1080, height: 1920)
+        let crop = aspectFillCrop(imageSize: imageSize, viewSize: size)
 
         func pt(_ name: String) -> CGPoint? {
             guard let n = jointMap[name] else { return nil }
-            // Vision coords are in raw buffer space; for portrait video,
-            // x maps to vertical and y maps to horizontal after rotation
-            return CGPoint(x: n.y * size.width, y: n.x * size.height)
+            return toScreen(n, crop: crop, imageSize: imageSize)
         }
 
         let defaultColor = Color.white.opacity(0.35)
