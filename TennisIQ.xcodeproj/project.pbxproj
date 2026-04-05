@@ -81,6 +81,7 @@
 		F8B34770D71406488E66ADE7 /* StrokeAnalysisModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52B20C486E4DDFFAB3786FAD /* StrokeAnalysisModel.swift */; };
 		FAA2DD7E3FD2C2D1430333CA /* SkeletonWaitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBD3465DC4CB4CA615288D0F /* SkeletonWaitView.swift */; };
 		FECCC292B1482A2044723AF3 /* SubscriptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0D9F2A15A6BC7093DDF9E23 /* SubscriptionService.swift */; };
+		D1A3B7C4E2F9081A5C6D4E3F /* LaunchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2B4A8D5F3E0192B6D7E5F40 /* LaunchView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -160,6 +161,7 @@
 		F69C954894BA2C837EF0C9BC /* ZoneIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoneIndicator.swift; sourceTree = "<group>"; };
 		F7811A06F978478D32276993 /* FeedbackService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackService.swift; sourceTree = "<group>"; };
 		FAFA957376E7CF08C013154F /* NetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitor.swift; sourceTree = "<group>"; };
+		C2B4A8D5F3E0192B6D7E5F40 /* LaunchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -346,6 +348,7 @@
 			isa = PBXGroup;
 			children = (
 				72C8CCBB21110646AF327E4F /* Components */,
+				C2B4A8D5F3E0192B6D7E5F40 /* LaunchView.swift */,
 				FAC4FFF71E28056AFE77E0DD /* Onboarding */,
 				8C955B024EA6925D9BC3272A /* Profile */,
 				18201005F1C7A913875B1D68 /* Progress */,
@@ -539,6 +542,7 @@
 				AFA12FCAFB454D8FAC3469B3 /* UserProfileModel.swift in Sources */,
 				66D005C10E3E3609D441EF6A /* VoiceFeedbackService.swift in Sources */,
 				C7B507BBED1C2B0ED246D287 /* ZoneIndicator.swift in Sources */,
+				D1A3B7C4E2F9081A5C6D4E3F /* LaunchView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
