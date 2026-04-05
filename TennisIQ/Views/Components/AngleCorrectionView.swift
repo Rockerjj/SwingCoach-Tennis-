@@ -397,6 +397,8 @@ struct AngleCorrectionStrip: View {
             .filter { $0.actual < $0.idealLow || $0.actual > $0.idealHigh }
     }
 
+    @State private var currentPage = 0
+
     var body: some View {
         if !outOfRangeAngles.isEmpty {
             VStack(alignment: .leading, spacing: Spacing.xs) {
@@ -408,24 +410,34 @@ struct AngleCorrectionStrip: View {
                         .font(AppFont.body(size: 11, weight: .bold))
                         .foregroundStyle(theme.textTertiary)
                         .tracking(0.5)
-                }
 
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: Spacing.sm) {
-                        ForEach(outOfRangeAngles, id: \.jointName) { parsed in
-                            AngleCorrectionView(
-                                joints: joints,
-                                jointName: parsed.jointName,
-                                actualAngle: parsed.actual,
-                                idealAngle: parsed.idealMidpoint,
-                                label: parsed.jointName,
-                                videoURL: videoURL,
-                                timestamp: timestamp
-                            )
-                            .frame(width: 260)
-                        }
+                    Spacer()
+
+                    if outOfRangeAngles.count > 1 {
+                        Text("\(currentPage + 1)/\(outOfRangeAngles.count)")
+                            .font(AppFont.mono(size: 11))
+                            .foregroundStyle(theme.textTertiary)
                     }
                 }
+
+                // Full-width, swipeable pages instead of side-by-side scroll
+                TabView(selection: $currentPage) {
+                    ForEach(Array(outOfRangeAngles.enumerated()), id: \.element.jointName) { index, parsed in
+                        AngleCorrectionView(
+                            joints: joints,
+                            jointName: parsed.jointName,
+                            actualAngle: parsed.actual,
+                            idealAngle: parsed.idealMidpoint,
+                            label: parsed.jointName,
+                            videoURL: videoURL,
+                            timestamp: timestamp
+                        )
+                        .tag(index)
+                    }
+                }
+                .tabViewStyle(.page(indexDisplayMode: outOfRangeAngles.count > 1 ? .automatic : .never))
+                .frame(height: 240)
+
             }
         }
     }
