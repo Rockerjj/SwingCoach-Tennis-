@@ -6,14 +6,15 @@ import Foundation
 enum DrillVideoMatcher {
 
     /// Returns a YouTube URL for the best matching drill, or nil to fall back to search.
+    /// Converts youtu.be short links to full youtube.com/watch URLs for better iOS app linking.
     static func youtubeURL(for drillText: String) -> URL? {
         let lower = drillText.lowercased()
 
         // Check each keyword group
         for (keywords, urlString) in Self.drillMap {
             if keywords.contains(where: { lower.contains($0) }) {
-                if let urlString, let url = URL(string: urlString) {
-                    return url
+                if let urlString {
+                    return expandYouTubeURL(urlString)
                 }
                 // Curated entry exists but URL is nil — fall through to search
                 return nil
@@ -21,6 +22,16 @@ enum DrillVideoMatcher {
         }
 
         return nil
+    }
+
+    /// Convert youtu.be/VIDEO_ID to youtube.com/watch?v=VIDEO_ID
+    /// Full URLs work better with iOS universal links and open in the YouTube app
+    private static func expandYouTubeURL(_ urlString: String) -> URL? {
+        if urlString.contains("youtu.be/"),
+           let videoID = urlString.components(separatedBy: "youtu.be/").last {
+            return URL(string: "https://www.youtube.com/watch?v=\(videoID)")
+        }
+        return URL(string: urlString)
     }
 
     /// Always-valid YouTube search URL for a drill description.
