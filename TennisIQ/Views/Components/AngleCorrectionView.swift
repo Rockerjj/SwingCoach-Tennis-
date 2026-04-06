@@ -117,6 +117,20 @@ struct AngleCorrectionView: View {
             map[j.name] = toScreen(raw, crop: crop, imageSize: imageSize)
         }
 
+        // Debug: log coordinates for a recognizable joint (only once per draw)
+        if let wrist = joints.first(where: { $0.name == "right_wrist" }) ?? joints.first(where: { $0.name == "left_wrist" }) {
+            let screenPt = map[wrist.name] ?? .zero
+            print("[SKEL] joint=\(wrist.name) raw=(\(String(format:"%.3f",wrist.x)),\(String(format:"%.3f",wrist.y))) imgSize=\(Int(imageSize.width))x\(Int(imageSize.height)) canvas=\(Int(size.width))x\(Int(size.height)) screen=(\(Int(screenPt.x)),\(Int(screenPt.y))) crop=(s:\(String(format:"%.3f",crop.scale)) ox:\(Int(crop.offsetX)) oy:\(Int(crop.offsetY)))")
+        }
+        if let nose = joints.first(where: { $0.name == "nose" }) {
+            let screenPt = map["nose"] ?? .zero
+            print("[SKEL] joint=nose raw=(\(String(format:"%.3f",nose.x)),\(String(format:"%.3f",nose.y))) screen=(\(Int(screenPt.x)),\(Int(screenPt.y)))")
+        }
+        if let hip = joints.first(where: { $0.name == "right_hip" }) ?? joints.first(where: { $0.name == "left_hip" }) {
+            let screenPt = map[hip.name] ?? .zero
+            print("[SKEL] joint=\(hip.name) raw=(\(String(format:"%.3f",hip.x)),\(String(format:"%.3f",hip.y))) screen=(\(Int(screenPt.x)),\(Int(screenPt.y)))")
+        }
+
         guard let chain = angleChain,
               let a = map[chain.a], let b = map[chain.b], let c = map[chain.c] else { return map }
 
@@ -194,10 +208,24 @@ struct AngleCorrectionView: View {
                     .padding(8)
                 }
                 .frame(height: 340)
+
+                // DEBUG: on-screen coordinate readout
+                VStack {
+                    HStack {
+                        if let wrist = joints.first(where: { $0.name == "right_wrist" }) ?? joints.first(where: { $0.name == "left_wrist" }) {
+                            Text("DBG \(wrist.name): raw(\(String(format:"%.2f",wrist.x)),\(String(format:"%.2f",wrist.y))) img(\(Int(frameImage?.size.width ?? 0))x\(Int(frameImage?.size.height ?? 0)))")
+                                .font(.system(size: 8, design: .monospaced))
+                                .foregroundStyle(.yellow)
+                                .padding(3)
+                                .background(Color.black.opacity(0.8))
+                        }
+                        Spacer()
+                    }
+                    Spacer()
+                }
+                .frame(height: 340)
             }
             .clipShape(RoundedRectangle(cornerRadius: Radius.md))
-
-            // Coach tip is now the only annotation — angle badges removed for cleaner UX
         }
         .task {
             await extractFrame()
