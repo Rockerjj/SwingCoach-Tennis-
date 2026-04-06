@@ -604,7 +604,7 @@ struct AnalysisResultsView: View {
                         withAnimation(.easeInOut(duration: 0.3)) {
                             scrollProxy.scrollTo("section_phases", anchor: .top)
                         }
-                    }, poseFrames: session.poseFrames)
+                    })
                         .id("section_coaching")
 
                     // --- Drills / Tactical Notes ---
@@ -1387,7 +1387,6 @@ struct StrokeCardsSection: View {
     let strokes: [StrokeAnalysisModel]
     var videoURL: URL? = nil
     var scrollToPhases: (() -> Void)? = nil
-    var poseFrames: [FramePoseData] = []
 
     private var summaries: [StrokeTypeSummary] {
         StrokeAggregator.aggregate(strokes)
@@ -1399,8 +1398,7 @@ struct StrokeCardsSection: View {
                 StrokeTypeSummaryCard(
                     summary: summary,
                     videoURL: videoURL,
-                    scrollToPhases: scrollToPhases,
-                    poseFrames: poseFrames
+                    scrollToPhases: scrollToPhases
                 )
             }
         }
@@ -1414,7 +1412,6 @@ struct StrokeTypeSummaryCard: View {
     let summary: StrokeTypeSummary
     var videoURL: URL? = nil
     var scrollToPhases: (() -> Void)? = nil
-    var poseFrames: [FramePoseData] = []
     @State private var showAllStrokes = false
     private let theme = DesignSystem.current
 
@@ -1440,9 +1437,7 @@ struct StrokeTypeSummaryCard: View {
                         joints: joints,
                         angleStrings: overlay.anglesToHighlight,
                         videoURL: videoURL,
-                        timestamp: summary.worstStroke.timestamp,
-                        phaseBreakdown: summary.worstStroke.phaseBreakdown,
-                        poseFrames: poseFrames
+                        timestamp: summary.worstStroke.timestamp
                     )
                 }
 
@@ -1468,7 +1463,7 @@ struct StrokeTypeSummaryCard: View {
                 Divider().foregroundStyle(theme.surfaceSecondary)
                 VStack(spacing: Spacing.sm) {
                     ForEach(summary.strokes) { stroke in
-                        CoachingCard(stroke: stroke, videoURL: videoURL, scrollToPhases: scrollToPhases, poseFrames: poseFrames)
+                        CoachingCard(stroke: stroke, videoURL: videoURL, scrollToPhases: scrollToPhases)
                     }
                 }
                 .padding(Spacing.sm)
@@ -1569,18 +1564,16 @@ struct StrokeTypeSummaryCard: View {
                 .lineSpacing(3)
                 .lineLimit(4)
 
-            // YouTube link: curated video or search fallback
-            Button {
-                let url = DrillVideoMatcher.youtubeURL(for: drill) ?? DrillVideoMatcher.youtubeSearchURL(for: drill)
-                UIApplication.shared.open(url)
-            } label: {
-                drillLinkLabel(
-                    title: DrillVideoMatcher.youtubeURL(for: drill) != nil ? "Watch Drill Demo" : "Search Drill on YouTube",
-                    icon: DrillVideoMatcher.youtubeURL(for: drill) != nil ? "play.fill" : "magnifyingglass",
-                    full: DrillVideoMatcher.youtubeURL(for: drill) != nil
-                )
+            // YouTube link for this drill
+            if let url = DrillVideoMatcher.youtubeURL(for: drill) {
+                Link(destination: url) {
+                    drillLinkLabel(title: "Watch Drill Demo", icon: "play.fill", full: true)
+                }
+            } else {
+                Link(destination: DrillVideoMatcher.youtubeSearchURL(for: drill)) {
+                    drillLinkLabel(title: "Search Drill on YouTube", icon: "magnifyingglass", full: false)
+                }
             }
-            .buttonStyle(.plain)
         }
         .padding(Spacing.sm)
         .background(
@@ -1631,7 +1624,6 @@ struct CoachingCard: View {
     let stroke: StrokeAnalysisModel
     var videoURL: URL? = nil
     var scrollToPhases: (() -> Void)? = nil
-    var poseFrames: [FramePoseData] = []
     @State private var isExpanded = false
     @State private var showMechanics = false
     @State private var showDrill = false
@@ -1747,9 +1739,7 @@ struct CoachingCard: View {
                     joints: joints,
                     angleStrings: overlay.anglesToHighlight,
                     videoURL: videoURL,
-                    timestamp: stroke.timestamp,
-                    phaseBreakdown: stroke.phaseBreakdown,
-                    poseFrames: poseFrames
+                    timestamp: stroke.timestamp
                 )
             }
 
@@ -2333,27 +2323,41 @@ struct DrillSection: View {
                             .lineSpacing(3)
                     }
 
-                    // Watch Demo — button opens YouTube directly to avoid tap swallowing
-                    Button {
-                        let url = DrillVideoMatcher.youtubeURL(for: text) ?? DrillVideoMatcher.youtubeSearchURL(for: text)
-                        UIApplication.shared.open(url)
-                    } label: {
-                        let hasCurated = DrillVideoMatcher.youtubeURL(for: text) != nil
-                        HStack(spacing: Spacing.xxs) {
-                            Image(systemName: hasCurated ? "play.fill" : "magnifyingglass")
-                                .font(.system(size: 12))
-                            Text(hasCurated ? "Watch Drill Demo" : "Search Drill on YouTube")
-                                .font(AppFont.body(size: 14, weight: .semibold))
+                    // Watch Demo — link to YouTube drill video based on drill content
+                    if let url = DrillVideoMatcher.youtubeURL(for: text) {
+                        Link(destination: url) {
+                            HStack(spacing: Spacing.xxs) {
+                                Image(systemName: "play.fill")
+                                    .font(.system(size: 12))
+                                Text("Watch Drill Demo")
+                                    .font(AppFont.body(size: 14, weight: .semibold))
+                            }
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 44)
+                            .background(
+                                RoundedRectangle(cornerRadius: Radius.sm)
+                                    .fill(theme.accent)
+                            )
                         }
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 44)
-                        .background(
-                            RoundedRectangle(cornerRadius: Radius.sm)
-                                .fill(theme.accent.opacity(hasCurated ? 1.0 : 0.7))
-                        )
+                    } else {
+                        // Fallback: always-valid YouTube search URL
+                        Link(destination: DrillVideoMatcher.youtubeSearchURL(for: text)) {
+                            HStack(spacing: Spacing.xxs) {
+                                Image(systemName: "magnifyingglass")
+                                    .font(.system(size: 12))
+                                Text("Search Drill on YouTube")
+                                    .font(AppFont.body(size: 14, weight: .semibold))
+                            }
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 44)
+                            .background(
+                                RoundedRectangle(cornerRadius: Radius.sm)
+                                    .fill(theme.accent.opacity(0.7))
+                            )
+                        }
                     }
-                    .buttonStyle(.plain)
                 }
                 .padding(Spacing.sm)
                 .background(
@@ -3101,17 +3105,13 @@ struct WireframeOverlayView: View {
     }
 
     private func toScreen(_ joint: JointData, crop: CropInfo) -> CGPoint {
-        // Vision returns normalized coords in the raw pixel buffer space
-        // with a bottom-left origin (y points up). For portrait iPhone video,
-        // the raw buffer is landscape (1920x1080) with a 90-degree rotation
-        // applied on display. videoNaturalSize is the display size (e.g. 1080x1920).
-        //
-        // After the 90-degree rotation:
-        //   - Vision's y axis maps to the horizontal (display x)
-        //   - Vision's x axis maps to the vertical (display y), but inverted
-        //     because Vision's origin is bottom-left while UIKit is top-left.
+        // Vision returns normalized coords in the raw pixel buffer space.
+        // For portrait iPhone video, the raw buffer is landscape (1920x1080)
+        // with a 90° rotation applied on display. Vision's x maps to the
+        // vertical axis and y maps to the horizontal axis after rotation.
+        // videoNaturalSize is already the display size (e.g. 1080x1920).
         let videoX = joint.y * videoNaturalSize.width
-        let videoY = (1.0 - joint.x) * videoNaturalSize.height
+        let videoY = joint.x * videoNaturalSize.height
         return CGPoint(
             x: videoX * crop.scale + crop.offsetX,
             y: videoY * crop.scale + crop.offsetY

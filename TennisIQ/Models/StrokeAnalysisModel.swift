@@ -45,12 +45,6 @@ final class StrokeAnalysisModel {
         return try? JSONDecoder().decode([JointData].self, from: data)
     }
 
-    func correctionJoints(at timestamp: Double?) -> [JointData] {
-        let fallback = jointSnapshot ?? []
-        guard let timestamp, let session else { return fallback }
-        return session.poseJoints(near: timestamp) ?? fallback
-    }
-
     var verifiedSources: [String] {
         guard let data = verifiedSourcesJSON,
               let decoded = try? JSONDecoder().decode([String].self, from: data) else {

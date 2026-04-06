@@ -118,7 +118,7 @@ struct SavedInsightCard: View {
                     if showAngleAnimation {
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: Spacing.sm) {
-                                ForEach(outOfRange) { parsed in
+                                ForEach(outOfRange, id: \.jointName) { parsed in
                                     AngleCorrectionView(
                                         joints: joints,
                                         jointName: parsed.jointName,

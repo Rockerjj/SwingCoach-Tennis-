@@ -7,20 +7,10 @@ struct DemoAnalysisView: View {
     @Environment(\.dismiss) private var dismiss
     private let theme = DesignSystem.current
     private let analysis = DemoSession.analysisResponse
-    private let ctaTitle: String?
-    private let onComplete: (() -> Void)?
     @State private var selectedStroke: StrokeResult?
     @State private var selectedPhase: SwingPhase?
     @State private var showPhaseDetail = false
     @State private var appearAnimation = false
-
-    init(
-        ctaTitle: String? = nil,
-        onComplete: (() -> Void)? = nil
-    ) {
-        self.ctaTitle = ctaTitle
-        self.onComplete = onComplete
-    }
 
     var body: some View {
         NavigationStack {
@@ -34,9 +24,6 @@ struct DemoAnalysisView: View {
                         topPriorityCard
                         strokeCards
                         tacticalNotesCard
-                        if let ctaTitle {
-                            onboardingFooter(ctaTitle: ctaTitle)
-                        }
                     }
                     .padding(.horizontal, Spacing.md)
                     .padding(.bottom, Spacing.xxxl)
@@ -45,11 +32,9 @@ struct DemoAnalysisView: View {
             .navigationTitle("Demo Analysis")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                if onComplete == nil {
-                    ToolbarItem(placement: .topBarLeading) {
-                        Button("Close") { dismiss() }
-                            .foregroundStyle(theme.accent)
-                    }
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Close") { dismiss() }
+                        .foregroundStyle(theme.accent)
                 }
             }
             .sheet(item: $selectedStroke) { stroke in
@@ -195,34 +180,7 @@ struct DemoAnalysisView: View {
         .offset(y: appearAnimation ? 0 : 30)
     }
 
-    private func onboardingFooter(ctaTitle: String) -> some View {
-        VStack(spacing: Spacing.sm) {
-            Button(action: completeDemoFlow) {
-                Text(ctaTitle)
-                    .font(AppFont.body(size: 17, weight: .semibold))
-                    .foregroundStyle(theme.textOnAccent)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 54)
-                    .background(theme.accent)
-                    .clipShape(RoundedRectangle(cornerRadius: Radius.md))
-            }
-
-            Text("Next, sign in and upload a real session to get coaching tied to your own swing.")
-                .font(AppFont.body(size: 13))
-                .foregroundStyle(theme.textSecondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, Spacing.md)
-        }
-        .opacity(appearAnimation ? 1 : 0)
-        .offset(y: appearAnimation ? 0 : 30)
-    }
-
     // MARK: - Helpers
-
-    private func completeDemoFlow() {
-        onComplete?()
-        dismiss()
-    }
 
     private func gradeColor(_ grade: String) -> Color {
         switch grade.prefix(1) {

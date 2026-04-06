@@ -22,16 +22,6 @@ final class SessionModel {
         return (try? JSONDecoder().decode([FramePoseData].self, from: data)) ?? []
     }
 
-    func nearestPoseFrame(to timestamp: Double) -> FramePoseData? {
-        let frames = poseFrames
-        guard !frames.isEmpty else { return nil }
-        return frames.min { abs($0.timestamp - timestamp) < abs($1.timestamp - timestamp) }
-    }
-
-    func poseJoints(near timestamp: Double) -> [JointData]? {
-        nearestPoseFrame(to: timestamp)?.joints
-    }
-
     init(
         id: UUID = UUID(),
         recordedAt: Date = Date(),

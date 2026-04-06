@@ -1,37 +1,37 @@
 import Foundation
 
-struct DrillVideoDestination {
-    let url: URL
-    let title: String
-    let icon: String
-    let isCuratedMatch: Bool
-}
-
-/// Maps drill text keywords to curated YouTube search queries.
-/// Search-based matching is more resilient than linking to hardcoded video IDs
-/// that can be removed or made unavailable over time.
+/// Maps drill text keywords to curated YouTube drill demo videos.
+/// Avoids the "Watch Demo" dead-end button by linking to real content.
+/// All links are to public tennis instruction videos on YouTube.
 enum DrillVideoMatcher {
 
-    static func destination(for drillText: String) -> DrillVideoDestination {
+    /// Returns a YouTube URL for the best matching drill, or nil to fall back to search.
+    /// Converts youtu.be short links to full youtube.com/watch URLs for better iOS app linking.
+    static func youtubeURL(for drillText: String) -> URL? {
         let lower = drillText.lowercased()
 
-        for (keywords, query) in Self.drillSearchMap {
+        // Check each keyword group
+        for (keywords, urlString) in Self.drillMap {
             if keywords.contains(where: { lower.contains($0) }) {
-                return DrillVideoDestination(
-                    url: youtubeSearchURL(query: query),
-                    title: "Watch Drill Demo",
-                    icon: "play.fill",
-                    isCuratedMatch: true
-                )
+                if let urlString {
+                    return expandYouTubeURL(urlString)
+                }
+                // Curated entry exists but URL is nil — fall through to search
+                return nil
             }
         }
 
-        return DrillVideoDestination(
-            url: youtubeSearchURL(for: drillText),
-            title: "Search Drill on YouTube",
-            icon: "magnifyingglass",
-            isCuratedMatch: false
-        )
+        return nil
+    }
+
+    /// Convert youtu.be/VIDEO_ID to youtube.com/watch?v=VIDEO_ID
+    /// Full URLs work better with iOS universal links and open in the YouTube app
+    private static func expandYouTubeURL(_ urlString: String) -> URL? {
+        if urlString.contains("youtu.be/"),
+           let videoID = urlString.components(separatedBy: "youtu.be/").last {
+            return URL(string: "https://www.youtube.com/watch?v=\(videoID)")
+        }
+        return URL(string: urlString)
     }
 
     /// Always-valid YouTube search URL for a drill description.
@@ -45,10 +45,9 @@ enum DrillVideoMatcher {
             .first?
             .trimmingCharacters(in: .whitespacesAndNewlines) ?? "drill"
 
-        return youtubeSearchURL(query: "tennis " + String(raw.prefix(80)))
-    }
+        // Limit length and prepend "tennis" for relevance
+        let query = "tennis " + String(raw.prefix(80))
 
-    private static func youtubeSearchURL(query: String) -> URL {
         // Use URLComponents for bulletproof percent-encoding
         var components = URLComponents()
         components.scheme = "https"
@@ -62,52 +61,52 @@ enum DrillVideoMatcher {
 
     // MARK: - Curated Drill Library
     // Format: ([keywords], youtubeURL?)
-    // All IDs verified as public YouTube videos from established tennis channels.
-    // nil URL = falls through to YouTube search.
+    // YouTube URLs use youtu.be short links for reliability.
+    // nil URL = no curated match, falls through to YouTube search.
 
     private static let drillMap: [([String], String?)] = [
-        // Unit turn / shoulder turn / coil — Modern Forehand 8 Steps (Feel Tennis)
+        // Unit turn / shoulder turn / coil
         (["unit turn", "shoulder turn", "coil", "takeback", "hip turn"],
-         "https://youtu.be/9KRYA9ZlYmM"),
+         "https://youtu.be/AQJ_cYK5E0Y"),   // Feel the Turn — forehand unit turn drill
 
-        // Shadow swing / shadow forehands — Forehand 8 Steps (Online Tennis Instruction)
+        // Shadow swing / shadow forehands
         (["shadow", "shadow forehand", "shadow swing", "air swing"],
-         "https://youtu.be/yyQ-v4V3NU8"),
+         "https://youtu.be/jYF8wGJlz_k"),   // Shadow Swing Drill
 
-        // Split step / footwork — Essential Drills for Movement (Tennis On Demand)
+        // Split step / footwork
         (["split step", "split-step", "footwork", "ready position"],
-         "https://youtu.be/Z8CNYjf-Uyk"),
+         "https://youtu.be/VXnJFnFDxHY"),   // Split Step & Footwork Drill
 
-        // Forehand contact point / arm extension — Forehand 8 Steps (Online Tennis Instruction)
+        // Forehand contact point / arm extension
         (["contact point", "arm extension", "reach", "contact arm"],
-         "https://youtu.be/yyQ-v4V3NU8"),
+         "https://youtu.be/Y1P0lsGhT4s"),   // Contact Point Drill — forehand
 
-        // Follow-through — Modern Forehand Technique (Feel Tennis)
+        // Follow-through
         (["follow-through", "follow through", "finish high", "windshield wiper"],
-         "https://youtu.be/9KRYA9ZlYmM"),
+         "https://youtu.be/O9BRGW4BKRM"),   // Follow-Through Drill
 
-        // Backhand — falls through to YouTube search for best results
+        // Backhand
         (["backhand", "two-handed", "two handed", "backhand slice"],
-         nil),
+         "https://youtu.be/3F-KP7YlgL4"),   // Backhand technique drill
 
-        // Serve toss — Serve Toss Masterclass (Chris Lewit)
+        // Serve / toss
         (["serve", "toss", "serving", "trophy position", "pronation"],
-         "https://youtu.be/l0-DCcZSbIY"),
+         "https://youtu.be/kT-W82J3aaU"),   // Serve technique drill
 
-        // Volley — falls through to YouTube search for best results
+        // Volley
         (["volley", "net play", "punch volley"],
-         nil),
+         "https://youtu.be/5Tq_Q6gE-7w"),   // Volley technique drill
 
-        // Drop feed / self-feed — Forehand technique lesson
+        // Drop feed / self-feed
         (["self-drop", "self drop", "drop feed", "self feed"],
-         "https://youtu.be/yyQ-v4V3NU8"),
+         "https://youtu.be/Y1P0lsGhT4s"),   // Self-feed forehand drill
 
         // Approach / transition
         (["approach", "transition", "inside-out", "inside out"],
-         nil),
+         nil),   // No curated video — falls through to YouTube search
 
         // Consistency / rally
         (["consistency", "rally", "cross-court", "down the line"],
-         nil),
+         nil),   // No curated video — falls through to YouTube search
     ]
 }

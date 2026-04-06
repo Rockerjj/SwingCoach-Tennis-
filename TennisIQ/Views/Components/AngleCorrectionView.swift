@@ -93,6 +93,8 @@ struct AngleCorrectionView: View {
         }
     }
 
+    /// Compute the angle (in degrees) between three points using the same formula
+    /// as WireframeOverlayView.computeAngle — dot product in Vision's raw coordinate space.
     private func computeAngle(_ a: CGPoint, _ b: CGPoint, _ c: CGPoint) -> Double {
         let ba = (x: a.x - b.x, y: a.y - b.y)
         let bc = (x: c.x - b.x, y: c.y - b.y)
@@ -104,26 +106,26 @@ struct AngleCorrectionView: View {
         return acos(cosAngle) * 180 / .pi
     }
 
-    /// Convert all joints to screen coordinates, then rotate the highlighted
-    /// chain in screen space so the animation is visible after the x/y swap.
-    private func screenJoints(size: CGSize) -> [String: CGPoint] {
-        let imageSize = frameImage.map { CGSize(width: $0.size.width, height: $0.size.height) }
-            ?? CGSize(width: 1080, height: 1920)
-        let crop = aspectFillCrop(imageSize: imageSize, viewSize: size)
-
+    private func interpolatedJoints() -> [String: CGPoint] {
         var map: [String: CGPoint] = [:]
         for j in joints {
-            let raw = CGPoint(x: j.x, y: j.y)
-            map[j.name] = toScreen(raw, crop: crop, imageSize: imageSize)
+            map[j.name] = CGPoint(x: j.x, y: j.y)
         }
 
         guard let chain = angleChain,
               let a = map[chain.a], let b = map[chain.b], let c = map[chain.c] else { return map }
 
+        // Compute the current angle from the actual joint positions
         let currentAngle = computeAngle(a, b, c)
+
+        // Determine how far we need to rotate to reach the ideal angle.
+        // A positive angleDiff means the angle needs to INCREASE (open up),
+        // which in screen space means rotating the distal joint (c) AWAY from
+        // the proximal joint (a). We use a small probe rotation to determine
+        // which rotation direction (CW vs CCW) actually increases the angle.
         let targetAngle = currentAngle + (sanitizedIdeal - currentAngle) * animationProgress
 
-        // Probe to find which rotation direction increases the angle
+        // Probe: rotate c by +1° around b and see if the angle increases
         let probeRad = 1.0 * .pi / 180.0
         let dx = c.x - b.x
         let dy = c.y - b.y
@@ -134,24 +136,19 @@ struct AngleCorrectionView: View {
         let probeAngle = computeAngle(a, b, probePt)
         let positiveRotationIncreasesAngle = probeAngle > currentAngle
 
+        // Compute required rotation in the correct direction
         let angleDelta = targetAngle - currentAngle
-        let rotationDegrees = positiveRotationIncreasesAngle ? angleDelta : -angleDelta
+        let rotationDegrees: Double
+        if positiveRotationIncreasesAngle {
+            rotationDegrees = angleDelta
+        } else {
+            rotationDegrees = -angleDelta
+        }
+
         let rotationRadians = rotationDegrees * .pi / 180.0
         let cosR = cos(rotationRadians)
         let sinR = sin(rotationRadians)
-
-        // Rotate endpoint c around pivot b, and also move any joints
-        // further down the chain (e.g., wrist when elbow is the pivot)
-        let chainJoints = [chain.c]
-        for name in chainJoints {
-            guard let pt = map[name] else { continue }
-            let relX = pt.x - b.x
-            let relY = pt.y - b.y
-            map[name] = CGPoint(
-                x: b.x + relX * cosR - relY * sinR,
-                y: b.y + relX * sinR + relY * cosR
-            )
-        }
+        map[chain.c] = CGPoint(x: b.x + dx * cosR - dy * sinR, y: b.y + dx * sinR + dy * cosR)
         return map
     }
 
@@ -241,11 +238,11 @@ struct AngleCorrectionView: View {
     }
 
     private func toScreen(_ n: CGPoint, crop: CropInfo, imageSize: CGSize) -> CGPoint {
-        // Vision coords are in raw buffer space with bottom-left origin.
-        // For portrait video, x/y are swapped after 90-degree rotation,
-        // and the vertical axis is inverted (Vision y-up vs UIKit y-down).
+        // Vision coords are in raw buffer space; for portrait video,
+        // x maps to vertical and y maps to horizontal after rotation.
+        // imageSize is the displayed image size (after rotation).
         let videoX = n.y * imageSize.width
-        let videoY = (1.0 - n.x) * imageSize.height
+        let videoY = n.x * imageSize.height
         return CGPoint(
             x: videoX * crop.scale + crop.offsetX,
             y: videoY * crop.scale + crop.offsetY
@@ -255,7 +252,15 @@ struct AngleCorrectionView: View {
     // MARK: - Drawing
 
     private func drawSkeletonWithAngle(context: GraphicsContext, size: CGSize) {
-        let jointMap = screenJoints(size: size)
+        let jointMap = interpolatedJoints()
+        let imageSize = frameImage.map { CGSize(width: $0.size.width, height: $0.size.height) }
+            ?? CGSize(width: 1080, height: 1920)
+        let crop = aspectFillCrop(imageSize: imageSize, viewSize: size)
+
+        func pt(_ name: String) -> CGPoint? {
+            guard let n = jointMap[name] else { return nil }
+            return toScreen(n, crop: crop, imageSize: imageSize)
+        }
 
         let defaultColor = Color.white.opacity(0.35)
         let highlightedJoints: Set<String> = {
@@ -264,7 +269,7 @@ struct AngleCorrectionView: View {
         }()
 
         for (a, b) in Self.bones {
-            guard let pa = jointMap[a], let pb = jointMap[b] else { continue }
+            guard let pa = pt(a), let pb = pt(b) else { continue }
             let isHighlighted = highlightedJoints.contains(a) || highlightedJoints.contains(b)
             var path = Path()
             path.move(to: pa)
@@ -281,15 +286,16 @@ struct AngleCorrectionView: View {
             }
         }
 
-        for (name, pt) in jointMap {
+        for (name, _) in jointMap {
+            guard let p = pt(name) else { continue }
             let isHighlighted = highlightedJoints.contains(name)
             let r: CGFloat = isHighlighted ? 5 : 3
             let color = isHighlighted ? skeletonColor : defaultColor
-            let rect = CGRect(x: pt.x - r, y: pt.y - r, width: r * 2, height: r * 2)
+            let rect = CGRect(x: p.x - r, y: p.y - r, width: r * 2, height: r * 2)
             context.fill(Path(ellipseIn: rect), with: .color(color))
         }
 
-        if let chain = angleChain, let pivot = jointMap[chain.b] {
+        if let chain = angleChain, let pivot = pt(chain.b) {
             let bubbleCenter = CGPoint(x: pivot.x + 30, y: pivot.y - 22)
             let displayStr = "\(Int(displayAngle))°"
             let bubbleRect = CGRect(x: bubbleCenter.x - 22, y: bubbleCenter.y - 13,
@@ -309,34 +315,24 @@ struct AngleCorrectionView: View {
 
     private func startAnimation() {
         let fps = 30.0
-        let animDuration = 2.0
-        let holdDuration = 1.5
-        let animFrames = Int(fps * animDuration)
-        let holdFrames = Int(fps * holdDuration)
-        let halfCycle = animFrames + holdFrames   // animate + hold
-        let fullCycle = halfCycle * 2             // forward + back
+        let duration = 2.0
+        let totalFrames = Int(fps * duration)
+        let holdFrames = Int(fps * 1.2)
         var frameCount = 0
 
         timer = Timer.scheduledTimer(withTimeInterval: 1.0 / fps, repeats: true) { _ in
             frameCount += 1
-            let pos = frameCount % fullCycle
+            let cycleLength = totalFrames + holdFrames
+            let pos = frameCount % cycleLength
 
-            if pos < animFrames {
-                // Animate forward: actual -> ideal
-                let raw = Double(pos) / Double(animFrames)
+            if pos < totalFrames {
+                let raw = Double(pos) / Double(totalFrames)
                 let eased = raw < 0.5 ? 2 * raw * raw : -1 + (4 - 2 * raw) * raw
-                animationProgress = eased
-            } else if pos < halfCycle {
-                // Hold at ideal
-                animationProgress = 1.0
-            } else if pos < halfCycle + animFrames {
-                // Animate back: ideal -> actual
-                let raw = Double(pos - halfCycle) / Double(animFrames)
-                let eased = raw < 0.5 ? 2 * raw * raw : -1 + (4 - 2 * raw) * raw
-                animationProgress = 1.0 - eased
-            } else {
-                // Hold at actual
-                animationProgress = 0.0
+                animationProgress = direction > 0 ? eased : 1.0 - eased
+            }
+
+            if pos == cycleLength - 1 {
+                direction *= -1
             }
         }
     }
@@ -364,51 +360,25 @@ struct AngleCorrectionView: View {
 
 // MARK: - Angle String Parser
 
-struct ParsedAngle: Identifiable {
-    let rawString: String
-    let phaseName: String?
-    let timestamp: Double?
+struct ParsedAngle {
     let jointName: String
     let actual: Double
     let idealLow: Double
     let idealHigh: Double
-    var id: String { rawString }
     var idealMidpoint: Double { (idealLow + idealHigh) / 2 }
 
     static func parse(_ str: String) -> ParsedAngle? {
-        let pattern = #"^(?:(.+?)\s+t=([\d.]+)s\s*-\s*)?(.+?):\s*([\d.]+)°?\s*\(ideal:\s*([\d.]+)\s*-\s*([\d.]+)\s*°?\+?\)"#
+        let pattern = #"^(.+?):\s*([\d.]+)°?\s*\(ideal:\s*([\d.]+)\s*-\s*([\d.]+)°?\)"#
         guard let regex = try? NSRegularExpression(pattern: pattern),
               let match = regex.firstMatch(in: str, range: NSRange(str.startIndex..., in: str)),
-              match.numberOfRanges >= 7 else { return nil }
+              match.numberOfRanges >= 5 else { return nil }
 
-        let phaseName = Range(match.range(at: 1), in: str)
-            .map { String(str[$0]).trimmingCharacters(in: .whitespacesAndNewlines) }
-        let timestamp = Range(match.range(at: 2), in: str)
-            .flatMap { Double(str[$0]) }
-        let nameRange = Range(match.range(at: 3), in: str)
-        let actualRange = Range(match.range(at: 4), in: str)
-        let lowRange = Range(match.range(at: 5), in: str)
-        let highRange = Range(match.range(at: 6), in: str)
+        let name = String(str[Range(match.range(at: 1), in: str)!]).trimmingCharacters(in: .whitespaces)
+        guard let actual = Double(str[Range(match.range(at: 2), in: str)!]),
+              let low = Double(str[Range(match.range(at: 3), in: str)!]),
+              let high = Double(str[Range(match.range(at: 4), in: str)!]) else { return nil }
 
-        guard let nameRange,
-              let actualRange,
-              let lowRange,
-              let highRange else { return nil }
-
-        let jointName = String(str[nameRange]).trimmingCharacters(in: .whitespacesAndNewlines)
-        guard let actual = Double(str[actualRange]),
-              let low = Double(str[lowRange]),
-              let high = Double(str[highRange]) else { return nil }
-
-        return ParsedAngle(
-            rawString: str,
-            phaseName: phaseName,
-            timestamp: timestamp,
-            jointName: jointName,
-            actual: actual,
-            idealLow: low,
-            idealHigh: high
-        )
+        return ParsedAngle(jointName: name, actual: actual, idealLow: low, idealHigh: high)
     }
 }
 
@@ -419,8 +389,6 @@ struct AngleCorrectionStrip: View {
     let angleStrings: [String]
     var videoURL: URL? = nil
     var timestamp: Double = 0
-    var phaseBreakdown: PhaseBreakdown? = nil
-    var poseFrames: [FramePoseData] = []
 
     private let theme = DesignSystem.current
 
@@ -430,31 +398,6 @@ struct AngleCorrectionStrip: View {
     }
 
     @State private var currentPage = 0
-
-    private func bestPhaseTimestamp(for jointName: String) -> Double {
-        guard let breakdown = phaseBreakdown else { return timestamp }
-        let lower = jointName.lowercased()
-
-        if lower.contains("elbow") || lower.contains("arm") || lower.contains("extension") {
-            return breakdown.contactPoint?.timestamp ?? timestamp
-        } else if lower.contains("knee") {
-            return breakdown.forwardSwing?.timestamp ?? timestamp
-        } else if lower.contains("hip") && !lower.contains("rotation") {
-            return breakdown.forwardSwing?.timestamp ?? timestamp
-        } else if lower.contains("shoulder") && lower.contains("rotation") {
-            return breakdown.unitTurn?.timestamp ?? breakdown.backswing?.timestamp ?? timestamp
-        }
-        return timestamp
-    }
-
-    private func nearestJoints(for phaseTimestamp: Double) -> [JointData] {
-        guard !poseFrames.isEmpty else { return joints }
-        if let nearest = poseFrames.min(by: { abs($0.timestamp - phaseTimestamp) < abs($1.timestamp - phaseTimestamp) }),
-           !nearest.joints.isEmpty {
-            return nearest.joints
-        }
-        return joints
-    }
 
     var body: some View {
         if !outOfRangeAngles.isEmpty {
@@ -477,18 +420,17 @@ struct AngleCorrectionStrip: View {
                     }
                 }
 
+                // Full-width, swipeable pages instead of side-by-side scroll
                 TabView(selection: $currentPage) {
                     ForEach(Array(outOfRangeAngles.enumerated()), id: \.element.jointName) { index, parsed in
-                        let phaseTime = bestPhaseTimestamp(for: parsed.jointName)
-                        let phaseJoints = nearestJoints(for: phaseTime)
                         AngleCorrectionView(
-                            joints: phaseJoints,
+                            joints: joints,
                             jointName: parsed.jointName,
                             actualAngle: parsed.actual,
                             idealAngle: parsed.idealMidpoint,
                             label: parsed.jointName,
                             videoURL: videoURL,
-                            timestamp: phaseTime
+                            timestamp: timestamp
                         )
                         .tag(index)
                     }
