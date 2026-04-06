@@ -132,11 +132,11 @@ struct SwingPathOverlayView: View {
     }
 
     private func toScreen(_ pt: CGPoint, crop: CropInfo) -> CGPoint {
-        // Fix: X and Y were swapped. Vision uses (x=horizontal, y=vertical, bottom-origin).
-        // Vision coords are in raw buffer space; for portrait video,
-        // x maps to vertical and y maps to horizontal after rotation
+        // Vision coords are in raw buffer space with bottom-left origin.
+        // For portrait video, x/y are swapped after 90-degree rotation,
+        // and the vertical axis is inverted (Vision y-up vs UIKit y-down).
         let videoX = pt.y * videoNaturalSize.width
-        let videoY = pt.x * videoNaturalSize.height
+        let videoY = (1.0 - pt.x) * videoNaturalSize.height
         return CGPoint(
             x: videoX * crop.scale + crop.offsetX,
             y: videoY * crop.scale + crop.offsetY

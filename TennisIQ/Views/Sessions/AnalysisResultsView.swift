@@ -604,7 +604,7 @@ struct AnalysisResultsView: View {
                         withAnimation(.easeInOut(duration: 0.3)) {
                             scrollProxy.scrollTo("section_phases", anchor: .top)
                         }
-                    })
+                    }, poseFrames: session.poseFrames)
                         .id("section_coaching")
 
                     // --- Drills / Tactical Notes ---
@@ -1387,6 +1387,7 @@ struct StrokeCardsSection: View {
     let strokes: [StrokeAnalysisModel]
     var videoURL: URL? = nil
     var scrollToPhases: (() -> Void)? = nil
+    var poseFrames: [FramePoseData] = []
 
     private var summaries: [StrokeTypeSummary] {
         StrokeAggregator.aggregate(strokes)
@@ -1398,7 +1399,8 @@ struct StrokeCardsSection: View {
                 StrokeTypeSummaryCard(
                     summary: summary,
                     videoURL: videoURL,
-                    scrollToPhases: scrollToPhases
+                    scrollToPhases: scrollToPhases,
+                    poseFrames: poseFrames
                 )
             }
         }
@@ -1412,6 +1414,7 @@ struct StrokeTypeSummaryCard: View {
     let summary: StrokeTypeSummary
     var videoURL: URL? = nil
     var scrollToPhases: (() -> Void)? = nil
+    var poseFrames: [FramePoseData] = []
     @State private var showAllStrokes = false
     private let theme = DesignSystem.current
 
@@ -1437,8 +1440,9 @@ struct StrokeTypeSummaryCard: View {
                         joints: joints,
                         angleStrings: overlay.anglesToHighlight,
                         videoURL: videoURL,
-                        fallbackTimestamp: summary.worstStroke.timestamp,
-                        jointResolver: summary.worstStroke.correctionJoints(at:)
+                        timestamp: summary.worstStroke.timestamp,
+                        phaseBreakdown: summary.worstStroke.phaseBreakdown,
+                        poseFrames: poseFrames
                     )
                 }
 
@@ -1464,7 +1468,7 @@ struct StrokeTypeSummaryCard: View {
                 Divider().foregroundStyle(theme.surfaceSecondary)
                 VStack(spacing: Spacing.sm) {
                     ForEach(summary.strokes) { stroke in
-                        CoachingCard(stroke: stroke, videoURL: videoURL, scrollToPhases: scrollToPhases)
+                        CoachingCard(stroke: stroke, videoURL: videoURL, scrollToPhases: scrollToPhases, poseFrames: poseFrames)
                     }
                 }
                 .padding(Spacing.sm)
@@ -1565,14 +1569,18 @@ struct StrokeTypeSummaryCard: View {
                 .lineSpacing(3)
                 .lineLimit(4)
 
-            let destination = DrillVideoMatcher.destination(for: drill)
-            Link(destination: destination.url) {
+            // YouTube link: curated video or search fallback
+            Button {
+                let url = DrillVideoMatcher.youtubeURL(for: drill) ?? DrillVideoMatcher.youtubeSearchURL(for: drill)
+                UIApplication.shared.open(url)
+            } label: {
                 drillLinkLabel(
-                    title: destination.title,
-                    icon: destination.icon,
-                    full: destination.isCuratedMatch
+                    title: DrillVideoMatcher.youtubeURL(for: drill) != nil ? "Watch Drill Demo" : "Search Drill on YouTube",
+                    icon: DrillVideoMatcher.youtubeURL(for: drill) != nil ? "play.fill" : "magnifyingglass",
+                    full: DrillVideoMatcher.youtubeURL(for: drill) != nil
                 )
             }
+            .buttonStyle(.plain)
         }
         .padding(Spacing.sm)
         .background(
@@ -1623,6 +1631,7 @@ struct CoachingCard: View {
     let stroke: StrokeAnalysisModel
     var videoURL: URL? = nil
     var scrollToPhases: (() -> Void)? = nil
+    var poseFrames: [FramePoseData] = []
     @State private var isExpanded = false
     @State private var showMechanics = false
     @State private var showDrill = false
@@ -1738,8 +1747,9 @@ struct CoachingCard: View {
                     joints: joints,
                     angleStrings: overlay.anglesToHighlight,
                     videoURL: videoURL,
-                    fallbackTimestamp: stroke.timestamp,
-                    jointResolver: stroke.correctionJoints(at:)
+                    timestamp: stroke.timestamp,
+                    phaseBreakdown: stroke.phaseBreakdown,
+                    poseFrames: poseFrames
                 )
             }
 
@@ -2323,12 +2333,16 @@ struct DrillSection: View {
                             .lineSpacing(3)
                     }
 
-                    let destination = DrillVideoMatcher.destination(for: text)
-                    Link(destination: destination.url) {
+                    // Watch Demo — button opens YouTube directly to avoid tap swallowing
+                    Button {
+                        let url = DrillVideoMatcher.youtubeURL(for: text) ?? DrillVideoMatcher.youtubeSearchURL(for: text)
+                        UIApplication.shared.open(url)
+                    } label: {
+                        let hasCurated = DrillVideoMatcher.youtubeURL(for: text) != nil
                         HStack(spacing: Spacing.xxs) {
-                            Image(systemName: destination.icon)
+                            Image(systemName: hasCurated ? "play.fill" : "magnifyingglass")
                                 .font(.system(size: 12))
-                            Text(destination.title)
+                            Text(hasCurated ? "Watch Drill Demo" : "Search Drill on YouTube")
                                 .font(AppFont.body(size: 14, weight: .semibold))
                         }
                         .foregroundStyle(.white)
@@ -2336,9 +2350,10 @@ struct DrillSection: View {
                         .frame(height: 44)
                         .background(
                             RoundedRectangle(cornerRadius: Radius.sm)
-                                .fill(theme.accent.opacity(destination.isCuratedMatch ? 1.0 : 0.7))
+                                .fill(theme.accent.opacity(hasCurated ? 1.0 : 0.7))
                         )
                     }
+                    .buttonStyle(.plain)
                 }
                 .padding(Spacing.sm)
                 .background(
@@ -3086,13 +3101,17 @@ struct WireframeOverlayView: View {
     }
 
     private func toScreen(_ joint: JointData, crop: CropInfo) -> CGPoint {
-        // Vision returns normalized coords in the raw pixel buffer space.
-        // For portrait iPhone video, the raw buffer is landscape (1920x1080)
-        // with a 90° rotation applied on display. Vision's x maps to the
-        // vertical axis and y maps to the horizontal axis after rotation.
-        // videoNaturalSize is already the display size (e.g. 1080x1920).
+        // Vision returns normalized coords in the raw pixel buffer space
+        // with a bottom-left origin (y points up). For portrait iPhone video,
+        // the raw buffer is landscape (1920x1080) with a 90-degree rotation
+        // applied on display. videoNaturalSize is the display size (e.g. 1080x1920).
+        //
+        // After the 90-degree rotation:
+        //   - Vision's y axis maps to the horizontal (display x)
+        //   - Vision's x axis maps to the vertical (display y), but inverted
+        //     because Vision's origin is bottom-left while UIKit is top-left.
         let videoX = joint.y * videoNaturalSize.width
-        let videoY = joint.x * videoNaturalSize.height
+        let videoY = (1.0 - joint.x) * videoNaturalSize.height
         return CGPoint(
             x: videoX * crop.scale + crop.offsetX,
             y: videoY * crop.scale + crop.offsetY

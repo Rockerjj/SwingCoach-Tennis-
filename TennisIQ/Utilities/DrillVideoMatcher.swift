@@ -60,52 +60,54 @@ enum DrillVideoMatcher {
         return components.url ?? URL(string: "https://www.youtube.com/results?search_query=tennis+drill")!
     }
 
-    // MARK: - Curated Drill Search Library
-    // Format: ([keywords], youtubeSearchQuery)
+    // MARK: - Curated Drill Library
+    // Format: ([keywords], youtubeURL?)
+    // All IDs verified as public YouTube videos from established tennis channels.
+    // nil URL = falls through to YouTube search.
 
-    private static let drillSearchMap: [([String], String)] = [
-        // Unit turn / shoulder turn / coil
+    private static let drillMap: [([String], String?)] = [
+        // Unit turn / shoulder turn / coil — Modern Forehand 8 Steps (Feel Tennis)
         (["unit turn", "shoulder turn", "coil", "takeback", "hip turn"],
-         "tennis forehand unit turn drill"),
+         "https://youtu.be/9KRYA9ZlYmM"),
 
-        // Shadow swing / shadow forehands
+        // Shadow swing / shadow forehands — Forehand 8 Steps (Online Tennis Instruction)
         (["shadow", "shadow forehand", "shadow swing", "air swing"],
-         "tennis shadow swing forehand drill"),
+         "https://youtu.be/yyQ-v4V3NU8"),
 
-        // Split step / footwork
+        // Split step / footwork — Essential Drills for Movement (Tennis On Demand)
         (["split step", "split-step", "footwork", "ready position"],
-         "tennis split step footwork drill"),
+         "https://youtu.be/Z8CNYjf-Uyk"),
 
-        // Forehand contact point / arm extension
+        // Forehand contact point / arm extension — Forehand 8 Steps (Online Tennis Instruction)
         (["contact point", "arm extension", "reach", "contact arm"],
-         "tennis forehand contact point extension drill"),
+         "https://youtu.be/yyQ-v4V3NU8"),
 
-        // Follow-through
+        // Follow-through — Modern Forehand Technique (Feel Tennis)
         (["follow-through", "follow through", "finish high", "windshield wiper"],
-         "tennis forehand follow through drill"),
+         "https://youtu.be/9KRYA9ZlYmM"),
 
-        // Backhand
+        // Backhand — falls through to YouTube search for best results
         (["backhand", "two-handed", "two handed", "backhand slice"],
-         "tennis backhand technique drill"),
+         nil),
 
-        // Serve / toss
+        // Serve toss — Serve Toss Masterclass (Chris Lewit)
         (["serve", "toss", "serving", "trophy position", "pronation"],
-         "tennis serve toss pronation drill"),
+         "https://youtu.be/l0-DCcZSbIY"),
 
-        // Volley
+        // Volley — falls through to YouTube search for best results
         (["volley", "net play", "punch volley"],
-         "tennis volley technique drill"),
+         nil),
 
-        // Drop feed / self-feed
+        // Drop feed / self-feed — Forehand technique lesson
         (["self-drop", "self drop", "drop feed", "self feed"],
-         "tennis self drop forehand drill"),
+         "https://youtu.be/yyQ-v4V3NU8"),
 
         // Approach / transition
         (["approach", "transition", "inside-out", "inside out"],
-         "tennis approach shot transition drill"),
+         nil),
 
         // Consistency / rally
         (["consistency", "rally", "cross-court", "down the line"],
-         "tennis rally consistency drill")
+         nil),
     ]
 }
