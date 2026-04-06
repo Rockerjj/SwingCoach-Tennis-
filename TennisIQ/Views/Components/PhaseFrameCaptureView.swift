@@ -267,7 +267,7 @@ struct PhaseFrameCaptureView: View {
         // For portrait video, x/y are swapped after 90-degree rotation,
         // and the vertical axis is inverted (Vision y-up vs UIKit y-down).
         let videoX = joint.y * videoSize.width
-        let videoY = (1.0 - joint.x) * videoSize.height
+        let videoY = joint.x * videoSize.height
         return CGPoint(
             x: videoX * crop.scale + crop.offsetX,
             y: videoY * crop.scale + crop.offsetY

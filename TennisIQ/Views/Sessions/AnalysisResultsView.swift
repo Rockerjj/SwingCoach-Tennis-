@@ -1581,6 +1581,7 @@ struct StrokeTypeSummaryCard: View {
                 )
             }
             .buttonStyle(.plain)
+            .contentShape(Rectangle())
         }
         .padding(Spacing.sm)
         .background(
@@ -2354,6 +2355,7 @@ struct DrillSection: View {
                         )
                     }
                     .buttonStyle(.plain)
+                    .contentShape(Rectangle())
                 }
                 .padding(Spacing.sm)
                 .background(
@@ -3111,7 +3113,7 @@ struct WireframeOverlayView: View {
         //   - Vision's x axis maps to the vertical (display y), but inverted
         //     because Vision's origin is bottom-left while UIKit is top-left.
         let videoX = joint.y * videoNaturalSize.width
-        let videoY = (1.0 - joint.x) * videoNaturalSize.height
+        let videoY = joint.x * videoNaturalSize.height
         return CGPoint(
             x: videoX * crop.scale + crop.offsetX,
             y: videoY * crop.scale + crop.offsetY

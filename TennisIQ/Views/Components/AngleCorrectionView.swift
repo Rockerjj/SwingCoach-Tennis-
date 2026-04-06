@@ -162,21 +162,20 @@ struct AngleCorrectionView: View {
                 if let image = frameImage {
                     Image(uiImage: image)
                         .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(height: 220)
-                        .clipped()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(height: 340)
                         .overlay(Color.black.opacity(0.25))
                 } else {
                     RoundedRectangle(cornerRadius: Radius.md)
                         .fill(Color.black.opacity(0.85))
-                        .frame(height: 220)
+                        .frame(height: 340)
                 }
 
                 // Skeleton + angle overlay
                 Canvas { context, size in
                     drawSkeletonWithAngle(context: context, size: size)
                 }
-                .frame(height: 220)
+                .frame(height: 340)
 
                 // Coach tip overlay
                 VStack {
@@ -194,7 +193,7 @@ struct AngleCorrectionView: View {
                     }
                     .padding(8)
                 }
-                .frame(height: 220)
+                .frame(height: 340)
             }
             .clipShape(RoundedRectangle(cornerRadius: Radius.md))
 
@@ -245,7 +244,7 @@ struct AngleCorrectionView: View {
         // For portrait video, x/y are swapped after 90-degree rotation,
         // and the vertical axis is inverted (Vision y-up vs UIKit y-down).
         let videoX = n.y * imageSize.width
-        let videoY = (1.0 - n.x) * imageSize.height
+        let videoY = n.x * imageSize.height
         return CGPoint(
             x: videoX * crop.scale + crop.offsetX,
             y: videoY * crop.scale + crop.offsetY
@@ -406,17 +405,31 @@ struct AngleCorrectionStrip: View {
     @State private var currentPage = 0
 
     private func bestPhaseTimestamp(for jointName: String) -> Double {
-        guard let breakdown = phaseBreakdown else { return timestamp }
         let lower = jointName.lowercased()
 
+        // Use real phase breakdown timestamps when available
+        if let breakdown = phaseBreakdown {
+            if lower.contains("elbow") || lower.contains("arm") || lower.contains("extension") {
+                return breakdown.contactPoint?.timestamp ?? timestamp
+            } else if lower.contains("knee") {
+                return breakdown.forwardSwing?.timestamp ?? timestamp
+            } else if lower.contains("hip") && !lower.contains("rotation") {
+                return breakdown.forwardSwing?.timestamp ?? timestamp
+            } else if lower.contains("shoulder") && lower.contains("rotation") {
+                return breakdown.unitTurn?.timestamp ?? breakdown.backswing?.timestamp ?? timestamp
+            }
+            return timestamp
+        }
+
+        // Fallback: estimate phase offsets from the stroke contact timestamp
         if lower.contains("elbow") || lower.contains("arm") || lower.contains("extension") {
-            return breakdown.contactPoint?.timestamp ?? timestamp
+            return timestamp
         } else if lower.contains("knee") {
-            return breakdown.forwardSwing?.timestamp ?? timestamp
+            return timestamp - 0.4
         } else if lower.contains("hip") && !lower.contains("rotation") {
-            return breakdown.forwardSwing?.timestamp ?? timestamp
+            return timestamp - 0.3
         } else if lower.contains("shoulder") && lower.contains("rotation") {
-            return breakdown.unitTurn?.timestamp ?? breakdown.backswing?.timestamp ?? timestamp
+            return timestamp - 0.6
         }
         return timestamp
     }
@@ -468,7 +481,7 @@ struct AngleCorrectionStrip: View {
                     }
                 }
                 .tabViewStyle(.page(indexDisplayMode: outOfRangeAngles.count > 1 ? .automatic : .never))
-                .frame(height: 240)
+                .frame(height: 360)
 
             }
         }
