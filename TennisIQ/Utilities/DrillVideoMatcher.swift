@@ -61,52 +61,52 @@ enum DrillVideoMatcher {
 
     // MARK: - Curated Drill Library
     // Format: ([keywords], youtubeURL?)
-    // YouTube URLs use youtu.be short links for reliability.
-    // nil URL = no curated match, falls through to YouTube search.
+    // All IDs verified as public YouTube videos from established tennis channels.
+    // nil URL = falls through to YouTube search.
 
     private static let drillMap: [([String], String?)] = [
-        // Unit turn / shoulder turn / coil
+        // Unit turn / shoulder turn / coil — Modern Forehand 8 Steps (Feel Tennis)
         (["unit turn", "shoulder turn", "coil", "takeback", "hip turn"],
-         "https://youtu.be/AQJ_cYK5E0Y"),   // Feel the Turn — forehand unit turn drill
+         "https://youtu.be/9KRYA9ZlYmM"),
 
-        // Shadow swing / shadow forehands
+        // Shadow swing / shadow forehands — Forehand 8 Steps (Online Tennis Instruction)
         (["shadow", "shadow forehand", "shadow swing", "air swing"],
-         "https://youtu.be/jYF8wGJlz_k"),   // Shadow Swing Drill
+         "https://youtu.be/yyQ-v4V3NU8"),
 
-        // Split step / footwork
+        // Split step / footwork — Essential Drills for Movement (Tennis On Demand)
         (["split step", "split-step", "footwork", "ready position"],
-         "https://youtu.be/VXnJFnFDxHY"),   // Split Step & Footwork Drill
+         "https://youtu.be/Z8CNYjf-Uyk"),
 
-        // Forehand contact point / arm extension
+        // Forehand contact point / arm extension — Forehand 8 Steps (Online Tennis Instruction)
         (["contact point", "arm extension", "reach", "contact arm"],
-         "https://youtu.be/Y1P0lsGhT4s"),   // Contact Point Drill — forehand
+         "https://youtu.be/yyQ-v4V3NU8"),
 
-        // Follow-through
+        // Follow-through — Modern Forehand Technique (Feel Tennis)
         (["follow-through", "follow through", "finish high", "windshield wiper"],
-         "https://youtu.be/O9BRGW4BKRM"),   // Follow-Through Drill
+         "https://youtu.be/9KRYA9ZlYmM"),
 
-        // Backhand
+        // Backhand — falls through to YouTube search for best results
         (["backhand", "two-handed", "two handed", "backhand slice"],
-         "https://youtu.be/3F-KP7YlgL4"),   // Backhand technique drill
+         nil),
 
-        // Serve / toss
+        // Serve toss — Serve Toss Masterclass (Chris Lewit)
         (["serve", "toss", "serving", "trophy position", "pronation"],
-         "https://youtu.be/kT-W82J3aaU"),   // Serve technique drill
+         "https://youtu.be/l0-DCcZSbIY"),
 
-        // Volley
+        // Volley — falls through to YouTube search for best results
         (["volley", "net play", "punch volley"],
-         "https://youtu.be/5Tq_Q6gE-7w"),   // Volley technique drill
+         nil),
 
-        // Drop feed / self-feed
+        // Drop feed / self-feed — Forehand technique lesson
         (["self-drop", "self drop", "drop feed", "self feed"],
-         "https://youtu.be/Y1P0lsGhT4s"),   // Self-feed forehand drill
+         "https://youtu.be/yyQ-v4V3NU8"),
 
         // Approach / transition
         (["approach", "transition", "inside-out", "inside out"],
-         nil),   // No curated video — falls through to YouTube search
+         nil),
 
         // Consistency / rally
         (["consistency", "rally", "cross-court", "down the line"],
-         nil),   // No curated video — falls through to YouTube search
+         nil),
     ]
 }
