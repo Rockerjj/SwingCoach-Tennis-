@@ -1,3 +1,63 @@
+STROKE_SPECIFIC_CONTEXT: dict[str, str] = {
+    "forehand": """**Forehand — Biomechanical Ideals**
+- Kinetic chain: ground force → hip rotation → shoulder rotation → arm → racket
+- Low-to-high swing path: contact point at hip height, finish above opposite shoulder
+- Arm extension at contact: 160–175° (near full extension, slight elbow bend)
+- Shoulder rotation (unit turn): 80–100° from baseline
+- Wrist snap (windshield wiper finish): racket face rotates from vertical → face-down after contact
+- Stance: open or semi-open for modern topspin; closed for flat/slice
+- Contact point: 12–18 inches in front of front hip, slightly inside the ball
+- Ideal knee bend at contact: 120–145° (athletic crouch, not locked)
+- Follow-through: racket finishes over non-dominant shoulder or wraps around body""",
+
+    "backhand": """**Backhand — Biomechanical Ideals**
+- Two-handed: both arms drive through contact; non-dominant arm leads, contact at hip height
+- One-handed: full shoulder turn (90°+), contact slightly in front and higher than 2H, high finish
+- Arm extension (1H at contact): 155–175°; (2H): 130–155° with both arms extending
+- Compact takeback: racket tip points down during backswing (not looping wide)
+- Contact zone: ball contacted at waist–chest height; too low = loss of control
+- Footwork: crossover step for wide balls; split step before every shot
+- Follow-through (2H): both arms extend fully, finish high above shoulder
+- Follow-through (1H): full arm extension, racket points to sky""",
+
+    "serve": """**Serve — Biomechanical Ideals**
+- Trophy pose: elbow at shoulder height, racket pointing up, front arm extended toward target
+- Knee bend at trophy pose: 100–130° (leg drive is critical for power)
+- Ball toss: released at full arm extension above and slightly in front of head (flat/slice) or to the right for kick
+- Arm extension at ball contact: 175–180° (maximal reach, full extension)
+- Pronation: forearm rotates inward through contact (adds pace + topspin)
+- Shoulder rotation: full coil; hitting shoulder drops, non-hitting shoulder leads
+- Foot position: feet shoulder-width, front foot angled ~45° toward net post
+- Hip drive: hips rotate open before shoulder rotation (kinetic chain)
+- Contact point height: ideally 9–12 inches above full reach for flat serve""",
+
+    "volley": """**Volley — Biomechanical Ideals**
+- Grip: continental (critical — no grip change at net)
+- Backswing: compact punch motion; racket face barely moves behind body
+- Contact point: in front of body at net height or above; ball contacted early
+- Elbow: slightly bent, roughly at shoulder height for high volleys
+- Wrist: firm and locked — no wrist lag or flip
+- Footwork: split step as opponent strikes; step into the volley (low-to-high for underspin)
+- Follow-through: short and punchy, NOT a full swing
+- Body position: stay low (knees bent 130–150°); don't reach or straighten legs prematurely
+- Low volleys: open racket face, slice under the ball, finish toward target""",
+
+    "volley_forehand": """**Forehand Volley — Biomechanical Ideals** (same as volley above)
+- Continental grip; punch motion; contact in front; firm wrist; split step""",
+
+    "volley_backhand": """**Backhand Volley — Biomechanical Ideals** (same as volley above)
+- Continental grip; lead with elbow; contact in front of body; slice for depth""",
+
+    "overhead": """**Overhead / Smash — Biomechanical Ideals**
+- Footwork: turn sideways immediately, point non-dominant hand at ball, backpedal with crossover steps
+- Trophy position: mirrors the serve (elbow up, racket behind head)
+- Contact point: slightly in front and above head, arm near full extension (170–180°)
+- Pronation through contact: same motion as flat serve
+- Weight transfer: forward into the shot (don't fall backward)
+- Follow-through: racket finishes across body on same side as hitting hand""",
+}
+
+
 SYSTEM_PROMPT = """You are an elite tennis coach AI. You receive pre-computed stroke data from on-device analysis (timestamps, joint angles, stroke types) and your job is to provide coaching evaluation ONLY.
 
 ## CRITICAL RULES
@@ -35,6 +95,11 @@ ANALYSIS_PROMPT_TEMPLATE = """Evaluate this tennis session. Player skill level: 
 - Duration: {duration_seconds}s
 - Total strokes detected on-device: {stroke_count}
 - Representative strokes sent for analysis (best data quality per stroke type):
+
+## Stroke-Specific Biomechanical Reference
+The following ideal ranges apply to the strokes detected in this session. Use these to score phases and write coaching notes.
+
+{stroke_specific_context}
 
 ## Pre-Computed Stroke Data
 The following strokes were detected by on-device pose analysis. Timestamps and angles are REAL MEASUREMENTS from the video -- use them as-is.
@@ -143,6 +208,16 @@ def build_detected_strokes_summary(detected_strokes: list) -> str:
             lines.append(f"  {phase_name} at t={ts:.1f}s: {angles_text}")
 
     return "\n".join(lines)
+
+
+def get_stroke_types_from_payload(detected_strokes: list) -> set[str]:
+    """Extract unique stroke types from the detected strokes list."""
+    types = set()
+    for stroke in detected_strokes:
+        s_type = stroke.get("type", "").lower().strip()
+        if s_type:
+            types.add(s_type)
+    return types
 
 
 def build_pose_summary(frames: list, max_frames: int = 50) -> str:

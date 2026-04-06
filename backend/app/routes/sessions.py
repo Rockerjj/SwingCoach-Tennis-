@@ -16,12 +16,19 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/sessions", tags=["sessions"])
 
 
+def _req_log(request_id: str, msg: str) -> None:
+    logger.info(f"[{request_id}] {msg}")
+
+
 @router.post("/analyze", response_model=AnalysisResponse)
 async def analyze_session(
     request: Request,
     user_id: str = Depends(get_current_user_id),
     supabase: Optional[Client] = Depends(get_supabase),
 ):
+    request_id = str(uuid4())[:8]
+    _req_log(request_id, f"analyze_session start — user={user_id[:8] if len(user_id) > 8 else user_id}")
+
     # Parse multipart form: pose_data + key_frame_0, key_frame_1, ...
     form = await request.form()
 
@@ -34,6 +41,7 @@ async def analyze_session(
         pose_dict = json.loads(pose_bytes)
         pose_payload = SessionPosePayload(**pose_dict)
     except Exception as e:
+        _req_log(request_id, f"Invalid pose data: {e}")
         raise HTTPException(status_code=400, detail=f"Invalid pose data: {e}")
 
     # Read all key frame images from multipart (key_frame_0, key_frame_1, ...)
@@ -45,9 +53,9 @@ async def analyze_session(
                 if img_bytes:
                     key_frame_images.append(img_bytes)
             except Exception as e:
-                logger.warning(f"Failed to read {key}: {e}")
+                _req_log(request_id, f"Failed to read {key}: {e}")
 
-    logger.info(f"Received {len(key_frame_images)} key frame images for analysis")
+    _req_log(request_id, f"Received {len(key_frame_images)} key frames, {len(pose_payload.detected_strokes)} strokes")
     session_id = pose_payload.session_id or str(uuid4())
 
     if supabase is not None:
@@ -61,7 +69,7 @@ async def analyze_session(
 
     try:
         coaching = LLMCoachingService()
-        result = await coaching.analyze_session(pose_payload, key_frame_images)
+        result = await coaching.analyze_session(pose_payload, key_frame_images, request_id=request_id)
 
         if supabase is not None:
             for stroke in result.strokes_detected:
@@ -92,7 +100,7 @@ async def analyze_session(
         return result
 
     except Exception as e:
-        logger.error(f"Analysis failed for session {session_id}: {e}")
+        _req_log(request_id, f"Analysis failed for session {session_id}: {e}")
         if supabase is not None:
             supabase.table("sessions").update({
                 "status": "failed",
