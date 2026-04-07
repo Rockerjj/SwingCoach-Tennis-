@@ -2,6 +2,7 @@ import Foundation
 import SwiftUI
 import SwiftData
 import Combine
+import AVFoundation
 
 @MainActor
 final class AnalysisViewModel: ObservableObject {
@@ -136,6 +137,11 @@ final class AnalysisViewModel: ObservableObject {
         session.poseFramesJSON = try? JSONEncoder().encode(extractionFrames)
         session.status = .ready
 
+        // Generate a thumbnail from the video for the session list row
+        if session.thumbnailData == nil, let videoURL = resolveVideoURL() {
+            session.thumbnailData = Self.extractThumbnail(from: videoURL)
+        }
+
         for stroke in response.strokesDetected {
             let nearestFrame = nearestFrame(to: stroke.timestamp, from: extractionFrames)
             let model = StrokeAnalysisModel(
@@ -204,6 +210,32 @@ final class AnalysisViewModel: ObservableObject {
         }
         if relevant.count >= 2 { return Array(relevant.prefix(6)) }
         return Array(keyFrames.prefix(6))
+    }
+
+    // MARK: - Thumbnail Extraction
+
+    /// Extracts a thumbnail from the video at ~3 seconds in (past any initial camera shake).
+    /// Returns JPEG data compressed for efficient SwiftData storage (~20-40KB).
+    static func extractThumbnail(from videoURL: URL, atTime seconds: Double = 3.0) -> Data? {
+        let asset = AVURLAsset(url: videoURL)
+        let generator = AVAssetImageGenerator(asset: asset)
+        generator.appliesPreferredTrackTransform = true
+        generator.maximumSize = CGSize(width: 160, height: 160)
+
+        let time = CMTime(seconds: seconds, preferredTimescale: 600)
+        do {
+            let cgImage = try generator.copyCGImage(at: time, actualTime: nil)
+            let uiImage = UIImage(cgImage: cgImage)
+            return uiImage.jpegData(compressionQuality: 0.6)
+        } catch {
+            // Video shorter than 3s — try at 1s
+            let fallback = CMTime(seconds: 1.0, preferredTimescale: 600)
+            guard let cgImage = try? generator.copyCGImage(at: fallback, actualTime: nil) else {
+                return nil
+            }
+            let uiImage = UIImage(cgImage: cgImage)
+            return uiImage.jpegData(compressionQuality: 0.6)
+        }
     }
 
     enum AnalysisError: LocalizedError {

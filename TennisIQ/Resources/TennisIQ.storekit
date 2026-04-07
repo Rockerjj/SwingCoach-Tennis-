@@ -1,5 +1,5 @@
 {
-  "identifier" : "com.tennisiq.app.storekit",
+  "identifier" : "com.tennique.app.storekit",
   "nonRenewingSubscriptions" : [],
   "products" : [],
   "settings" : {
@@ -56,50 +56,50 @@
   },
   "subscriptionGroups" : [
     {
-      "id" : "tennisiq_premium",
+      "id" : "tennique_pro",
       "localizations" : [],
-      "name" : "TennisIQ Premium",
+      "name" : "Tennique Pro",
       "subscriptions" : [
         {
           "adHocOffers" : [],
           "codeOffers" : [],
-          "displayPrice" : "6.99",
+          "displayPrice" : "9.99",
           "familyShareable" : false,
           "groupNumber" : 1,
-          "internalID" : "monthly_001",
+          "internalID" : "tennique_pro_monthly_001",
           "introductoryOffer" : null,
           "localizations" : [
             {
-              "description" : "Unlimited AI stroke analysis and coaching feedback",
-              "displayName" : "Monthly Premium",
+              "description" : "Unlimited AI stroke analysis and personalized coaching feedback",
+              "displayName" : "Tennique Pro Monthly",
               "locale" : "en_US"
             }
           ],
-          "productID" : "tennisiq_monthly",
+          "productID" : "tennique_pro_monthly",
           "recurringSubscriptionPeriod" : "P1M",
-          "referenceName" : "Monthly Premium",
-          "subscriptionGroupID" : "tennisiq_premium",
+          "referenceName" : "Tennique Pro Monthly",
+          "subscriptionGroupID" : "tennique_pro",
           "type" : "RecurringSubscription"
         },
         {
           "adHocOffers" : [],
           "codeOffers" : [],
-          "displayPrice" : "49.99",
+          "displayPrice" : "59.99",
           "familyShareable" : false,
           "groupNumber" : 1,
-          "internalID" : "annual_001",
+          "internalID" : "tennique_pro_annual_001",
           "introductoryOffer" : null,
           "localizations" : [
             {
-              "description" : "Unlimited AI stroke analysis and coaching - save 40%",
-              "displayName" : "Annual Premium",
+              "description" : "Unlimited AI stroke analysis and coaching - save 50% vs monthly",
+              "displayName" : "Tennique Pro Annual",
               "locale" : "en_US"
             }
           ],
-          "productID" : "tennisiq_annual",
+          "productID" : "tennique_pro_annual",
           "recurringSubscriptionPeriod" : "P1Y",
-          "referenceName" : "Annual Premium",
-          "subscriptionGroupID" : "tennisiq_premium",
+          "referenceName" : "Tennique Pro Annual",
+          "subscriptionGroupID" : "tennique_pro",
           "type" : "RecurringSubscription"
         }
       ]

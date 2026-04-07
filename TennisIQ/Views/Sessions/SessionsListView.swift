@@ -11,6 +11,32 @@ struct SessionsListView: View {
     @State private var retryTotal = 0
     let theme = DesignSystem.current
 
+    // MARK: - Thumbnail Backfill
+
+    /// On first appearance, generate thumbnails for any ready sessions that are missing one.
+    /// Runs in a background task so it doesn't block the UI.
+    private func backfillMissingThumbnails() {
+        let needsThumbnail = sessions.filter { $0.status == .ready && $0.thumbnailData == nil && $0.videoLocalURL != nil }
+        guard !needsThumbnail.isEmpty else { return }
+
+        let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+
+        Task.detached(priority: .utility) {
+            for session in needsThumbnail {
+                guard let filename = session.videoLocalURL else { continue }
+                let videoURL = documentsURL.appendingPathComponent(filename)
+                guard FileManager.default.fileExists(atPath: videoURL.path) else { continue }
+
+                if let thumbnailData = AnalysisViewModel.extractThumbnail(from: videoURL) {
+                    await MainActor.run {
+                        session.thumbnailData = thumbnailData
+                        try? modelContext.save()
+                    }
+                }
+            }
+        }
+    }
+
     var body: some View {
         ZStack {
             theme.background.ignoresSafeArea()
@@ -67,6 +93,9 @@ struct SessionsListView: View {
                 .padding(.top, Spacing.sm)
                 .transition(.move(edge: .top).combined(with: .opacity))
             }
+        }
+        .onAppear {
+            backfillMissingThumbnails()
         }
     }
 
