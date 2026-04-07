@@ -100,7 +100,7 @@ struct KeyFixesCard: View {
                 Text(insightTitle(for: phase, detail: detail))
                     .font(AppFont.body(size: 14, weight: .semibold))
                     .foregroundStyle(theme.textPrimary)
-                    .lineLimit(1)
+                    .lineLimit(2)
 
                 Spacer()
 
@@ -132,6 +132,7 @@ struct KeyFixesCard: View {
     }
 
     private func insightTitle(for phase: SwingPhase, detail: PhaseDetail) -> String {
+        if let cue = detail.improveCue, !cue.isEmpty { return cue }
         switch phase {
         case .readyPosition: return "Set your feet earlier"
         case .unitTurn: return "Rotate your hips more"

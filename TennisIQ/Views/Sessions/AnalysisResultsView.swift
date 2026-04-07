@@ -1433,6 +1433,28 @@ struct StrokeTypeSummaryCard: View {
                     .lineSpacing(3)
                     .fixedSize(horizontal: false, vertical: true)
 
+                // Per-phase coaching cues from worst stroke
+                if let breakdown = summary.worstStroke.phaseBreakdown {
+                    let cues = topCoachingCues(from: breakdown)
+                    if !cues.isEmpty {
+                        VStack(alignment: .leading, spacing: Spacing.xs) {
+                            ForEach(Array(cues.enumerated()), id: \.offset) { _, item in
+                                HStack(alignment: .top, spacing: Spacing.xs) {
+                                    Image(systemName: item.phase.icon)
+                                        .font(.system(size: 11))
+                                        .foregroundStyle(theme.accent)
+                                        .frame(width: 20)
+                                    Text(item.cue)
+                                        .font(AppFont.body(size: 13))
+                                        .foregroundStyle(theme.textSecondary)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                            }
+                        }
+                        .padding(.vertical, Spacing.xxs)
+                    }
+                }
+
                 // Skeleton correction visual from worst swing
                 if let joints = summary.worstStroke.jointSnapshot, !joints.isEmpty,
                    let overlay = summary.worstStroke.overlayInstructions {
@@ -1479,6 +1501,18 @@ struct StrokeTypeSummaryCard: View {
                 .fill(theme.surfacePrimary)
         )
         .clipShape(RoundedRectangle(cornerRadius: Radius.md))
+    }
+
+    private func topCoachingCues(from breakdown: PhaseBreakdown) -> [(phase: SwingPhase, cue: String)] {
+        let phases: [(SwingPhase, PhaseDetail)] = breakdown.allPhases.compactMap { phase, detail in
+            guard let d = detail, d.status != .inZone,
+                  let _ = d.improveCue, !d.improveCue!.isEmpty else { return nil }
+            return (phase, d)
+        }
+        return phases
+            .sorted { $0.1.score < $1.1.score }
+            .prefix(4)
+            .map { (phase: $0.0, cue: $0.1.improveCue!) }
     }
 
     private var cardHeader: some View {

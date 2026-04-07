@@ -256,36 +256,30 @@ struct AngleCorrectionView: View {
     private func drawSkeletonWithAngle(context: GraphicsContext, size: CGSize) {
         let jointMap = screenJoints(size: size)
 
-        let defaultColor = Color.white.opacity(0.35)
         let highlightedJoints: Set<String> = {
             guard let chain = angleChain else { return [] }
             return [chain.a, chain.b, chain.c]
         }()
 
+        // Only draw bones where BOTH endpoints are in the highlighted chain
         for (a, b) in Self.bones {
             guard let pa = jointMap[a], let pb = jointMap[b] else { continue }
-            let isHighlighted = highlightedJoints.contains(a) || highlightedJoints.contains(b)
+            guard highlightedJoints.contains(a) && highlightedJoints.contains(b) else { continue }
             var path = Path()
             path.move(to: pa)
             path.addLine(to: pb)
-
-            if isHighlighted {
-                context.stroke(path, with: .color(skeletonColor.opacity(0.4)),
-                    style: StrokeStyle(lineWidth: 8, lineCap: .round))
-                context.stroke(path, with: .color(skeletonColor),
-                    style: StrokeStyle(lineWidth: 3, lineCap: .round))
-            } else {
-                context.stroke(path, with: .color(defaultColor),
-                    style: StrokeStyle(lineWidth: 1.5, lineCap: .round))
-            }
+            context.stroke(path, with: .color(skeletonColor.opacity(0.4)),
+                style: StrokeStyle(lineWidth: 8, lineCap: .round))
+            context.stroke(path, with: .color(skeletonColor),
+                style: StrokeStyle(lineWidth: 3, lineCap: .round))
         }
 
+        // Only draw dots for highlighted joints
         for (name, pt) in jointMap {
-            let isHighlighted = highlightedJoints.contains(name)
-            let r: CGFloat = isHighlighted ? 5 : 3
-            let color = isHighlighted ? skeletonColor : defaultColor
+            guard highlightedJoints.contains(name) else { continue }
+            let r: CGFloat = 5
             let rect = CGRect(x: pt.x - r, y: pt.y - r, width: r * 2, height: r * 2)
-            context.fill(Path(ellipseIn: rect), with: .color(color))
+            context.fill(Path(ellipseIn: rect), with: .color(skeletonColor))
         }
 
         if let chain = angleChain, let pivot = jointMap[chain.b] {
