@@ -135,7 +135,7 @@ struct SwingPathOverlayView: View {
         // Vision coords are in raw buffer space with bottom-left origin.
         // For portrait video, x/y are swapped after 90-degree rotation,
         // and the vertical axis is inverted (Vision y-up vs UIKit y-down).
-        let videoX = pt.y * videoNaturalSize.width
+        let videoX = (1.0 - pt.y) * videoNaturalSize.width
         let videoY = pt.x * videoNaturalSize.height
         return CGPoint(
             x: videoX * crop.scale + crop.offsetX,

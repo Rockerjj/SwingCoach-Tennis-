@@ -266,7 +266,7 @@ struct PhaseFrameCaptureView: View {
         // Vision coords are in raw buffer space with bottom-left origin.
         // For portrait video, x/y are swapped after 90-degree rotation,
         // and the vertical axis is inverted (Vision y-up vs UIKit y-down).
-        let videoX = joint.y * videoSize.width
+        let videoX = (1.0 - joint.y) * videoSize.width
         let videoY = joint.x * videoSize.height
         return CGPoint(
             x: videoX * crop.scale + crop.offsetX,
