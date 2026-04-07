@@ -1768,14 +1768,63 @@ struct CoachingCard: View {
         }
     }
 
+    private var swingSummary: String {
+        guard let rationale = stroke.gradingRationale, !rationale.isEmpty else {
+            return "Review this stroke for areas to improve."
+        }
+        let first = rationale
+            .components(separatedBy: ".")
+            .first?
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? rationale
+        return first.isEmpty ? rationale : first
+    }
+
+    private var coachingCuesList: [(icon: String, cue: String)] {
+        guard let breakdown = stroke.phaseBreakdown else { return [] }
+        return breakdown.allPhases
+            .compactMap { phase, detail -> (String, String)? in
+                guard let d = detail, d.status != .inZone,
+                      let cue = d.improveCue, !cue.isEmpty else { return nil }
+                return (phase.icon, cue)
+            }
+            .sorted { lhs, rhs in
+                let lScore = stroke.phaseBreakdown?.allPhases.first(where: { $0.0.icon == lhs.0 })?.1?.score ?? 10
+                let rScore = stroke.phaseBreakdown?.allPhases.first(where: { $0.0.icon == rhs.0 })?.1?.score ?? 10
+                return lScore < rScore
+            }
+    }
+
     private var expandedBody: some View {
         VStack(alignment: .leading, spacing: Spacing.md) {
             Divider().foregroundStyle(theme.surfaceSecondary)
 
-            // What to Fix — always visible
-            WhatToFixSection(rationale: stroke.gradingRationale)
+            // 1. Swing Summary — first sentence only, no raw angles
+            Text(swingSummary)
+                .font(AppFont.body(size: 14, weight: .medium))
+                .foregroundStyle(theme.textPrimary)
+                .lineSpacing(3)
+                .fixedSize(horizontal: false, vertical: true)
 
-            // Visual Angle Corrections — animated skeleton on real video frame
+            // 2. Coaching Cues — actionable tips from each phase
+            if !coachingCuesList.isEmpty {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    SectionLabel(icon: "megaphone", title: "COACHING CUES")
+                    ForEach(Array(coachingCuesList.prefix(4).enumerated()), id: \.offset) { _, item in
+                        HStack(alignment: .top, spacing: Spacing.xs) {
+                            Image(systemName: item.icon)
+                                .font(.system(size: 11))
+                                .foregroundStyle(theme.accent)
+                                .frame(width: 20)
+                            Text(item.cue)
+                                .font(AppFont.body(size: 13))
+                                .foregroundStyle(theme.textSecondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                }
+            }
+
+            // 3. Visual Angle Corrections — animated skeleton on real video frame
             if let joints = stroke.jointSnapshot, !joints.isEmpty,
                let overlay = stroke.overlayInstructions {
                 AngleCorrectionStrip(
@@ -1788,7 +1837,7 @@ struct CoachingCard: View {
                 )
             }
 
-            // Mechanics Breakdown — collapsed by default
+            // 4. Mechanics Breakdown — collapsed, detailed angle analysis
             CollapsibleSection(title: "MECHANICS BREAKDOWN", icon: "gearshape.2", isExpanded: $showMechanics) {
                 MechanicsBreakdownSection(mechanics: stroke.mechanics, compactMode: true, scrollToPhases: scrollToPhases)
             }

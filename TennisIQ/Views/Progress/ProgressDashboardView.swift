@@ -25,7 +25,7 @@ struct ProgressDashboardView: View {
         case saved = "Saved"
     }
 
-    @State private var selectedTab: ProgressTab = .trends
+    @State private var selectedTab: ProgressTab = .sessions
 
     var body: some View {
         ZStack {
@@ -122,7 +122,10 @@ struct ProgressDashboardView: View {
 
                 // Session list with grades
                 ForEach(recentSessions.prefix(30)) { session in
-                    SessionProgressRow(session: session)
+                    NavigationLink(destination: AnalysisResultsView(session: session)) {
+                        SessionProgressRow(session: session)
+                    }
+                    .buttonStyle(.plain)
                 }
             }
         }

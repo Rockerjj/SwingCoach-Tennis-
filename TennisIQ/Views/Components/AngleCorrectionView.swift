@@ -109,7 +109,7 @@ struct AngleCorrectionView: View {
     private func screenJoints(size: CGSize) -> [String: CGPoint] {
         let imageSize = frameImage.map { CGSize(width: $0.size.width, height: $0.size.height) }
             ?? CGSize(width: 1080, height: 1920)
-        let crop = aspectFillCrop(imageSize: imageSize, viewSize: size)
+        let crop = aspectFitCrop(imageSize: imageSize, viewSize: size)
 
         var map: [String: CGPoint] = [:]
         for j in joints {
@@ -236,6 +236,18 @@ struct AngleCorrectionView: View {
             offsetX = (viewSize.width - imageSize.width * scale) / 2.0
             offsetY = 0
         }
+        return CropInfo(scale: scale, offsetX: offsetX, offsetY: offsetY)
+    }
+
+    private func aspectFitCrop(imageSize: CGSize, viewSize: CGSize) -> CropInfo {
+        guard imageSize.width > 0, imageSize.height > 0 else {
+            return CropInfo(scale: 1, offsetX: 0, offsetY: 0)
+        }
+        let scaleW = viewSize.width / imageSize.width
+        let scaleH = viewSize.height / imageSize.height
+        let scale = min(scaleW, scaleH)
+        let offsetX = (viewSize.width - imageSize.width * scale) / 2.0
+        let offsetY = (viewSize.height - imageSize.height * scale) / 2.0
         return CropInfo(scale: scale, offsetX: offsetX, offsetY: offsetY)
     }
 
