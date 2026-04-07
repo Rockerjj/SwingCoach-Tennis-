@@ -3195,7 +3195,7 @@ struct WireframeOverlayView: View {
         //   - Vision's y axis maps to the horizontal (display x)
         //   - Vision's x axis maps to the vertical (display y), but inverted
         //     because Vision's origin is bottom-left while UIKit is top-left.
-        let videoX = (1.0 - joint.y) * videoNaturalSize.width
+        let videoX = joint.y * videoNaturalSize.width
         let videoY = joint.x * videoNaturalSize.height
         return CGPoint(
             x: videoX * crop.scale + crop.offsetX,
