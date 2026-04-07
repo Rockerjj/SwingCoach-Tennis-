@@ -9,7 +9,9 @@ from supabase import Client
 
 from app.models import SessionPosePayload, AnalysisResponse
 from app.services.llm_coaching import LLMCoachingService
+from app.services.gemini_coaching import GeminiCoachingService
 from app.services.progress_calculator import ProgressCalculator
+from app.config import get_settings
 from app.routes.deps import get_supabase, get_current_user_id
 
 logger = logging.getLogger(__name__)
@@ -47,7 +49,28 @@ async def analyze_session(
             except Exception as e:
                 logger.warning(f"Failed to read {key}: {e}")
 
-    logger.info(f"Received {len(key_frame_images)} key frame images for analysis")
+    # Read video clip files from multipart (stroke_clip_0, stroke_clip_1, ...)
+    video_clips: list[tuple[float, bytes]] = []
+    for key in sorted(form.keys()):
+        if key.startswith("stroke_clip_"):
+            try:
+                clip_file = form[key]
+                clip_bytes = await clip_file.read()
+                # Extract timestamp from filename (e.g., "clip_0_8.20.mp4")
+                filename = getattr(clip_file, "filename", "") or ""
+                ts = 0.0
+                parts = filename.replace(".mp4", "").split("_")
+                if len(parts) >= 3:
+                    try:
+                        ts = float(parts[2])
+                    except ValueError:
+                        pass
+                if clip_bytes:
+                    video_clips.append((ts, clip_bytes))
+            except Exception as e:
+                logger.warning(f"Failed to read {key}: {e}")
+
+    logger.info(f"Received {len(key_frame_images)} key frame images and {len(video_clips)} video clips for analysis")
     session_id = pose_payload.session_id or str(uuid4())
 
     if supabase is not None:
@@ -60,8 +83,17 @@ async def analyze_session(
         }).execute()
 
     try:
-        coaching = LLMCoachingService()
-        result = await coaching.analyze_session(pose_payload, key_frame_images)
+        settings = get_settings()
+        if settings.use_gemini and settings.gemini_api_key:
+            coaching = GeminiCoachingService()
+            result = await coaching.analyze_session(
+                pose_payload, key_frame_images, video_clips or None
+            )
+            logger.info("Analysis completed via Gemini 2.5 Pro")
+        else:
+            coaching = LLMCoachingService()
+            result = await coaching.analyze_session(pose_payload, key_frame_images)
+            logger.info("Analysis completed via OpenAI")
 
         if supabase is not None:
             for stroke in result.strokes_detected:

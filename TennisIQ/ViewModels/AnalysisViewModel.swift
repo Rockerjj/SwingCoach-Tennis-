@@ -88,16 +88,31 @@ final class AnalysisViewModel: ObservableObject {
 
             let authToken = AuthService().authToken
 
+            // Extract short video clips around each stroke for Gemini video analysis
+            var strokeClipURLs: [(timestamp: Double, url: URL)] = []
+            if let url = videoURL {
+                let clips = try await poseService.extractStrokeClips(
+                    from: url,
+                    strokes: sampledStrokes
+                )
+                strokeClipURLs = clips.map { (timestamp: $0.timestamp, url: $0.url) }
+            }
+
             let response = try await apiService.analyzeSession(
                 posePayload: payload,
                 keyFrameImages: sampledKeyFrames.map { (timestamp: $0.timestamp, image: $0.image) },
+                strokeClips: strokeClipURLs,
                 authToken: authToken
             )
 
             applyResults(response, extractionFrames: extraction.frames, to: session, context: context)
 
-            // Clean up temp key frame files now that they've been sent to the API
+            // Clean up temp files now that they've been sent to the API
             extraction.cleanupTempFiles()
+            if !strokeClipURLs.isEmpty {
+                let clips = strokeClipURLs.map { PoseEstimationService.StrokeClip(timestamp: $0.timestamp, url: $0.url) }
+                poseService.cleanupClips(clips)
+            }
 
             // Sync progress data so the dashboard updates immediately
             let progressVM = ProgressViewModel()

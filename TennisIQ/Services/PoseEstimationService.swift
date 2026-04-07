@@ -284,6 +284,64 @@ final class PoseEstimationService: ObservableObject {
         return results
     }
 
+    // MARK: - Video Clip Extraction
+
+    struct StrokeClip {
+        let timestamp: Double
+        let url: URL
+    }
+
+    func extractStrokeClips(from videoURL: URL, strokes: [DetectedStroke], padding: Double = 1.5) async throws -> [StrokeClip] {
+        let asset = AVURLAsset(url: videoURL)
+        let duration = try await asset.load(.duration).seconds
+
+        let clipDir = FileManager.default.temporaryDirectory
+            .appendingPathComponent("tennique_clips", isDirectory: true)
+        try? FileManager.default.createDirectory(at: clipDir, withIntermediateDirectories: true)
+
+        var clips: [StrokeClip] = []
+
+        for (index, stroke) in strokes.enumerated() {
+            let contact = stroke.contactTimestamp
+            let startTime = max(0, contact - padding)
+            let endTime = min(duration, contact + padding)
+
+            guard endTime > startTime else { continue }
+
+            let outputURL = clipDir.appendingPathComponent(
+                "clip_\(index)_\(String(format: "%.2f", contact)).mp4"
+            )
+
+            try? FileManager.default.removeItem(at: outputURL)
+
+            guard let exportSession = AVAssetExportSession(
+                asset: asset,
+                presetName: AVAssetExportPreset1280x720
+            ) else { continue }
+
+            exportSession.outputURL = outputURL
+            exportSession.outputFileType = .mp4
+            exportSession.timeRange = CMTimeRange(
+                start: CMTime(seconds: startTime, preferredTimescale: 600),
+                end: CMTime(seconds: endTime, preferredTimescale: 600)
+            )
+
+            await exportSession.export()
+
+            if exportSession.status == .completed {
+                clips.append(StrokeClip(timestamp: contact, url: outputURL))
+            }
+        }
+
+        return clips
+    }
+
+    func cleanupClips(_ clips: [StrokeClip]) {
+        for clip in clips {
+            try? FileManager.default.removeItem(at: clip.url)
+        }
+    }
+
     // MARK: - Helpers
 
     private func imageFromPixelBuffer(_ pixelBuffer: CVPixelBuffer) -> UIImage {

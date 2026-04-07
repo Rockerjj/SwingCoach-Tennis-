@@ -6,9 +6,14 @@ class Settings(BaseSettings):
     app_name: str = "Tennique API"
     debug: bool = False
 
-    # OpenAI
+    # OpenAI (fallback)
     openai_api_key: str = ""
     openai_model: str = "gpt-5.4"
+
+    # Gemini (primary)
+    gemini_api_key: str = ""
+    gemini_model: str = "gemini-2.5-pro-preview-05-06"
+    use_gemini: bool = True
 
     # Supabase
     supabase_url: str = ""

@@ -38,6 +38,7 @@ final class AnalysisAPIService {
     func analyzeSession(
         posePayload: SessionPosePayload,
         keyFrameImages: [(timestamp: Double, image: UIImage)],
+        strokeClips: [(timestamp: Double, url: URL)] = [],
         authToken: String
     ) async throws -> AnalysisResponse {
         guard let url = URL(string: "\(baseURL)/sessions/analyze") else {
@@ -69,6 +70,20 @@ final class AnalysisAPIService {
                 mimeType: "image/jpeg",
                 data: jpegData
             )
+        }
+
+        // Video clips for Gemini analysis
+        for (index, clip) in strokeClips.enumerated() {
+            if let clipData = try? Data(contentsOf: clip.url) {
+                let filename = clip.url.lastPathComponent
+                body.appendMultipart(
+                    boundary: boundary,
+                    name: "stroke_clip_\(index)",
+                    filename: filename,
+                    mimeType: "video/mp4",
+                    data: clipData
+                )
+            }
         }
 
         body.append("--\(boundary)--\r\n".data(using: .utf8)!)
