@@ -93,7 +93,7 @@ struct PhaseDetailCard: View {
                 timestamp: detail.timestamp,
                 poseFrames: poseFrames,
                 keyAngles: detail.keyAngles,
-                height: 200
+                height: 300
             )
 
             if !detail.keyAngles.isEmpty {

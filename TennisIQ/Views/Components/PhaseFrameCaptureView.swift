@@ -94,9 +94,8 @@ struct PhaseFrameCaptureView: View {
                         // Video frame
                         Image(uiImage: image)
                             .resizable()
-                            .aspectRatio(contentMode: .fill)
+                            .aspectRatio(contentMode: .fit)
                             .frame(width: geo.size.width, height: geo.size.height)
-                            .clipped()
 
                         // Dark overlay for contrast
                         Color.black.opacity(0.3)

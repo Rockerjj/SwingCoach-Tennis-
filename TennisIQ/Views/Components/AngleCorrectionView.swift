@@ -19,7 +19,7 @@ struct AngleCorrectionView: View {
     let theme = DesignSystem.current
 
     private var angleChain: (a: String, b: String, c: String)? {
-        let side = Handedness.current == .right ? "right" : "left"
+        let side = Handedness.current == .right ? "left" : "right"
         let lower = jointName.lowercased()
 
         if lower.contains("elbow") {
@@ -161,7 +161,6 @@ struct AngleCorrectionView: View {
         }()
 
         let skeletonColor = UIColor(red: 0.2, green: 0.8, blue: 0.3, alpha: 1.0)
-        let dimColor = UIColor.white.withAlphaComponent(0.0)
 
         return renderer.image { ctx in
             let cgCtx = ctx.cgContext
@@ -282,32 +281,41 @@ struct AngleCorrectionStrip: View {
 
     @State private var currentPage = 0
 
-    private func bestPhaseTimestamp(for jointName: String) -> Double {
+    private func bestPhaseTimestamp(for jointName: String, index: Int = 0, total: Int = 1) -> Double {
         let lower = jointName.lowercased()
+        var base: Double
 
         if let breakdown = phaseBreakdown {
             if lower.contains("elbow") || lower.contains("arm") || lower.contains("extension") {
-                return breakdown.contactPoint?.timestamp ?? timestamp
+                base = breakdown.contactPoint?.timestamp ?? timestamp
             } else if lower.contains("knee") {
-                return breakdown.forwardSwing?.timestamp ?? timestamp
+                base = breakdown.forwardSwing?.timestamp ?? timestamp
             } else if lower.contains("hip") && !lower.contains("rotation") {
-                return breakdown.forwardSwing?.timestamp ?? timestamp
+                base = breakdown.forwardSwing?.timestamp ?? timestamp
             } else if lower.contains("shoulder") && lower.contains("rotation") {
-                return breakdown.unitTurn?.timestamp ?? breakdown.backswing?.timestamp ?? timestamp
+                base = breakdown.unitTurn?.timestamp ?? breakdown.backswing?.timestamp ?? timestamp
+            } else {
+                base = timestamp
             }
-            return timestamp
+        } else if lower.contains("elbow") || lower.contains("arm") || lower.contains("extension") {
+            base = timestamp
+        } else if lower.contains("knee") {
+            base = timestamp - 0.4
+        } else if lower.contains("hip") && !lower.contains("rotation") {
+            base = timestamp - 0.3
+        } else if lower.contains("shoulder") && lower.contains("rotation") {
+            base = timestamp - 0.6
+        } else {
+            base = timestamp
         }
 
-        if lower.contains("elbow") || lower.contains("arm") || lower.contains("extension") {
-            return timestamp
-        } else if lower.contains("knee") {
-            return timestamp - 0.4
-        } else if lower.contains("hip") && !lower.contains("rotation") {
-            return timestamp - 0.3
-        } else if lower.contains("shoulder") && lower.contains("rotation") {
-            return timestamp - 0.6
+        // Spread corrections so each slide shows a slightly different frame
+        if total > 1 {
+            let spread = 0.15
+            let offset = (Double(index) - Double(total - 1) / 2.0) * spread
+            base += offset
         }
-        return timestamp
+        return max(0, base)
     }
 
     private func nearestJoints(for phaseTimestamp: Double) -> [JointData] {
@@ -342,7 +350,7 @@ struct AngleCorrectionStrip: View {
 
                 TabView(selection: $currentPage) {
                     ForEach(Array(outOfRangeAngles.enumerated()), id: \.element.jointName) { index, parsed in
-                        let phaseTime = bestPhaseTimestamp(for: parsed.jointName)
+                        let phaseTime = bestPhaseTimestamp(for: parsed.jointName, index: index, total: outOfRangeAngles.count)
                         let phaseJoints = nearestJoints(for: phaseTime)
                         AngleCorrectionView(
                             joints: phaseJoints,
