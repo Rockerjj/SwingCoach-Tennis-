@@ -4,47 +4,44 @@ struct LaunchView: View {
     @State private var logoScale: CGFloat = 0.6
     @State private var logoOpacity: Double = 0
     @State private var taglineOpacity: Double = 0
-    @State private var ringRotation: Double = 0
-    @State private var ringScale: CGFloat = 0.8
 
-    private let theme = DesignSystem.current
+    private let brandGreen = Color(red: 84/255, green: 113/255, blue: 83/255)
+    private let brandCream = Color(red: 238/255, green: 242/255, blue: 228/255)
+    private let brandDarkGreen = Color(red: 15/255, green: 26/255, blue: 18/255)
 
     var body: some View {
         ZStack {
-            theme.background
+            brandDarkGreen
                 .ignoresSafeArea()
 
-            VStack(spacing: Spacing.lg) {
+            VStack(spacing: 24) {
                 Spacer()
 
                 ZStack {
-                    // Pulsing ring behind the icon
                     Circle()
-                        .stroke(theme.accent.opacity(0.15), lineWidth: 2)
+                        .fill(brandGreen.opacity(0.15))
                         .frame(width: 140, height: 140)
-                        .scaleEffect(ringScale)
-                        .rotationEffect(.degrees(ringRotation))
 
                     Circle()
-                        .fill(theme.accent.opacity(0.06))
-                        .frame(width: 120, height: 120)
+                        .fill(brandGreen.opacity(0.08))
+                        .frame(width: 110, height: 110)
 
-                    Image(systemName: "figure.tennis")
-                        .font(.system(size: 52, weight: .light))
-                        .foregroundStyle(theme.accent)
+                    tenniqueLogo
+                        .frame(width: 70, height: 70)
                 }
                 .scaleEffect(logoScale)
                 .opacity(logoOpacity)
 
-                VStack(spacing: Spacing.xs) {
-                    Text("TennisIQ")
-                        .font(AppFont.display(size: 34))
-                        .foregroundStyle(theme.textPrimary)
+                VStack(spacing: 6) {
+                    Text("Tennique")
+                        .font(.system(size: 36, weight: .light, design: .default))
+                        .foregroundStyle(brandCream)
+                        .tracking(1)
 
                     Text("AI-Powered Coaching")
-                        .font(AppFont.body(size: 15))
-                        .foregroundStyle(theme.textTertiary)
-                        .tracking(1.5)
+                        .font(.system(size: 14, weight: .regular))
+                        .foregroundStyle(brandCream.opacity(0.5))
+                        .tracking(2)
                 }
                 .opacity(taglineOpacity)
 
@@ -53,17 +50,35 @@ struct LaunchView: View {
             }
         }
         .onAppear {
-            withAnimation(.easeOut(duration: 0.5)) {
+            withAnimation(.easeOut(duration: 0.6)) {
                 logoScale = 1.0
                 logoOpacity = 1.0
-                ringScale = 1.0
             }
-            withAnimation(.easeOut(duration: 0.6).delay(0.2)) {
+            withAnimation(.easeOut(duration: 0.5).delay(0.3)) {
                 taglineOpacity = 1.0
             }
-            withAnimation(.linear(duration: 3).repeatForever(autoreverses: false)) {
-                ringRotation = 360
+        }
+    }
+
+    private var tenniqueLogo: some View {
+        ZStack {
+            Circle()
+                .stroke(brandCream, lineWidth: 3)
+                .frame(width: 50, height: 50)
+
+            Path { path in
+                path.move(to: CGPoint(x: 30, y: 38))
+                path.addQuadCurve(
+                    to: CGPoint(x: 18, y: 15),
+                    control: CGPoint(x: 10, y: 28)
+                )
+                path.addQuadCurve(
+                    to: CGPoint(x: 30, y: 22),
+                    control: CGPoint(x: 24, y: 10)
+                )
             }
+            .stroke(brandCream, style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
+            .frame(width: 50, height: 50)
         }
     }
 }
