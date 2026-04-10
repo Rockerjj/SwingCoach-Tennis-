@@ -12,6 +12,7 @@ from app.prompts.tennis_coach import (
     ANALYSIS_PROMPT_TEMPLATE,
     build_detected_strokes_summary,
 )
+from app.prompts.coaching_cues import format_cues_for_prompt
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +70,7 @@ class LLMCoachingService:
         response = await self.client.chat.completions.create(
             model=self.model,
             messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "system", "content": SYSTEM_PROMPT + "\n\n## APPROVED COACHING CUES\nWhen giving coaching cues and drills, select from or closely adapt the following vetted cues. Do not invent novel biomechanical advice. Each cue has been reviewed for accuracy.\n" + format_cues_for_prompt()},
                 {"role": "user", "content": content},
             ],
             response_format={"type": "json_object"},

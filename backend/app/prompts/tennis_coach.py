@@ -36,6 +36,45 @@ When you mention angles in key_angles fields, format them as coaching observatio
 5. The key_angles array should contain 1-3 coaching observations per phase (not raw angle dumps).
 6. Drills must be specific: name the drill, give rep counts, and explain what to focus on during it.
 7. The grading_rationale should read like a coach's post-session debrief — conversational, specific, actionable.
+
+
+## BIOMECHANICAL REFERENCE (Research-Backed Ideal Ranges)
+Score each phase by comparing measured angles against these ranges. Do NOT invent your own ideal ranges.
+All ranges are sourced from peer-reviewed research and established coaching frameworks.
+
+### Forehand
+- Ready Position: Knee flexion 130-150° (USTA Player Development)
+- Unit Turn: Shoulder rotation 60-90°+ (Elliott, Reid & Crespo 2009). Hip rotation 30-45° (JSSM 2009)
+- Backswing: Racket lag / wrist cock 80-100° (ITF Coaching Manual)
+- Forward Swing: Hips should lead shoulders by 20-40ms (Landlinger et al. 2010). Low-to-high swing path is mandatory for topspin.
+- Contact: Elbow extension 155-175° — near full extension (Elliott 2006). Arm extension (shoulder-to-wrist) 160-180° (Reid & Elliott). Contact point MUST be ahead of the front hip (USTA fundamentals). Ball contact at 50-60% of player height (Korean J Applied Biomech).
+- Follow-Through: Additional shoulder rotation 30-50° past contact (ITF). Racket finishes across the body (modern windshield-wiper) or over the shoulder.
+- Recovery: Return to split step within 0.5-1.0s of contact (USTA).
+
+### Two-Handed Backhand
+- Unit Turn: Shoulder rotation 80-100° (Korean J Applied Biomech). Hip rotation 35-45°.
+- Contact: Racket face approximately 90° / perpendicular to net. Dominant-arm elbow 90-120° (more bent than forehand). Ball contact at ~54% of player height.
+- The non-dominant hand (top hand) drives the stroke; dominant hand guides.
+
+### Serve
+- Trophy Position: Knee flexion 55-75° — deep bend for leg drive (Frontiers 2024 meta-analysis). Trunk inclination 18-32°.
+- Racket Drop: Shoulder lateral rotation 100-155° (Frontiers 2024).
+- Contact: Shoulder elevation 95-125° (Frontiers 2024). Elbow nearly fully extended, 15-45° flexion remaining. Contact at full reach height.
+- Pronation through contact is essential for pace and spin.
+
+### Volley
+- Split Step: Knee flexion 120-140° — athletic and ready (USTA).
+- Contact: Elbow 100-130° — firm with a slight bend, NOT a full swing (Elliott 1988). Racket face slightly open. Compact stroke, total duration 0.4-0.5s. Meet the ball in front with a punch, not a swing.
+
+## NEVER SAY (Common Bad Advice to Avoid)
+These are popular misconceptions that contradict expert biomechanics. NEVER give this advice:
+- "Keep a firm/stiff wrist through contact" — WRONG. The wrist should be relaxed and lag naturally. Forced stiffness kills racket head speed.
+- "Swing level to the ground" — WRONG for topspin. The swing path must be low-to-high (typically 25-35° upward).
+- "Always step into the shot with your front foot" — WRONG. Open stance is biomechanically correct for wide balls and most modern forehands.
+- "Roll your wrist over the ball for topspin" — WRONG. Topspin comes from the low-to-high swing path, not wrist manipulation.
+- "Keep your eye on the ball until it hits the strings" — Physically impossible at contact speed. Better cue: "Watch the ball into the hitting zone."
+- "Hit the ball at the top of the bounce" — Not universally true. Contact timing depends on shot selection (rising ball for aggression, dropping ball for defense).
+- "The follow-through doesn't matter because the ball is already gone" — WRONG. The follow-through reflects and reinforces the swing path and deceleration pattern. Poor follow-through indicates problems earlier in the chain.
 """
 
 ANALYSIS_PROMPT_TEMPLATE = """You're reviewing a tennis session. The player is {skill_level} level, {handedness}-handed.
