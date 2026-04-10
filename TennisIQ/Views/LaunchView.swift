@@ -5,27 +5,27 @@ struct LaunchView: View {
     @State private var logoScale: CGFloat = 0.85
     @State private var taglineOpacity: Double = 0
 
-    private let brandDarkGreen = Color(red: 15/255, green: 26/255, blue: 18/255)
+    private let brandBackground = Color(red: 10/255, green: 18/255, blue: 12/255)
     private let brandCream = Color(red: 238/255, green: 242/255, blue: 228/255)
 
     var body: some View {
         ZStack {
-            brandDarkGreen
+            brandBackground
                 .ignoresSafeArea()
 
-            VStack(spacing: 32) {
+            VStack(spacing: 28) {
                 Spacer()
 
                 Image("TenniqueLogo")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .frame(maxWidth: 280)
+                    .frame(maxWidth: 220)
                     .scaleEffect(logoScale)
                     .opacity(logoOpacity)
 
                 Text("AI-Powered Coaching")
-                    .font(.system(size: 14, weight: .regular))
-                    .foregroundStyle(brandCream.opacity(0.5))
+                    .font(.system(size: 13, weight: .regular))
+                    .foregroundStyle(brandCream.opacity(0.45))
                     .tracking(2)
                     .opacity(taglineOpacity)
 
