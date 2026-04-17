@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import base64
 import logging
@@ -22,6 +24,9 @@ class LLMCoachingService:
         settings = get_settings()
         self.client = AsyncOpenAI(api_key=settings.openai_api_key)
         self.model = settings.openai_model
+        # Populated after each analyze_session call so the eval harness and
+        # cost tracker can read token counts without re-running the request.
+        self.last_usage: dict | None = None
 
     async def analyze_session(
         self,
@@ -82,6 +87,13 @@ class LLMCoachingService:
         raw_json = choice.message.content
         finish_reason = choice.finish_reason
         refusal = getattr(choice.message, 'refusal', None)
+
+        usage = getattr(response, "usage", None)
+        if usage is not None:
+            self.last_usage = {
+                "input_tokens": usage.prompt_tokens,
+                "output_tokens": usage.completion_tokens,
+            }
 
         logger.info(
             f"LLM response received, tokens used: {response.usage.total_tokens}, "

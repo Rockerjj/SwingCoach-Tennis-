@@ -1,0 +1,3 @@
+# Eval run outputs — provider JSON dumps, metrics, score sheets. Never commit.
+*
+!.gitignore

@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings
 from functools import lru_cache
+from typing import Literal
 
 
 class Settings(BaseSettings):
@@ -15,6 +16,18 @@ class Settings(BaseSettings):
     gemini_model: str = "gemini-2.5-pro-preview-05-06"
     use_gemini: bool = True
 
+    # Anthropic (eval candidate)
+    anthropic_api_key: str = ""
+    anthropic_opus_model: str = "claude-opus-4-7"
+    anthropic_sonnet_model: str = "claude-sonnet-4-6"
+
+    # Active provider for /sessions/analyze. "auto" preserves the legacy
+    # use_gemini-then-OpenAI fallback so existing prod behavior is unchanged
+    # until we explicitly opt in to a provider.
+    coaching_provider: Literal[
+        "auto", "gemini", "claude_opus", "claude_sonnet", "openai"
+    ] = "auto"
+
     # Supabase
     supabase_url: str = ""
     supabase_key: str = ""
@@ -27,6 +40,13 @@ class Settings(BaseSettings):
     # Rate limits
     max_video_duration_seconds: int = 1800
     max_key_frames: int = 20
+
+    # Eval / debug capture: when true, /sessions/analyze writes the incoming
+    # multipart payload (pose JSON, key frames, stroke clips) to disk before
+    # running analysis. Used to collect real test sessions for the provider
+    # comparison harness. NEVER turn this on in production.
+    debug_capture_payloads: bool = False
+    payload_capture_dir: str = "test-data/sessions"
 
     class Config:
         env_file = ".env"

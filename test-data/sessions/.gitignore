@@ -1,0 +1,4 @@
+# Captured analyze payloads — pose JSON, key frames, stroke clips,
+# user-authored ground_truth.md per session. Never commit.
+*
+!.gitignore

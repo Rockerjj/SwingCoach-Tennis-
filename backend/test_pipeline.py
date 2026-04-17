@@ -18,6 +18,14 @@ from app.models import (
     SessionPosePayload, DetectedStrokeData, DetectedPhaseData, MeasuredAngleData
 )
 
+# Re-export so callers can `from test_pipeline import load_captured_session`.
+try:
+    from scripts.session_loader import load_captured_session  # noqa: F401
+except ImportError:
+    # scripts/ may not be on the import path in some run contexts; that's fine,
+    # the mock build_mock_payload below still works.
+    load_captured_session = None  # type: ignore[assignment]
+
 
 def extract_key_frames(video_path: str, fps: float = 2, max_frames: int = 8) -> list[bytes]:
     import tempfile

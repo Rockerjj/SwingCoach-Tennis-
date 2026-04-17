@@ -48,6 +48,29 @@ create table if not exists stroke_analyses (
 
 create index idx_stroke_analyses_session_id on stroke_analyses(session_id);
 
+-- Analysis runs (per-call cost and latency tracking)
+-- One row per /sessions/analyze attempt, populated by the backend regardless
+-- of which coaching provider was used. Drives unit-economics decisions and
+-- ongoing provider comparison once the eval is shipped.
+create table if not exists analysis_runs (
+    id text primary key default uuid_generate_v4()::text,
+    session_id text references sessions(id) on delete set null,
+    user_id text references user_profiles(id) on delete set null,
+    provider text not null,
+    model text not null,
+    input_tokens integer,
+    output_tokens integer,
+    cost_cents integer,
+    latency_ms integer,
+    success boolean not null default true,
+    error text,
+    created_at timestamptz not null default now()
+);
+
+create index if not exists idx_analysis_runs_session_id on analysis_runs(session_id);
+create index if not exists idx_analysis_runs_provider on analysis_runs(provider);
+create index if not exists idx_analysis_runs_created_at on analysis_runs(created_at desc);
+
 -- Progress snapshots
 create table if not exists progress_snapshots (
     id text primary key default uuid_generate_v4()::text,

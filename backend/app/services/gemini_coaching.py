@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import base64
 import logging
@@ -27,6 +29,9 @@ class GeminiCoachingService:
         except ImportError:
             raise RuntimeError("google-genai package not installed")
         self.model = settings.gemini_model
+        # Populated after each analyze_session call so the eval harness and
+        # cost tracker can read token counts without re-running the request.
+        self.last_usage: dict | None = None
 
     async def analyze_session(
         self,
@@ -103,9 +108,17 @@ class GeminiCoachingService:
 
         raw_json = response.text
 
+        usage = getattr(response, "usage_metadata", None)
+        if usage is not None:
+            self.last_usage = {
+                "input_tokens": getattr(usage, "prompt_token_count", None),
+                "output_tokens": getattr(usage, "candidates_token_count", None),
+            }
+
         logger.info(
             f"Gemini response received, "
-            f"content_length={len(raw_json) if raw_json else 0}"
+            f"content_length={len(raw_json) if raw_json else 0}, "
+            f"usage={self.last_usage}"
         )
 
         if not raw_json or not raw_json.strip():

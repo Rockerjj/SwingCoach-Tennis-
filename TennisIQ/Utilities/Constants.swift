@@ -27,7 +27,11 @@ enum AppConstants {
     enum API {
         static let baseURL = "https://tennique-api-production.up.railway.app/api/v1"
         #if DEBUG
-        static let debugBaseURL = "https://tennique-api-production.up.railway.app/api/v1"
+        // Eval capture: point debug builds at the local Mac so DEBUG_CAPTURE_PAYLOADS
+        // writes to test-data/sessions/. Update the IP if your Mac's LAN address changes
+        // (run `ipconfig getifaddr en0` to check). Revert to the production URL when
+        // done capturing.
+        static let debugBaseURL = "http://10.0.0.48:8000/api/v1"
         #endif
     }
 
