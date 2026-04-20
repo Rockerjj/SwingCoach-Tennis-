@@ -1,0 +1,4 @@
+# Captured analyze payloads, eval run outputs, and ground truth files.
+# This entire backend/test-data/ tree is local-only and never committed.
+*
+!.gitignore

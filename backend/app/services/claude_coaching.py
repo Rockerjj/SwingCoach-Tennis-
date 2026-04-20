@@ -121,10 +121,12 @@ class ClaudeCoachingService:
             f"{len(content) - 1} images, model={self.model}"
         )
 
+        # Note: temperature is deprecated on the newer Claude models (Opus 4.7,
+        # Sonnet 4.6+). The models' default sampling is well-calibrated for
+        # structured output; we rely on tool-use to enforce the schema.
         response = await self.client.messages.create(
             model=self.model,
             max_tokens=16000,
-            temperature=0.3,
             system=system,
             tools=[_build_analysis_tool()],
             tool_choice={"type": "tool", "name": _ANALYSIS_TOOL_NAME},
@@ -159,7 +161,11 @@ class ClaudeCoachingService:
             )
 
         try:
-            return AnalysisResponse(**tool_input)
+            # Same coercion the Gemini path uses, so any LLM quirk we've already
+            # learned to handle (nulls, accidentally-listed root) Just Works here.
+            from app.services.gemini_coaching import _coerce_to_response_shape
+            shaped = _coerce_to_response_shape(tool_input)
+            return AnalysisResponse(**shaped)
         except Exception as e:
             logger.error(f"Claude tool input failed schema validation: {e}")
             raise ValueError(f"Claude response didn't match schema: {e}")

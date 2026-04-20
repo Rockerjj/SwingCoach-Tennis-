@@ -1,6 +1,13 @@
-from pydantic import BaseModel, Field, ConfigDict
-from typing import Optional, Literal
+from pydantic import BaseModel, Field, ConfigDict, field_validator
+from typing import Optional, Literal, Any
 from datetime import datetime
+
+
+def _coerce_none_to_empty_list(v: Any) -> Any:
+    """Treat null/missing as empty list. LLM outputs frequently omit or null
+    optional list fields even when our schema declares a default. Without this,
+    Pydantic v2 strict mode rejects the entire response over a single null."""
+    return [] if v is None else v
 
 
 # --- Request Models ---
@@ -68,6 +75,11 @@ class MechanicDetail(BaseModel):
     improve_cue: Optional[str] = None
     drill: Optional[str] = None
     sources: list[str] = []
+
+    @field_validator("sources", mode="before")
+    @classmethod
+    def _sources_none_ok(cls, v):
+        return _coerce_none_to_empty_list(v)
 
 
 class StrokeMechanics(BaseModel):
@@ -160,22 +172,55 @@ class StrokeResult(BaseModel):
     type: str
     timestamp: float
     grade: str
-    mechanics: StrokeMechanics
-    overlay_instructions: OverlayInstructions
+    # mechanics and overlay_instructions both default to empty. Real providers
+    # inconsistently include them. For the eval we care about the coaching
+    # content (grading_rationale, phase_breakdown, analysis_categories).
+    mechanics: StrokeMechanics = Field(default_factory=StrokeMechanics)
+    overlay_instructions: OverlayInstructions = Field(default_factory=OverlayInstructions)
     grading_rationale: Optional[str] = None
     next_reps_plan: Optional[str] = None
     verified_sources: list[str] = []
     phase_breakdown: Optional[PhaseBreakdown] = None
     analysis_categories: Optional[list[AnalysisCategory]] = None
 
+    @field_validator("verified_sources", mode="before")
+    @classmethod
+    def _verified_sources_none_ok(cls, v):
+        return _coerce_none_to_empty_list(v)
+
+    @field_validator("mechanics", "overlay_instructions", mode="before")
+    @classmethod
+    def _nested_none_ok(cls, v):
+        return {} if v is None else v
+
 
 class AnalysisResponse(BaseModel):
     session_grade: str
-    strokes_detected: list[StrokeResult]
-    tactical_notes: list[str]
-    top_priority: str
-    overall_mechanics_score: float
-    session_summary: str
+    strokes_detected: list[StrokeResult] = []
+    tactical_notes: list[str] = []
+    top_priority: str = ""
+    # Empty/incomplete sessions legitimately have no overall score; LLMs
+    # return null in those cases. Treat as 0.0 rather than rejecting the
+    # entire response.
+    overall_mechanics_score: float = 0.0
+    session_summary: str = ""
+
+    @field_validator(
+        "strokes_detected", "tactical_notes", mode="before"
+    )
+    @classmethod
+    def _list_none_ok(cls, v):
+        return _coerce_none_to_empty_list(v)
+
+    @field_validator("overall_mechanics_score", mode="before")
+    @classmethod
+    def _score_none_ok(cls, v):
+        return 0.0 if v is None else v
+
+    @field_validator("top_priority", "session_summary", mode="before")
+    @classmethod
+    def _str_none_ok(cls, v):
+        return "" if v is None else v
 
 
 class ProgressResponse(BaseModel):
