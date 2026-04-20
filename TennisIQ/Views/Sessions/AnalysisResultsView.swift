@@ -293,6 +293,7 @@ struct AnalysisResultsView: View {
     @State private var showDrillPlan = false
     @State private var showShareCard = false
     @State private var activeSection: SectionJumpBar.SectionTab = .overview
+    @State private var showMoreDetails: Bool = false
     @EnvironmentObject var authService: AuthService
     @EnvironmentObject var subscriptionService: SubscriptionService
     @State private var showPaywall = false
@@ -336,7 +337,7 @@ struct AnalysisResultsView: View {
                     Task { await viewModel.triggerAnalysis(context: modelContext) }
                 }
             } else {
-                analysisContent
+                newspaperContent
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -659,6 +660,338 @@ struct AnalysisResultsView: View {
 
     private var heroVideoHeight: CGFloat {
         UIScreen.main.bounds.height * 0.40
+    }
+
+    // MARK: - Option C: Newspaper
+
+    private var newspaperPrimaryFix: NewspaperFix? {
+        let all: [NewspaperFix] = session.strokeAnalyses.flatMap { stroke -> [NewspaperFix] in
+            guard let breakdown = stroke.phaseBreakdown else { return [] }
+            return breakdown.allPhases.compactMap { phase, detail in
+                guard let d = detail, d.status != .inZone else { return nil }
+                return NewspaperFix(stroke: stroke, phase: phase, detail: d)
+            }
+        }
+        return all.sorted { $0.detail.score < $1.detail.score }.first
+    }
+
+    private var newspaperVideoHeight: CGFloat {
+        UIScreen.main.bounds.height * 0.42
+    }
+
+    private var newspaperContent: some View {
+        ScrollViewReader { scrollProxy in
+            ScrollView {
+                VStack(spacing: 0) {
+                    // 1. Full-bleed video at the top
+                    ZStack {
+                        LiveVideoPlayerSection(
+                            playback: playback,
+                            showOverlay: $showOverlay,
+                            showSwingPath: $showSwingPath,
+                            hasVideo: session.videoLocalURL != nil
+                        )
+
+                        if showSwingPath && !playback.racketTrajectory.isEmpty {
+                            SwingPathOverlayView(
+                                wristPoints: playback.racketTrajectory,
+                                videoNaturalSize: playback.videoNaturalSize
+                            )
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .allowsHitTesting(false)
+                        }
+
+                        if showOverlay && !playback.smoothedJoints.isEmpty {
+                            WireframeOverlayView(
+                                joints: playback.smoothedJoints,
+                                videoNaturalSize: playback.videoNaturalSize,
+                                highlightedJoints: highlightedJointNames,
+                                highlightAngles: selectedPhaseAngles
+                            )
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .allowsHitTesting(false)
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: newspaperVideoHeight)
+                    .background(theme.navBackground)
+                    .clipped()
+
+                    // 2. The headline block
+                    if let fix = newspaperPrimaryFix {
+                        NewspaperHeadlineCard(
+                            fix: fix,
+                            onReplay: {
+                                selectedStroke = fix.stroke
+                                selectedPhase = fix.phase
+                                playback.selectStroke(fix.stroke)
+                                playback.seekTo(timestamp: fix.detail.timestamp)
+                            }
+                        )
+                    } else {
+                        NewspaperNoIssuesCard(session: session)
+                    }
+
+                    // 3. Two prominent CTA buttons
+                    HStack(spacing: Spacing.sm) {
+                        NavigationLink(destination: DrillPlanView(session: session)) {
+                            HStack(spacing: Spacing.xs) {
+                                Image(systemName: "figure.tennis")
+                                    .font(.system(size: 15, weight: .semibold))
+                                Text("Drill")
+                                    .font(AppFont.body(size: 15, weight: .semibold))
+                            }
+                            .foregroundStyle(theme.textOnAccent)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(
+                                RoundedRectangle(cornerRadius: Radius.md)
+                                    .fill(theme.accent)
+                            )
+                        }
+                        .buttonStyle(.plain)
+
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.28)) {
+                                showMoreDetails.toggle()
+                            }
+                        } label: {
+                            HStack(spacing: Spacing.xs) {
+                                Text(showMoreDetails ? "Hide breakdown" : "See breakdown")
+                                    .font(AppFont.body(size: 15, weight: .semibold))
+                                Image(systemName: showMoreDetails ? "chevron.up" : "chevron.down")
+                                    .font(.system(size: 12, weight: .bold))
+                            }
+                            .foregroundStyle(theme.textPrimary)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(
+                                RoundedRectangle(cornerRadius: Radius.md)
+                                    .fill(theme.surfacePrimary)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: Radius.md)
+                                            .strokeBorder(theme.surfaceSecondary, lineWidth: 1)
+                                    )
+                            )
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .padding(.horizontal, Spacing.md)
+                    .padding(.top, Spacing.md)
+
+                    // 4. Disclosure: the full legacy detail stack
+                    if showMoreDetails {
+                        VStack(spacing: 0) {
+                            StrokeSelectorRow(
+                                strokes: session.strokeAnalyses,
+                                selectedStroke: $selectedStroke,
+                                onSelectStroke: { stroke in
+                                    selectedStroke = stroke
+                                    playback.selectStroke(stroke)
+                                }
+                            )
+
+                            if let stroke = selectedStroke, let breakdown = stroke.phaseBreakdown {
+                                PhaseTimelineStrip(
+                                    breakdown: breakdown,
+                                    selectedPhase: $selectedPhase,
+                                    onPhaseSelected: { phase in
+                                        if let detail = breakdown.detail(for: phase) {
+                                            playback.seekTo(timestamp: detail.timestamp)
+                                        }
+                                    },
+                                    videoURL: resolvedVideoURL,
+                                    poseFrames: session.poseFrames
+                                )
+                            }
+
+                            TacticalNotesCard(notes: session.tacticalNotes)
+                        }
+                        .padding(.top, Spacing.md)
+                        .transition(.opacity.combined(with: .move(edge: .top)))
+                    }
+
+                    Spacer().frame(height: Spacing.xl)
+                }
+                .frame(maxWidth: .infinity, alignment: .topLeading)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .onAppear {
+                if selectedStroke == nil, let fix = newspaperPrimaryFix {
+                    selectedStroke = fix.stroke
+                    selectedPhase = fix.phase
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Option C helpers (Newspaper)
+
+fileprivate struct NewspaperFix: Identifiable {
+    let stroke: StrokeAnalysisModel
+    let phase: SwingPhase
+    let detail: PhaseDetail
+
+    var id: String { "\(stroke.id)-\(phase.rawValue)" }
+
+    var headline: String {
+        if let cue = detail.improveCue, !cue.isEmpty { return cue }
+        switch phase {
+        case .readyPosition: return "Set your feet earlier."
+        case .unitTurn: return "Rotate your hips and shoulders more."
+        case .backswing: return "Loop the racket higher on the take-back."
+        case .forwardSwing: return "Accelerate through the swing."
+        case .contactPoint: return "Meet the ball further in front."
+        case .followThrough: return "Extend over your shoulder."
+        case .recovery: return "Get back to ready position faster."
+        }
+    }
+
+    var contextLine: String {
+        "\(stroke.strokeType.displayName) · \(phase.displayName)"
+    }
+}
+
+fileprivate struct NewspaperHeadlineCard: View {
+    let fix: NewspaperFix
+    let onReplay: () -> Void
+    private let theme = DesignSystem.current
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            // Kicker / section label (newspaper feel)
+            HStack(spacing: Spacing.xs) {
+                Rectangle()
+                    .fill(theme.error)
+                    .frame(width: 14, height: 2)
+                Text("TODAY'S FIX")
+                    .font(AppFont.body(size: 10, weight: .heavy))
+                    .foregroundStyle(theme.error)
+                    .tracking(2)
+            }
+
+            // Giant headline
+            Text(fix.headline)
+                .font(.system(size: 30, weight: .black, design: .serif))
+                .foregroundStyle(theme.textPrimary)
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
+
+            // Byline / subhead
+            HStack(spacing: Spacing.xs) {
+                Image(systemName: fix.stroke.strokeType.icon)
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(theme.textSecondary)
+                Text(fix.contextLine.uppercased())
+                    .font(AppFont.body(size: 11, weight: .semibold))
+                    .foregroundStyle(theme.textSecondary)
+                    .tracking(1.2)
+
+                Spacer()
+
+                Text("\(fix.detail.score)/10")
+                    .font(AppFont.mono(size: 12, weight: .bold))
+                    .foregroundStyle(scoreColor(fix.detail.score))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(
+                        RoundedRectangle(cornerRadius: Radius.sm)
+                            .fill(scoreColor(fix.detail.score).opacity(0.14))
+                    )
+            }
+
+            // Thin divider rule — newspaper style
+            Rectangle()
+                .fill(theme.surfaceSecondary)
+                .frame(height: 1)
+                .padding(.vertical, 4)
+
+            // Narrative body copy
+            Text(bodyCopy)
+                .font(.system(size: 16, weight: .regular, design: .serif))
+                .foregroundStyle(theme.textPrimary.opacity(0.92))
+                .lineSpacing(4)
+                .fixedSize(horizontal: false, vertical: true)
+
+            // Angles (if present) styled as a pull quote
+            if !fix.detail.keyAngles.isEmpty {
+                HStack(alignment: .top, spacing: Spacing.xs) {
+                    Rectangle()
+                        .fill(theme.accent)
+                        .frame(width: 2)
+                    Text(fix.detail.keyAngles.joined(separator: " · "))
+                        .font(AppFont.mono(size: 12, weight: .medium))
+                        .foregroundStyle(theme.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .padding(.leading, 2)
+            }
+
+            // Replay CTA
+            Button(action: onReplay) {
+                HStack(spacing: Spacing.xs) {
+                    Image(systemName: "play.circle.fill")
+                        .font(.system(size: 15))
+                    Text("Replay this moment")
+                        .font(AppFont.body(size: 14, weight: .semibold))
+                }
+                .foregroundStyle(theme.accent)
+                .padding(.top, 2)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, Spacing.md)
+        .padding(.vertical, Spacing.lg)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var bodyCopy: String {
+        let note = fix.detail.note.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !note.isEmpty { return note }
+        return "Your \(fix.stroke.strokeType.displayName.lowercased()) is losing points at the \(fix.phase.displayName.lowercased()). Dial this in first — the rest of the swing unlocks once it's clean."
+    }
+
+    private func scoreColor(_ score: Int) -> Color {
+        switch score {
+        case 8...10: return theme.success
+        case 5...7: return theme.accent
+        case 3...4: return theme.warning
+        default: return theme.error
+        }
+    }
+}
+
+fileprivate struct NewspaperNoIssuesCard: View {
+    let session: SessionModel
+    private let theme = DesignSystem.current
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            HStack(spacing: Spacing.xs) {
+                Rectangle()
+                    .fill(theme.success)
+                    .frame(width: 14, height: 2)
+                Text("CLEAN SESSION")
+                    .font(AppFont.body(size: 10, weight: .heavy))
+                    .foregroundStyle(theme.success)
+                    .tracking(2)
+            }
+
+            Text("No major fixes today — everything stayed in the zone.")
+                .font(.system(size: 26, weight: .black, design: .serif))
+                .foregroundStyle(theme.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Text("Your \(session.strokeAnalyses.count) strokes graded out without any phase falling outside acceptable ranges. Keep the rhythm going.")
+                .font(.system(size: 15, weight: .regular, design: .serif))
+                .foregroundStyle(theme.textSecondary)
+                .lineSpacing(3)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(.horizontal, Spacing.md)
+        .padding(.vertical, Spacing.lg)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
