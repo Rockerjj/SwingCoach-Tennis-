@@ -293,6 +293,8 @@ struct AnalysisResultsView: View {
     @State private var showDrillPlan = false
     @State private var showShareCard = false
     @State private var activeSection: SectionJumpBar.SectionTab = .overview
+    @State private var heroFixIndex: Int = 0
+    @State private var showMoreDetails: Bool = false
     @EnvironmentObject var authService: AuthService
     @EnvironmentObject var subscriptionService: SubscriptionService
     @State private var showPaywall = false
@@ -336,7 +338,7 @@ struct AnalysisResultsView: View {
                     Task { await viewModel.triggerAnalysis(context: modelContext) }
                 }
             } else {
-                analysisContent
+                heroFixContent
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -659,6 +661,394 @@ struct AnalysisResultsView: View {
 
     private var heroVideoHeight: CGFloat {
         UIScreen.main.bounds.height * 0.40
+    }
+
+    // MARK: - Option A: Hero Fix Redesign
+
+    /// Ranked list of fixes across all strokes (worst score first, up to 3).
+    fileprivate var allFixesRanked: [HeroFixItem] {
+        let all: [HeroFixItem] = session.strokeAnalyses.flatMap { stroke -> [HeroFixItem] in
+            guard let breakdown = stroke.phaseBreakdown else { return [] }
+            return breakdown.allPhases.compactMap { phase, detail in
+                guard let d = detail, d.status != .inZone else { return nil }
+                return HeroFixItem(stroke: stroke, phase: phase, detail: d)
+            }
+        }
+        return Array(all.sorted { $0.detail.score < $1.detail.score }.prefix(3))
+    }
+
+    private var currentHeroFix: HeroFixItem? {
+        let fixes = allFixesRanked
+        guard !fixes.isEmpty else { return nil }
+        let idx = max(0, min(heroFixIndex, fixes.count - 1))
+        return fixes[idx]
+    }
+
+    private var heroFixContent: some View {
+        ScrollView {
+            VStack(spacing: 0) {
+                // 1. Video player (same as original)
+                ZStack {
+                    LiveVideoPlayerSection(
+                        playback: playback,
+                        showOverlay: $showOverlay,
+                        showSwingPath: $showSwingPath,
+                        hasVideo: session.videoLocalURL != nil
+                    )
+
+                    if showSwingPath && !playback.racketTrajectory.isEmpty {
+                        SwingPathOverlayView(
+                            wristPoints: playback.racketTrajectory,
+                            videoNaturalSize: playback.videoNaturalSize
+                        )
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .allowsHitTesting(false)
+                    }
+
+                    if showOverlay && !playback.smoothedJoints.isEmpty {
+                        WireframeOverlayView(
+                            joints: playback.smoothedJoints,
+                            videoNaturalSize: playback.videoNaturalSize,
+                            highlightedJoints: highlightedJointNames,
+                            highlightAngles: selectedPhaseAngles
+                        )
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .allowsHitTesting(false)
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: heroVideoHeight)
+                .background(DesignSystem.current.navBackground)
+                .clipped()
+
+                // 2. Hero Fix Carousel (swipe between the 3 worst fixes)
+                if !allFixesRanked.isEmpty {
+                    HeroFixCarousel(
+                        fixes: allFixesRanked,
+                        currentIndex: $heroFixIndex,
+                        sessionGrade: session.overallGrade,
+                        onReplay: { fix in
+                            selectedStroke = fix.stroke
+                            selectedPhase = fix.phase
+                            playback.selectStroke(fix.stroke)
+                            playback.seekTo(timestamp: fix.detail.timestamp)
+                        }
+                    )
+                    .padding(.horizontal, Spacing.md)
+                    .padding(.top, Spacing.md)
+                    .onChange(of: heroFixIndex) { _, _ in
+                        if let fix = currentHeroFix {
+                            selectedStroke = fix.stroke
+                            selectedPhase = fix.phase
+                            playback.selectStroke(fix.stroke)
+                        }
+                    }
+                } else {
+                    HeroFixNoIssuesCard(sessionGrade: session.overallGrade)
+                        .padding(.horizontal, Spacing.md)
+                        .padding(.top, Spacing.md)
+                }
+
+                // 3. Practice Plan CTA (kept — quick path to drills)
+                NavigationLink(destination: DrillPlanView(session: session)) {
+                    HStack(spacing: Spacing.sm) {
+                        Image(systemName: "figure.tennis")
+                            .font(.system(size: 18))
+                            .foregroundStyle(theme.accent)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Open Practice Plan")
+                                .font(AppFont.body(size: 15, weight: .semibold))
+                                .foregroundStyle(theme.textPrimary)
+                            Text("Take today's drills to the court")
+                                .font(AppFont.body(size: 12))
+                                .foregroundStyle(theme.textSecondary)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(theme.textTertiary)
+                    }
+                    .padding(Spacing.md)
+                    .background(
+                        RoundedRectangle(cornerRadius: Radius.lg)
+                            .fill(theme.surfacePrimary)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: Radius.lg)
+                                    .strokeBorder(theme.accent.opacity(0.3), lineWidth: 1)
+                            )
+                    )
+                }
+                .buttonStyle(.plain)
+                .padding(.horizontal, Spacing.md)
+                .padding(.top, Spacing.md)
+
+                // 4. "See full breakdown" disclosure — everything else lives here
+                VStack(spacing: 0) {
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.25)) {
+                            showMoreDetails.toggle()
+                        }
+                    } label: {
+                        HStack(spacing: Spacing.xs) {
+                            Text(showMoreDetails ? "Hide full breakdown" : "See full breakdown")
+                                .font(AppFont.body(size: 13, weight: .semibold))
+                                .foregroundStyle(theme.textSecondary)
+                            Image(systemName: showMoreDetails ? "chevron.up" : "chevron.down")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundStyle(theme.textTertiary)
+                        }
+                        .padding(.vertical, Spacing.md)
+                    }
+                    .buttonStyle(.plain)
+
+                    if showMoreDetails {
+                        VStack(spacing: 0) {
+                            StrokeSelectorRow(
+                                strokes: session.strokeAnalyses,
+                                selectedStroke: $selectedStroke,
+                                onSelectStroke: { stroke in
+                                    selectedStroke = stroke
+                                    playback.selectStroke(stroke)
+                                }
+                            )
+
+                            CompactSessionSummaryCard(
+                                session: session,
+                                thingsToWorkOn: selectedStroke?.analysisCategories?.filter { $0.status != .inZone }.count ?? 0
+                            )
+
+                            if let stroke = selectedStroke, let breakdown = stroke.phaseBreakdown {
+                                PhaseTimelineStrip(
+                                    breakdown: breakdown,
+                                    selectedPhase: $selectedPhase,
+                                    onPhaseSelected: { phase in
+                                        if let detail = breakdown.detail(for: phase) {
+                                            playback.seekTo(timestamp: detail.timestamp)
+                                        }
+                                    },
+                                    videoURL: resolvedVideoURL,
+                                    poseFrames: session.poseFrames
+                                )
+                            }
+
+                            TacticalNotesCard(notes: session.tacticalNotes)
+                        }
+                    }
+                }
+                .frame(maxWidth: .infinity)
+
+                Spacer().frame(height: Spacing.xl)
+            }
+            .frame(maxWidth: .infinity, alignment: .topLeading)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .onAppear {
+            if selectedStroke == nil, let fix = allFixesRanked.first {
+                selectedStroke = fix.stroke
+                selectedPhase = fix.phase
+                playback.selectStroke(fix.stroke)
+            }
+        }
+    }
+}
+
+// MARK: - Option A Hero Fix helpers
+
+fileprivate struct HeroFixItem: Identifiable {
+    let stroke: StrokeAnalysisModel
+    let phase: SwingPhase
+    let detail: PhaseDetail
+    var id: String { "\(stroke.id)_\(phase.rawValue)" }
+}
+
+fileprivate struct HeroFixCarousel: View {
+    let fixes: [HeroFixItem]
+    @Binding var currentIndex: Int
+    let sessionGrade: String?
+    let onReplay: (HeroFixItem) -> Void
+    private let theme = DesignSystem.current
+
+    var body: some View {
+        VStack(spacing: Spacing.sm) {
+            // Swipeable card
+            TabView(selection: $currentIndex) {
+                ForEach(Array(fixes.enumerated()), id: \.offset) { idx, fix in
+                    HeroFixCard(
+                        index: idx + 1,
+                        total: fixes.count,
+                        fix: fix,
+                        sessionGrade: sessionGrade,
+                        onReplay: { onReplay(fix) }
+                    )
+                    .tag(idx)
+                    .padding(.horizontal, 2)
+                }
+            }
+            .tabViewStyle(.page(indexDisplayMode: .never))
+            .frame(height: 310)
+
+            // Page dots
+            HStack(spacing: 6) {
+                ForEach(0..<fixes.count, id: \.self) { idx in
+                    Circle()
+                        .fill(idx == currentIndex ? theme.textPrimary : theme.textTertiary.opacity(0.4))
+                        .frame(width: 6, height: 6)
+                }
+            }
+        }
+    }
+}
+
+fileprivate struct HeroFixCard: View {
+    let index: Int
+    let total: Int
+    let fix: HeroFixItem
+    let sessionGrade: String?
+    let onReplay: () -> Void
+    private let theme = DesignSystem.current
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            // Top chip row
+            HStack(spacing: Spacing.xs) {
+                Text("FIX \(index)")
+                    .font(AppFont.body(size: 10, weight: .bold))
+                    .tracking(1.2)
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Capsule().fill(scoreColor(fix.detail.score)))
+
+                Text("\(fix.stroke.strokeType.displayName.uppercased()) · \(fix.phase.displayName.uppercased())")
+                    .font(AppFont.body(size: 10, weight: .bold))
+                    .tracking(1)
+                    .foregroundStyle(theme.textSecondary)
+
+                Spacer()
+
+                Text("\(fix.detail.score)/10")
+                    .font(AppFont.mono(size: 11, weight: .bold))
+                    .foregroundStyle(scoreColor(fix.detail.score))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Capsule().fill(scoreColor(fix.detail.score).opacity(0.15)))
+            }
+
+            // Big coaching headline
+            Text(primaryCue)
+                .font(AppFont.body(size: 22, weight: .bold))
+                .foregroundStyle(theme.textPrimary)
+                .lineLimit(3)
+                .fixedSize(horizontal: false, vertical: true)
+
+            // Angle context if available
+            if !angleLine.isEmpty {
+                Text(angleLine)
+                    .font(AppFont.body(size: 14))
+                    .foregroundStyle(theme.textSecondary)
+                    .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Spacer(minLength: 0)
+
+            // CTA
+            Button(action: onReplay) {
+                HStack(spacing: Spacing.xs) {
+                    Image(systemName: "play.fill")
+                        .font(.system(size: 13, weight: .bold))
+                    Text("Replay this moment")
+                        .font(AppFont.body(size: 14, weight: .semibold))
+                }
+                .foregroundStyle(theme.textOnAccent)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, Spacing.sm)
+                .background(Capsule().fill(theme.accent))
+            }
+            .buttonStyle(.plain)
+
+            // Footer: pagination + session grade
+            HStack {
+                Text("\(index) of \(total)")
+                    .font(AppFont.body(size: 11, weight: .medium))
+                    .foregroundStyle(theme.textTertiary)
+                Spacer()
+                if let g = sessionGrade {
+                    Text("Session · \(g)")
+                        .font(AppFont.body(size: 11, weight: .medium))
+                        .foregroundStyle(theme.textTertiary)
+                }
+            }
+        }
+        .padding(Spacing.md)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .background(
+            RoundedRectangle(cornerRadius: Radius.lg)
+                .fill(theme.surfacePrimary)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: Radius.lg)
+                .stroke(theme.surfaceSecondary, lineWidth: 1)
+        )
+    }
+
+    private var primaryCue: String {
+        if let cue = fix.detail.improveCue, !cue.isEmpty { return cue }
+        switch fix.phase {
+        case .readyPosition: return "Set your feet earlier"
+        case .unitTurn: return "Rotate your hips and shoulders more"
+        case .backswing: return "Loop the racket higher on take-back"
+        case .forwardSwing: return "Accelerate through the swing"
+        case .contactPoint: return "Meet the ball further in front"
+        case .followThrough: return "Extend over your shoulder"
+        case .recovery: return "Get back to ready position faster"
+        }
+    }
+
+    private var angleLine: String {
+        let angles = fix.detail.keyAngles.prefix(2).joined(separator: "  ·  ")
+        return angles
+    }
+
+    private func scoreColor(_ score: Int) -> Color {
+        switch score {
+        case 8...10: return theme.success
+        case 5...7: return theme.accent
+        case 3...4: return theme.warning
+        default: return theme.error
+        }
+    }
+}
+
+fileprivate struct HeroFixNoIssuesCard: View {
+    let sessionGrade: String?
+    private let theme = DesignSystem.current
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            HStack(spacing: Spacing.xs) {
+                Image(systemName: "checkmark.seal.fill")
+                    .foregroundStyle(theme.success)
+                Text("NO PRIORITY FIXES")
+                    .font(AppFont.body(size: 10, weight: .bold))
+                    .tracking(1.2)
+                    .foregroundStyle(theme.textSecondary)
+            }
+            Text("Every phase was in-zone on this session.")
+                .font(AppFont.body(size: 18, weight: .bold))
+                .foregroundStyle(theme.textPrimary)
+            if let g = sessionGrade {
+                Text("Session grade · \(g)")
+                    .font(AppFont.body(size: 13))
+                    .foregroundStyle(theme.textSecondary)
+            }
+        }
+        .padding(Spacing.md)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: Radius.lg)
+                .fill(theme.surfacePrimary)
+        )
     }
 }
 
