@@ -293,6 +293,8 @@ struct AnalysisResultsView: View {
     @State private var showDrillPlan = false
     @State private var showShareCard = false
     @State private var activeSection: SectionJumpBar.SectionTab = .overview
+    @State private var promotedFixIndex: Int = 0
+    @State private var showMoreDetails: Bool = false
     @EnvironmentObject var authService: AuthService
     @EnvironmentObject var subscriptionService: SubscriptionService
     @State private var showPaywall = false
@@ -336,7 +338,7 @@ struct AnalysisResultsView: View {
                     Task { await viewModel.triggerAnalysis(context: modelContext) }
                 }
             } else {
-                analysisContent
+                coachStackContent
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -659,6 +661,470 @@ struct AnalysisResultsView: View {
 
     private var heroVideoHeight: CGFloat {
         UIScreen.main.bounds.height * 0.40
+    }
+
+    // MARK: - Option B: Coach's Card Stack Redesign
+
+    fileprivate var coachStackFixes: [CoachStackFix] {
+        let all: [CoachStackFix] = session.strokeAnalyses.flatMap { stroke -> [CoachStackFix] in
+            guard let breakdown = stroke.phaseBreakdown else { return [] }
+            return breakdown.allPhases.compactMap { phase, detail in
+                guard let d = detail, d.status != .inZone else { return nil }
+                return CoachStackFix(stroke: stroke, phase: phase, detail: d)
+            }
+        }
+        return Array(all.sorted { $0.detail.score < $1.detail.score }.prefix(3))
+    }
+
+    private var promotedFix: CoachStackFix? {
+        let fixes = coachStackFixes
+        guard !fixes.isEmpty else { return nil }
+        let idx = max(0, min(promotedFixIndex, fixes.count - 1))
+        return fixes[idx]
+    }
+
+    private var strokeGradeSummaries: [(StrokeType, String)] {
+        var seen: [StrokeType: String] = [:]
+        for stroke in session.strokeAnalyses {
+            if seen[stroke.strokeType] == nil {
+                seen[stroke.strokeType] = stroke.grade
+            }
+        }
+        return StrokeType.allCases.compactMap { type in
+            guard let grade = seen[type] else { return nil }
+            return (type, grade)
+        }
+    }
+
+    private var coachStackContent: some View {
+        ScrollView {
+            VStack(spacing: 0) {
+                // 1. Video
+                ZStack {
+                    LiveVideoPlayerSection(
+                        playback: playback,
+                        showOverlay: $showOverlay,
+                        showSwingPath: $showSwingPath,
+                        hasVideo: session.videoLocalURL != nil
+                    )
+                    if showSwingPath && !playback.racketTrajectory.isEmpty {
+                        SwingPathOverlayView(
+                            wristPoints: playback.racketTrajectory,
+                            videoNaturalSize: playback.videoNaturalSize
+                        )
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .allowsHitTesting(false)
+                    }
+                    if showOverlay && !playback.smoothedJoints.isEmpty {
+                        WireframeOverlayView(
+                            joints: playback.smoothedJoints,
+                            videoNaturalSize: playback.videoNaturalSize,
+                            highlightedJoints: highlightedJointNames,
+                            highlightAngles: selectedPhaseAngles
+                        )
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .allowsHitTesting(false)
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: heroVideoHeight)
+                .background(DesignSystem.current.navBackground)
+                .clipped()
+
+                if coachStackFixes.isEmpty {
+                    CoachStackNoIssuesCard(sessionGrade: session.overallGrade)
+                        .padding(.horizontal, Spacing.md)
+                        .padding(.top, Spacing.md)
+                } else {
+                    // 2. TODAY'S TOP FIX hero card
+                    if let promoted = promotedFix {
+                        CoachStackHeroCard(
+                            fix: promoted,
+                            onReplay: {
+                                selectedStroke = promoted.stroke
+                                selectedPhase = promoted.phase
+                                playback.selectStroke(promoted.stroke)
+                                playback.seekTo(timestamp: promoted.detail.timestamp)
+                            }
+                        )
+                        .padding(.horizontal, Spacing.md)
+                        .padding(.top, Spacing.md)
+                    }
+
+                    // 3. UP NEXT rows (the other 2 fixes)
+                    if coachStackFixes.count > 1 {
+                        VStack(alignment: .leading, spacing: Spacing.xs) {
+                            Text("UP NEXT")
+                                .font(AppFont.body(size: 10, weight: .bold))
+                                .tracking(1.2)
+                                .foregroundStyle(theme.textSecondary)
+                                .padding(.horizontal, Spacing.md)
+                                .padding(.top, Spacing.md)
+
+                            ForEach(Array(coachStackFixes.enumerated()), id: \.offset) { idx, fix in
+                                if idx != promotedFixIndex {
+                                    CoachStackUpNextRow(
+                                        index: idx + 1,
+                                        fix: fix,
+                                        onPromote: {
+                                            withAnimation(.easeInOut(duration: 0.2)) {
+                                                promotedFixIndex = idx
+                                            }
+                                            selectedStroke = fix.stroke
+                                            selectedPhase = fix.phase
+                                            playback.selectStroke(fix.stroke)
+                                        }
+                                    )
+                                    .padding(.horizontal, Spacing.md)
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // 4. Session + stroke grade strip
+                CoachStackGradeStrip(
+                    sessionGrade: session.overallGrade,
+                    strokes: strokeGradeSummaries
+                )
+                .padding(.horizontal, Spacing.md)
+                .padding(.top, Spacing.md)
+
+                // 5. Practice Plan CTA
+                NavigationLink(destination: DrillPlanView(session: session)) {
+                    HStack(spacing: Spacing.sm) {
+                        Image(systemName: "figure.tennis")
+                            .font(.system(size: 18))
+                            .foregroundStyle(theme.accent)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Open Practice Plan")
+                                .font(AppFont.body(size: 15, weight: .semibold))
+                                .foregroundStyle(theme.textPrimary)
+                            Text("Take today's drills to the court")
+                                .font(AppFont.body(size: 12))
+                                .foregroundStyle(theme.textSecondary)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(theme.textTertiary)
+                    }
+                    .padding(Spacing.md)
+                    .background(
+                        RoundedRectangle(cornerRadius: Radius.lg)
+                            .fill(theme.surfacePrimary)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: Radius.lg)
+                                    .strokeBorder(theme.accent.opacity(0.3), lineWidth: 1)
+                            )
+                    )
+                }
+                .buttonStyle(.plain)
+                .padding(.horizontal, Spacing.md)
+                .padding(.top, Spacing.md)
+
+                // 6. Phase Breakdown + notes — always visible but compact
+                VStack(spacing: 0) {
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.25)) {
+                            showMoreDetails.toggle()
+                        }
+                    } label: {
+                        HStack(spacing: Spacing.xs) {
+                            Text(showMoreDetails ? "Hide phase breakdown" : "Show phase breakdown")
+                                .font(AppFont.body(size: 13, weight: .semibold))
+                                .foregroundStyle(theme.textSecondary)
+                            Image(systemName: showMoreDetails ? "chevron.up" : "chevron.down")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundStyle(theme.textTertiary)
+                        }
+                        .padding(.vertical, Spacing.md)
+                    }
+                    .buttonStyle(.plain)
+
+                    if showMoreDetails {
+                        if let stroke = selectedStroke, let breakdown = stroke.phaseBreakdown {
+                            PhaseTimelineStrip(
+                                breakdown: breakdown,
+                                selectedPhase: $selectedPhase,
+                                onPhaseSelected: { phase in
+                                    if let detail = breakdown.detail(for: phase) {
+                                        playback.seekTo(timestamp: detail.timestamp)
+                                    }
+                                },
+                                videoURL: resolvedVideoURL,
+                                poseFrames: session.poseFrames
+                            )
+                        }
+                        TacticalNotesCard(notes: session.tacticalNotes)
+                    }
+                }
+                .frame(maxWidth: .infinity)
+
+                Spacer().frame(height: Spacing.xl)
+            }
+            .frame(maxWidth: .infinity, alignment: .topLeading)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .onAppear {
+            if selectedStroke == nil, let first = coachStackFixes.first {
+                selectedStroke = first.stroke
+                selectedPhase = first.phase
+                playback.selectStroke(first.stroke)
+            }
+        }
+    }
+}
+
+// MARK: - Option B Coach Stack helpers
+
+fileprivate struct CoachStackFix: Identifiable {
+    let stroke: StrokeAnalysisModel
+    let phase: SwingPhase
+    let detail: PhaseDetail
+    var id: String { "\(stroke.id)_\(phase.rawValue)" }
+}
+
+fileprivate struct CoachStackHeroCard: View {
+    let fix: CoachStackFix
+    let onReplay: () -> Void
+    private let theme = DesignSystem.current
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            HStack(spacing: Spacing.xs) {
+                Text("TODAY'S TOP FIX")
+                    .font(AppFont.body(size: 10, weight: .bold))
+                    .tracking(1.2)
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Capsule().fill(theme.error))
+
+                Text("\(fix.stroke.strokeType.displayName.uppercased()) · \(fix.phase.displayName.uppercased())")
+                    .font(AppFont.body(size: 10, weight: .bold))
+                    .tracking(1)
+                    .foregroundStyle(theme.textSecondary)
+
+                Spacer()
+
+                Text("\(fix.detail.score)/10")
+                    .font(AppFont.mono(size: 11, weight: .bold))
+                    .foregroundStyle(scoreColor(fix.detail.score))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Capsule().fill(scoreColor(fix.detail.score).opacity(0.15)))
+            }
+
+            Text(primaryCue)
+                .font(AppFont.body(size: 22, weight: .bold))
+                .foregroundStyle(theme.textPrimary)
+                .lineLimit(3)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.top, Spacing.xxs)
+
+            if !angleLine.isEmpty {
+                Text(angleLine)
+                    .font(AppFont.body(size: 13))
+                    .foregroundStyle(theme.textSecondary)
+                    .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Button(action: onReplay) {
+                HStack(spacing: Spacing.xs) {
+                    Image(systemName: "play.fill")
+                        .font(.system(size: 13, weight: .bold))
+                    Text("Replay this moment")
+                        .font(AppFont.body(size: 14, weight: .semibold))
+                }
+                .foregroundStyle(theme.textOnAccent)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, Spacing.sm)
+                .background(Capsule().fill(theme.accent))
+            }
+            .buttonStyle(.plain)
+            .padding(.top, Spacing.xs)
+        }
+        .padding(Spacing.md)
+        .frame(maxWidth: .infinity, alignment: .topLeading)
+        .background(
+            RoundedRectangle(cornerRadius: Radius.lg)
+                .fill(theme.surfacePrimary)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: Radius.lg)
+                .stroke(theme.error.opacity(0.4), lineWidth: 1)
+        )
+    }
+
+    private var primaryCue: String {
+        if let cue = fix.detail.improveCue, !cue.isEmpty { return cue }
+        switch fix.phase {
+        case .readyPosition: return "Set your feet earlier"
+        case .unitTurn: return "Rotate your hips and shoulders more"
+        case .backswing: return "Loop the racket higher on take-back"
+        case .forwardSwing: return "Accelerate through the swing"
+        case .contactPoint: return "Meet the ball further in front"
+        case .followThrough: return "Extend over your shoulder"
+        case .recovery: return "Get back to ready position faster"
+        }
+    }
+
+    private var angleLine: String {
+        fix.detail.keyAngles.prefix(2).joined(separator: "  ·  ")
+    }
+
+    private func scoreColor(_ score: Int) -> Color {
+        switch score {
+        case 8...10: return theme.success
+        case 5...7: return theme.accent
+        case 3...4: return theme.warning
+        default: return theme.error
+        }
+    }
+}
+
+fileprivate struct CoachStackUpNextRow: View {
+    let index: Int
+    let fix: CoachStackFix
+    let onPromote: () -> Void
+    private let theme = DesignSystem.current
+
+    var body: some View {
+        Button(action: onPromote) {
+            HStack(spacing: Spacing.sm) {
+                Text("\(index)")
+                    .font(AppFont.body(size: 13, weight: .bold))
+                    .foregroundStyle(theme.textOnAccent)
+                    .frame(width: 22, height: 22)
+                    .background(Circle().fill(scoreColor(fix.detail.score)))
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(primaryCue)
+                        .font(AppFont.body(size: 14, weight: .semibold))
+                        .foregroundStyle(theme.textPrimary)
+                        .lineLimit(2)
+                    Text("\(fix.stroke.strokeType.displayName) · \(fix.phase.displayName)")
+                        .font(AppFont.body(size: 11))
+                        .foregroundStyle(theme.textTertiary)
+                }
+
+                Spacer()
+
+                Text("\(fix.detail.score)/10")
+                    .font(AppFont.mono(size: 11, weight: .bold))
+                    .foregroundStyle(scoreColor(fix.detail.score))
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(theme.textTertiary)
+            }
+            .padding(Spacing.sm)
+            .frame(maxWidth: .infinity)
+            .background(
+                RoundedRectangle(cornerRadius: Radius.md)
+                    .fill(theme.surfacePrimary)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: Radius.md)
+                    .stroke(theme.surfaceSecondary, lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var primaryCue: String {
+        if let cue = fix.detail.improveCue, !cue.isEmpty { return cue }
+        switch fix.phase {
+        case .readyPosition: return "Set your feet earlier"
+        case .unitTurn: return "Rotate more"
+        case .backswing: return "Loop racket higher"
+        case .forwardSwing: return "Accelerate through"
+        case .contactPoint: return "Meet ball further forward"
+        case .followThrough: return "Extend over shoulder"
+        case .recovery: return "Recover faster"
+        }
+    }
+
+    private func scoreColor(_ score: Int) -> Color {
+        switch score {
+        case 8...10: return theme.success
+        case 5...7: return theme.accent
+        case 3...4: return theme.warning
+        default: return theme.error
+        }
+    }
+}
+
+fileprivate struct CoachStackGradeStrip: View {
+    let sessionGrade: String?
+    let strokes: [(StrokeType, String)]
+    private let theme = DesignSystem.current
+
+    var body: some View {
+        HStack(spacing: Spacing.xs) {
+            if let g = sessionGrade {
+                HStack(spacing: Spacing.xxs) {
+                    Text("SESSION")
+                        .font(AppFont.body(size: 9, weight: .bold))
+                        .tracking(1)
+                        .foregroundStyle(theme.textTertiary)
+                    Text(g)
+                        .font(AppFont.body(size: 13, weight: .bold))
+                        .foregroundStyle(theme.textPrimary)
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(Capsule().fill(theme.surfacePrimary))
+            }
+            ForEach(Array(strokes.enumerated()), id: \.offset) { _, entry in
+                HStack(spacing: Spacing.xxs) {
+                    Image(systemName: entry.0.icon)
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(theme.textSecondary)
+                    Text(entry.1)
+                        .font(AppFont.body(size: 12, weight: .bold))
+                        .foregroundStyle(theme.textPrimary)
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(Capsule().fill(theme.surfacePrimary))
+            }
+            Spacer(minLength: 0)
+        }
+    }
+}
+
+fileprivate struct CoachStackNoIssuesCard: View {
+    let sessionGrade: String?
+    private let theme = DesignSystem.current
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            HStack(spacing: Spacing.xs) {
+                Image(systemName: "checkmark.seal.fill")
+                    .foregroundStyle(theme.success)
+                Text("NO PRIORITY FIXES")
+                    .font(AppFont.body(size: 10, weight: .bold))
+                    .tracking(1.2)
+                    .foregroundStyle(theme.textSecondary)
+            }
+            Text("Every phase was in-zone on this session.")
+                .font(AppFont.body(size: 18, weight: .bold))
+                .foregroundStyle(theme.textPrimary)
+            if let g = sessionGrade {
+                Text("Session grade · \(g)")
+                    .font(AppFont.body(size: 13))
+                    .foregroundStyle(theme.textSecondary)
+            }
+        }
+        .padding(Spacing.md)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: Radius.lg)
+                .fill(theme.surfacePrimary)
+        )
     }
 }
 
