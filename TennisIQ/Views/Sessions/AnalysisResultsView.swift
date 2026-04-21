@@ -749,40 +749,7 @@ struct AnalysisResultsView: View {
                         .padding(.top, Spacing.md)
                 }
 
-                // 3. Practice Plan CTA (kept — quick path to drills)
-                NavigationLink(destination: DrillPlanView(session: session)) {
-                    HStack(spacing: Spacing.sm) {
-                        Image(systemName: "figure.tennis")
-                            .font(.system(size: 18))
-                            .foregroundStyle(theme.accent)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Open Practice Plan")
-                                .font(AppFont.body(size: 15, weight: .semibold))
-                                .foregroundStyle(theme.textPrimary)
-                            Text("Take today's drills to the court")
-                                .font(AppFont.body(size: 12))
-                                .foregroundStyle(theme.textSecondary)
-                        }
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundStyle(theme.textTertiary)
-                    }
-                    .padding(Spacing.md)
-                    .background(
-                        RoundedRectangle(cornerRadius: Radius.lg)
-                            .fill(theme.surfacePrimary)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: Radius.lg)
-                                    .strokeBorder(theme.accent.opacity(0.3), lineWidth: 1)
-                            )
-                    )
-                }
-                .buttonStyle(.plain)
-                .padding(.horizontal, Spacing.md)
-                .padding(.top, Spacing.md)
-
-                // 4. "See full breakdown" disclosure — everything else lives here
+                // 3. "See full breakdown" disclosure — placed above the CTA so it's reachable
                 VStack(spacing: 0) {
                     Button {
                         withAnimation(.easeInOut(duration: 0.25)) {
@@ -836,6 +803,40 @@ struct AnalysisResultsView: View {
                     }
                 }
                 .frame(maxWidth: .infinity)
+                .padding(.top, Spacing.md)
+
+                // 4. Practice Plan CTA (moved below the disclosure so breakdown is easier to reach)
+                NavigationLink(destination: DrillPlanView(session: session)) {
+                    HStack(spacing: Spacing.sm) {
+                        Image(systemName: "figure.tennis")
+                            .font(.system(size: 18))
+                            .foregroundStyle(theme.accent)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Open Practice Plan")
+                                .font(AppFont.body(size: 15, weight: .semibold))
+                                .foregroundStyle(theme.textPrimary)
+                            Text("Take today's drills to the court")
+                                .font(AppFont.body(size: 12))
+                                .foregroundStyle(theme.textSecondary)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(theme.textTertiary)
+                    }
+                    .padding(Spacing.md)
+                    .background(
+                        RoundedRectangle(cornerRadius: Radius.lg)
+                            .fill(theme.surfacePrimary)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: Radius.lg)
+                                    .strokeBorder(theme.accent.opacity(0.3), lineWidth: 1)
+                            )
+                    )
+                }
+                .buttonStyle(.plain)
+                .padding(.horizontal, Spacing.md)
+                .padding(.top, Spacing.md)
 
                 Spacer().frame(height: Spacing.xl)
             }
@@ -885,7 +886,7 @@ fileprivate struct HeroFixCarousel: View {
                 }
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
-            .frame(height: 310)
+            .frame(height: 420)
 
             // Page dots
             HStack(spacing: 6) {
@@ -941,12 +942,14 @@ fileprivate struct HeroFixCard: View {
                 .lineLimit(3)
                 .fixedSize(horizontal: false, vertical: true)
 
-            // Angle context if available
-            if !angleLine.isEmpty {
-                Text(angleLine)
-                    .font(AppFont.body(size: 14))
-                    .foregroundStyle(theme.textSecondary)
-                    .lineLimit(2)
+            // Explanatory paragraph from the coaching output
+            let note = fix.detail.note.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !note.isEmpty {
+                Text(note)
+                    .font(AppFont.body(size: 15))
+                    .foregroundStyle(theme.textSecondary.opacity(0.9))
+                    .lineLimit(nil)
+                    .lineSpacing(2)
                     .fixedSize(horizontal: false, vertical: true)
             }
 
@@ -1005,10 +1008,6 @@ fileprivate struct HeroFixCard: View {
         }
     }
 
-    private var angleLine: String {
-        let angles = fix.detail.keyAngles.prefix(2).joined(separator: "  ·  ")
-        return angles
-    }
 
     private func scoreColor(_ score: Int) -> Color {
         switch score {
