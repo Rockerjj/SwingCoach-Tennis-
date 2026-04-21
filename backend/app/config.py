@@ -21,12 +21,14 @@ class Settings(BaseSettings):
     anthropic_opus_model: str = "claude-opus-4-7"
     anthropic_sonnet_model: str = "claude-sonnet-4-6"
 
-    # Active provider for /sessions/analyze. "auto" preserves the legacy
-    # use_gemini-then-OpenAI fallback so existing prod behavior is unchanged
-    # until we explicitly opt in to a provider.
+    # Active provider for /sessions/analyze. Default is Claude Opus 4.7 based
+    # on the eval-v1 results (see backend/test-data/eval-runs/eval-v1/winner.md):
+    # Opus had the best coaching specificity, source discipline, and was the
+    # only provider that consistently returned complete session-level fields.
+    # "auto" falls back to the legacy Gemini-then-OpenAI behavior.
     coaching_provider: Literal[
         "auto", "gemini", "claude_opus", "claude_sonnet", "openai"
-    ] = "auto"
+    ] = "claude_opus"
 
     # Supabase
     supabase_url: str = ""
