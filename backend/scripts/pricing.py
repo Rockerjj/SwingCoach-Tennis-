@@ -30,13 +30,13 @@ PRICING: dict[str, tuple[float, float]] = {
 }
 
 
-def estimate_cost_cents(model: str, input_tokens: int, output_tokens: int) -> int:
-    """Return estimated cost in integer cents for a single call."""
+def estimate_cost_cents(model: str, input_tokens: int, output_tokens: int) -> float:
+    """Return estimated cost in cents (4-decimal precision) for a single call."""
     if model not in PRICING:
-        return 0
+        return 0.0
     in_rate, out_rate = PRICING[model]
     dollars = (input_tokens / 1_000_000) * in_rate + (output_tokens / 1_000_000) * out_rate
-    return round(dollars * 100)
+    return round(dollars * 100, 4)
 
 
 def lookup(model: str) -> tuple[float, float] | None:

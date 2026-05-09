@@ -14,6 +14,7 @@ from app.services.llm_coaching import LLMCoachingService
 from app.services.gemini_coaching import GeminiCoachingService
 from app.services.claude_coaching import ClaudeCoachingService
 from app.services.progress_calculator import ProgressCalculator
+from app.services.stroke_relabeler import relabel_session
 from app.config import get_settings
 from app.routes.deps import get_supabase, get_current_user_id
 
@@ -149,6 +150,14 @@ async def analyze_session(
     provider_used = "unknown"
     model_used = "unknown"
     coaching = None
+
+    # Overwrite iOS stroke labels with MediaPipe + Gemini before the coaching LLM runs.
+    # iOS heuristic is 62% accurate on stroke type; the relabeler hits 100% on confident
+    # calls per the v5 bake-off. No-op when settings.relabel_strokes is False.
+    try:
+        pose_payload = await relabel_session(pose_payload, video_clips)
+    except Exception as e:
+        logger.warning(f"Relabel failed; falling back to iOS labels: {e}")
 
     try:
         provider = settings.coaching_provider

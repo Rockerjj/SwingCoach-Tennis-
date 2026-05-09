@@ -13,7 +13,7 @@ class Settings(BaseSettings):
 
     # Gemini (primary)
     gemini_api_key: str = ""
-    gemini_model: str = "gemini-2.5-pro-preview-05-06"
+    gemini_model: str = "gemini-3-flash-preview"
     use_gemini: bool = True
 
     # Anthropic (eval candidate)
@@ -49,6 +49,12 @@ class Settings(BaseSettings):
     # comparison harness. NEVER turn this on in production.
     debug_capture_payloads: bool = False
     payload_capture_dir: str = "test-data/sessions"
+
+    # Stroke relabeler: when true, /sessions/analyze runs MediaPipe + Gemini on
+    # each stroke clip and overwrites the iOS-provided stroke type and phase
+    # timestamps before the coaching LLM runs. Keep this opt-in until the frozen
+    # eval set proves accuracy, coverage, and latency for the current model.
+    relabel_strokes: bool = False
 
     class Config:
         env_file = ".env"
