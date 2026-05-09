@@ -76,7 +76,7 @@ final class CameraService: NSObject, ObservableObject {
     private func configureAudioSession() {
         let audioSession = AVAudioSession.sharedInstance()
         do {
-            try audioSession.setCategory(.playAndRecord, mode: .videoRecording, options: [.defaultToSpeaker, .allowBluetooth])
+            try audioSession.setCategory(.playAndRecord, mode: .videoRecording, options: [.defaultToSpeaker, .allowBluetoothHFP])
             try audioSession.setActive(true)
         } catch {
             print("Audio session configuration failed: \(error)")

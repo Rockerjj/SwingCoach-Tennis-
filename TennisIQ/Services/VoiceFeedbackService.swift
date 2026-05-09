@@ -65,7 +65,7 @@ final class VoiceFeedbackService: NSObject, ObservableObject {
             try audioSession.setCategory(
                 .playAndRecord,
                 mode: .videoRecording,
-                options: [.defaultToSpeaker, .allowBluetooth, .duckOthers]
+                options: [.defaultToSpeaker, .allowBluetoothHFP, .duckOthers]
             )
             try audioSession.setActive(true)
         } catch {
@@ -99,15 +99,15 @@ final class VoiceFeedbackService: NSObject, ObservableObject {
     }
 }
 
-extension VoiceFeedbackService: AVSpeechSynthesizerDelegate {
-    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
-        DispatchQueue.main.async { [weak self] in
+extension VoiceFeedbackService: @preconcurrency AVSpeechSynthesizerDelegate {
+    nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
+        Task { @MainActor [weak self] in
             self?.handleDidFinish()
         }
     }
 
-    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didCancel utterance: AVSpeechUtterance) {
-        DispatchQueue.main.async { [weak self] in
+    nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didCancel utterance: AVSpeechUtterance) {
+        Task { @MainActor [weak self] in
             self?.isSpeaking = false
         }
     }
@@ -119,10 +119,11 @@ extension VoiceFeedbackService: AVSpeechSynthesizerDelegate {
 
     private func startCooldown() {
         cooldownTask?.cancel()
-        cooldownTask = Task {
-            try? await Task.sleep(nanoseconds: UInt64(cooldownInterval * 1_000_000_000))
+        let interval = cooldownInterval
+        cooldownTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(nanoseconds: UInt64(interval * 1_000_000_000))
             guard !Task.isCancelled else { return }
-            await processQueue()
+            self?.processQueue()
         }
     }
 

@@ -8,6 +8,13 @@ final class FeedbackService {
     func submitFeedback(userID: String?, rating: Int, comment: String) async {
         guard let url = URL(string: "\(AppConstants.API.baseURL)/feedback") else { return }
 
+        let deviceInfo = await MainActor.run {
+            (
+                model: UIDevice.current.model,
+                systemVersion: UIDevice.current.systemVersion
+            )
+        }
+
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -17,8 +24,8 @@ final class FeedbackService {
             "rating": rating,
             "comment": comment,
             "app_version": Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0",
-            "device_model": UIDevice.current.model,
-            "ios_version": UIDevice.current.systemVersion,
+            "device_model": deviceInfo.model,
+            "ios_version": deviceInfo.systemVersion,
             "timestamp": ISO8601DateFormatter().string(from: Date())
         ]
 

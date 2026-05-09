@@ -152,10 +152,7 @@ final class AuthService: ObservableObject {
     private func retrySupabaseExchange() async {
         guard NetworkMonitor.shared.isConnected else { return }
         guard let appleToken = keychain.read(key: "apple_id_token"),
-              let appleUserID = keychain.read(key: "apple_user_id"),
               !appleToken.isEmpty else { return }
-
-        let name = keychain.read(key: "display_name") ?? ""
 
         do {
             let session = try await supabaseClient.auth.signInWithIdToken(

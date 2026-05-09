@@ -1,16 +1,55 @@
 import Foundation
-import Vision
 import AVFoundation
 import UIKit
 import Combine
 
-/// Processes video frames through Apple Vision to extract body pose data
+/// Processes video frames through a pluggable `PoseEngine` to extract body pose data.
+/// Defaults to MediaPipe (33 BlazePose keypoints, better wrist tracking under racket
+/// occlusion). VisionPoseEngine remains available as a fallback for devices where
+/// the .task model fails to load, or for DevTools comparison.
 final class PoseEstimationService: ObservableObject {
     @Published var progress: Double = 0
     @Published var isProcessing = false
     @Published var error: PoseError?
 
-    private let processingQueue = DispatchQueue(label: "com.tennisiq.pose", qos: .userInitiated)
+    let engine: PoseEngine
+    let usedFallback: Bool
+    var engineIdentifier: String { usedFallback ? "vision_fallback" : engine.identifier }
+
+    init(engine: PoseEngine) {
+        self.engine = engine
+        self.usedFallback = false
+    }
+
+    init(engine: PoseEngine? = nil) {
+        if let engine {
+            self.engine = engine
+            self.usedFallback = false
+            return
+        }
+
+        // Build the engine selected by FeatureFlags. If the configured engine
+        // can't load its model (e.g. .task missing from the bundle), fall back
+        // to Vision and surface the fallback in payload metadata.
+        let configured = AppConstants.FeatureFlags.poseEngine
+        let candidate: PoseEngine = {
+            switch configured {
+            case .mediapipe: return MediaPipePoseEngine()
+            case .vision, .visionHands, .movenet: return VisionPoseEngine()
+            }
+        }()
+
+        do {
+            try candidate.warmUp()
+            self.engine = candidate
+            self.usedFallback = false
+            print("[PoseEstimation] active engine=\(candidate.identifier)")
+        } catch {
+            print("[PoseEstimation] WARNING: \(candidate.identifier) failed to load (\(error.localizedDescription)) — falling back to Vision")
+            self.engine = VisionPoseEngine()
+            self.usedFallback = true
+        }
+    }
 
     enum PoseError: LocalizedError {
         case videoLoadFailed
@@ -115,7 +154,7 @@ final class PoseEstimationService: ObservableObject {
 
             guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { continue }
 
-            if let poseData = try await detectPose(in: pixelBuffer, frameIndex: currentFrameIndex, timestamp: timestamp) {
+            if let poseData = try await engine.extract(from: pixelBuffer, frameIndex: currentFrameIndex, timestamp: timestamp) {
                 allFrames.append(poseData)
 
                 let wristVelocity = calculateWristVelocity(current: poseData, previous: allFrames.dropLast().last)
@@ -191,51 +230,6 @@ final class PoseEstimationService: ObservableObject {
             keyFrameURLs: keyFrameURLs,
             duration: duration,
             detectedStrokes: detectedStrokes
-        )
-    }
-
-    // MARK: - Pose Detection
-
-    private func detectPose(in pixelBuffer: CVPixelBuffer, frameIndex: Int, timestamp: Double) async throws -> FramePoseData? {
-        let request = VNDetectHumanBodyPoseRequest()
-
-        // Dispatch Vision work to processing queue to avoid blocking cooperative thread pool
-        let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
-        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-            processingQueue.async {
-                do {
-                    try handler.perform([request])
-                    continuation.resume()
-                } catch {
-                    continuation.resume(throwing: error)
-                }
-            }
-        }
-
-        guard let observation = request.results?.first else { return nil }
-
-        var joints: [JointData] = []
-        for jointName in JointMapping.allJoints {
-            guard let point = try? observation.recognizedPoint(jointName),
-                  point.confidence > AppConstants.Analysis.poseConfidenceThreshold else { continue }
-
-            joints.append(JointData(
-                name: JointMapping.canonicalName(for: jointName),
-                x: Double(point.location.x),
-                y: Double(point.location.y),
-                confidence: point.confidence
-            ))
-        }
-
-        guard joints.count >= 8 else { return nil }
-
-        let avgConfidence = joints.map(\.confidence).reduce(0, +) / Float(joints.count)
-
-        return FramePoseData(
-            frameIndex: frameIndex,
-            timestamp: timestamp,
-            joints: joints,
-            confidence: avgConfidence
         )
     }
 

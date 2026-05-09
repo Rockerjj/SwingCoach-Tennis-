@@ -22,8 +22,7 @@ final class RecordViewModel: ObservableObject {
     /// Bridge to LiveSwingAnalyzer — set from RecordView
     weak var liveAnalyzer: LiveSwingAnalyzer?
 
-    private let poseQueue = DispatchQueue(label: "com.tennique.record.pose", qos: .userInitiated)
-    private var frameIndex = 0
+    private nonisolated let liveFrameProcessor = LiveFramePoseProcessor()
 
     var formattedDuration: String {
         let total = Int(recordingDuration)
@@ -49,7 +48,7 @@ final class RecordViewModel: ObservableObject {
         modelContext = context
         recordingStartTime = Date()
         recordingDuration = 0
-        frameIndex = 0
+        liveFrameProcessor.reset()
 
         timerCancellable = Timer.publish(every: 0.1, on: .main, in: .common)
             .autoconnect()
@@ -137,51 +136,67 @@ final class RecordViewModel: ObservableObject {
 
 extension RecordViewModel: CameraFrameDelegate {
     nonisolated func cameraService(_ service: CameraService, didOutputPixelBuffer pixelBuffer: CVPixelBuffer, timestamp: CMTime) {
-        // Run pose detection on the background queue
-        poseQueue.async { [weak self] in
-            guard let self else { return }
-
-            let request = VNDetectHumanBodyPoseRequest()
-            let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
-
-            do {
-                try handler.perform([request])
-            } catch {
-                return // Skip frame on failure
-            }
-
-            guard let observation = request.results?.first else { return }
-
-            // Extract joints
-            var joints: [JointData] = []
-            for jointName in JointMapping.allJoints {
-                guard let point = try? observation.recognizedPoint(jointName),
-                      point.confidence > AppConstants.Analysis.poseConfidenceThreshold else { continue }
-                joints.append(JointData(
-                    name: JointMapping.canonicalName(for: jointName),
-                    x: Double(point.location.x),
-                    y: Double(point.location.y),
-                    confidence: point.confidence
-                ))
-            }
-
-            guard joints.count >= 8 else { return }
-
-            let currentIdx = self.frameIndex
-            self.frameIndex += 1
-
-            let avgConfidence = joints.map(\.confidence).reduce(0, +) / Float(joints.count)
-            let poseData = FramePoseData(
-                frameIndex: currentIdx,
-                timestamp: timestamp.seconds,
-                joints: joints,
-                confidence: avgConfidence
-            )
-
-            // Feed to LiveSwingAnalyzer on main thread
-            DispatchQueue.main.async { [weak self] in
-                self?.liveAnalyzer?.processFrame(poseData)
-            }
+        guard let poseData = liveFrameProcessor.process(pixelBuffer: pixelBuffer, timestamp: timestamp) else {
+            return
         }
+
+        Task { @MainActor [weak self] in
+            self?.liveAnalyzer?.processFrame(poseData)
+        }
+    }
+}
+
+private final class LiveFramePoseProcessor: @unchecked Sendable {
+    private let lock = NSLock()
+    private var frameIndex = 0
+
+    func reset() {
+        lock.lock()
+        frameIndex = 0
+        lock.unlock()
+    }
+
+    func process(pixelBuffer: CVPixelBuffer, timestamp: CMTime) -> FramePoseData? {
+        let request = VNDetectHumanBodyPoseRequest()
+        let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
+
+        do {
+            try handler.perform([request])
+        } catch {
+            return nil
+        }
+
+        guard let observation = request.results?.first else { return nil }
+
+        var joints: [JointData] = []
+        for jointName in JointMapping.allJoints {
+            guard let point = try? observation.recognizedPoint(jointName),
+                  point.confidence > AppConstants.Analysis.poseConfidenceThreshold else { continue }
+            joints.append(JointData(
+                name: JointMapping.canonicalName(for: jointName),
+                x: Double(point.location.x),
+                y: Double(point.location.y),
+                confidence: point.confidence
+            ))
+        }
+
+        guard joints.count >= 8 else { return nil }
+
+        let currentIndex = nextFrameIndex()
+        let avgConfidence = joints.map(\.confidence).reduce(0, +) / Float(joints.count)
+        return FramePoseData(
+            frameIndex: currentIndex,
+            timestamp: timestamp.seconds,
+            joints: joints,
+            confidence: avgConfidence
+        )
+    }
+
+    private func nextFrameIndex() -> Int {
+        lock.lock()
+        defer { lock.unlock() }
+        let current = frameIndex
+        frameIndex += 1
+        return current
     }
 }

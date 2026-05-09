@@ -2,7 +2,7 @@ import Foundation
 import Vision
 
 /// Raw pose data extracted from a single video frame
-struct FramePoseData: Codable {
+struct FramePoseData: Codable, Sendable {
     let frameIndex: Int
     let timestamp: Double
     let joints: [JointData]
@@ -16,7 +16,7 @@ struct FramePoseData: Codable {
     }
 }
 
-struct JointData: Codable {
+struct JointData: Codable, Sendable {
     let name: String
     let x: Double
     let y: Double
@@ -24,7 +24,7 @@ struct JointData: Codable {
 }
 
 /// Aggregated pose data for an entire session, ready to send to API
-struct SessionPosePayload: Codable {
+struct SessionPosePayload: Codable, Sendable {
     let sessionID: String
     let durationSeconds: Int
     let fps: Int

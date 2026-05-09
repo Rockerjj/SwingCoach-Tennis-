@@ -12,7 +12,6 @@
 		07A8CEFE4DC505D3F41ECC9F /* DrillPlanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2001D4D59679927ACD1FFDAA /* DrillPlanView.swift */; };
 		094C8A26FEBAA5FBAB468E80 /* HeroInsightCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B62CF863477F0A539F5EF6C9 /* HeroInsightCard.swift */; };
 		0E559D5CA8718ADA1EBE5E1F /* DrillVideoMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 436C47F34EFE8F2A43CA7F60 /* DrillVideoMatcher.swift */; };
-		359723393214313343135154 /* StrokeAggregator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 427270281189534436833457 /* StrokeAggregator.swift */; };
 		0E8750A399BD9EED9B2D174C /* ProComparisonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD7C05C154F82A804E8D1347 /* ProComparisonView.swift */; };
 		10D27F43FFD2E1A3BBF04260 /* serena_serve.json in Resources */ = {isa = PBXBuildFile; fileRef = 600B168B3A2455C1C93C82FE /* serena_serve.json */; };
 		11BAADE1F553DDF794BC6E8E /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F9B1947FDC7359E4A9EF789 /* ProfileView.swift */; };
@@ -31,6 +30,7 @@
 		2814EE0217286EDB5E3CEF82 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9765FE60DBE1E3F218E7DF9 /* Constants.swift */; };
 		2C329E9AB45FC19844B30E78 /* LiveSwingAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF770FB15B1BCAD9680A0591 /* LiveSwingAnalyzer.swift */; };
 		2F4FFB9E53BF743B503E98C2 /* GrandSlamTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59075BA16CA9C10AE0674DD1 /* GrandSlamTheme.swift */; };
+		359723393214313343135154 /* StrokeAggregator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 427270281189534436833457 /* StrokeAggregator.swift */; };
 		364EA3880607432FD36673A7 /* AnalysisResultsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 527389EFF23211D098DE73C7 /* AnalysisResultsView.swift */; };
 		37C0E6125F35BD8D965FCDD0 /* LiveFeedbackOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 590FC9F3405246D6A0A375A4 /* LiveFeedbackOverlayView.swift */; };
 		3C154AF48087E2DC853ECE71 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4082767F0281EA4D9036FC3F /* LaunchScreen.storyboard */; };
@@ -48,9 +48,15 @@
 		73E9A6E7465EE2F9ABFE85E8 /* SessionProgressViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C137B8A473407E009D205EE /* SessionProgressViews.swift */; };
 		7B1CE7A50703EE686B3EB34A /* TennisIQ.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 5610F855E169537F79B3D956 /* TennisIQ.storekit */; };
 		83BC588B12CDB9D1A84F5E34 /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DDDDFC7697D7CEA3800B684 /* PaywallView.swift */; };
+		8A4EB89AC8944912F62A41D3 /* Pods_TennisIQ.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0BC13223B533A78945F34BD4 /* Pods_TennisIQ.framework */; };
 		8AF65B2D9034D9274208794C /* CameraService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E46A42D98AB9BC3C04C6B062 /* CameraService.swift */; };
 		8BFAAA30384215AEC731C636 /* ProgressDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B8D0E45F450F615F6E128EC /* ProgressDashboardView.swift */; };
 		8C03E81D17CCDEFCE40B139B /* PoseEstimationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5B535518DBC44C5C7DEA00D /* PoseEstimationService.swift */; };
+		8C190C732F99A8EA00FFB2B7 /* VisionPoseEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C190C712F99A8EA00FFB2B7 /* VisionPoseEngine.swift */; };
+		8C190C742F99A8EA00FFB2B7 /* PoseEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C190C702F99A8EA00FFB2B7 /* PoseEngine.swift */; };
+		8C190C772F99A90300FFB2B7 /* PoseCompareView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C190C752F99A90300FFB2B7 /* PoseCompareView.swift */; };
+		8C190C812F99A8EA00FFB2B7 /* MediaPipePoseEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C190C802F99A8EA00FFB2B7 /* MediaPipePoseEngine.swift */; };
+		8C190C852F99AA1100FFB2B7 /* pose_landmarker_full.task in Resources */ = {isa = PBXBuildFile; fileRef = 8C190C842F99AA1100FFB2B7 /* pose_landmarker_full.task */; };
 		94826E26136907D16B3FAE7A /* RecordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9FC7B859B2E4E0EF750323B /* RecordView.swift */; };
 		96A85B697AA23CEB1D8DE8CD /* SectionJumpBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C8274D390CC24727D38E92C /* SectionJumpBar.swift */; };
 		97BB78922BA20EE6C16B6948 /* NetworkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAFA957376E7CF08C013154F /* NetworkMonitor.swift */; };
@@ -72,6 +78,7 @@
 		C7B507BBED1C2B0ED246D287 /* ZoneIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = F69C954894BA2C837EF0C9BC /* ZoneIndicator.swift */; };
 		CBB3110C02B4C4B30E9C581C /* djokovic_backhand.json in Resources */ = {isa = PBXBuildFile; fileRef = 12CECC29FCD47E73EC97D3C7 /* djokovic_backhand.json */; };
 		CEB00A9E0365A9F74C4D5C18 /* ScoreSparklineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF7D7ADF16853A1D96535BC /* ScoreSparklineView.swift */; };
+		D1A3B7C4E2F9081A5C6D4E3F /* LaunchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2B4A8D5F3E0192B6D7E5F40 /* LaunchView.swift */; };
 		D7F44CBE93DF8085257B103B /* DemoSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 772C60F5C6B6149DFF3E8A54 /* DemoSession.swift */; };
 		E1DA14221EDD0E75FA664FD8 /* RallyTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6A5536E2F240904D190FC57 /* RallyTheme.swift */; };
 		E96E1AB48043D29423B89FBA /* SessionModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB542F02088934BE9D3757D3 /* SessionModel.swift */; };
@@ -81,20 +88,38 @@
 		F8B34770D71406488E66ADE7 /* StrokeAnalysisModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52B20C486E4DDFFAB3786FAD /* StrokeAnalysisModel.swift */; };
 		FAA2DD7E3FD2C2D1430333CA /* SkeletonWaitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBD3465DC4CB4CA615288D0F /* SkeletonWaitView.swift */; };
 		FECCC292B1482A2044723AF3 /* SubscriptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0D9F2A15A6BC7093DDF9E23 /* SubscriptionService.swift */; };
-		D1A3B7C4E2F9081A5C6D4E3F /* LaunchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2B4A8D5F3E0192B6D7E5F40 /* LaunchView.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		A5AFD666899E0165D049395A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 98475FEACA6222D21E2BCD4A /* Pods.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = F317A64DB1C37B5250C71071C5ABE67C;
+			remoteInfo = Subproject;
+		};
+		DFC50CC3FA672E06C52FC310 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 98475FEACA6222D21E2BCD4A /* Pods.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = DCDA448E7C417352735F6429A572B044;
+			remoteInfo = "Pods-TennisIQ";
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		0387E07E847607E871D2C68D /* ProComparisonService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProComparisonService.swift; sourceTree = "<group>"; };
 		03FA3A4D886936D5B97764AE /* SwingAnalysisReportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwingAnalysisReportView.swift; sourceTree = "<group>"; };
 		094E44AE039923C9E51A9E4A /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		0B8D0E45F450F615F6E128EC /* ProgressDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressDashboardView.swift; sourceTree = "<group>"; };
+		0BC13223B533A78945F34BD4 /* Pods_TennisIQ.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_TennisIQ.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		0DDDDFC7697D7CEA3800B684 /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallView.swift; sourceTree = "<group>"; };
 		0F12FD9E5E65DB12A4CB3A39 /* VoiceFeedbackService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceFeedbackService.swift; sourceTree = "<group>"; };
 		0F9B1947FDC7359E4A9EF789 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		12CECC29FCD47E73EC97D3C7 /* djokovic_backhand.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = djokovic_backhand.json; sourceTree = "<group>"; };
 		18E719624106AAD7848F4D50 /* SessionShareCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionShareCardView.swift; sourceTree = "<group>"; };
 		19968CE8A0DBAED51E23BF85 /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
+		1DC720806EA2AC6EC13E7435 /* Pods-TennisIQ.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TennisIQ.debug.xcconfig"; path = "Target Support Files/Pods-TennisIQ/Pods-TennisIQ.debug.xcconfig"; sourceTree = "<group>"; };
 		1F443DD2CABE5B3C601D9B5A /* federer_forehand.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = federer_forehand.json; sourceTree = "<group>"; };
 		2001D4D59679927ACD1FFDAA /* DrillPlanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrillPlanView.swift; sourceTree = "<group>"; };
 		28348009F8E94153EFCD5429 /* ShareService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareService.swift; sourceTree = "<group>"; };
@@ -105,11 +130,12 @@
 		4082767F0281EA4D9036FC3F /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		412881648BA5A288998A997D /* SessionsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionsListView.swift; sourceTree = "<group>"; };
 		4135897B9F9E86F8F57A0046 /* TennisIQApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TennisIQApp.swift; sourceTree = "<group>"; };
-		436C47F34EFE8F2A43CA7F60 /* DrillVideoMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrillVideoMatcher.swift; sourceTree = "<group>"; };
 		427270281189534436833457 /* StrokeAggregator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StrokeAggregator.swift; sourceTree = "<group>"; };
+		436C47F34EFE8F2A43CA7F60 /* DrillVideoMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrillVideoMatcher.swift; sourceTree = "<group>"; };
 		45E1478F4FA082B4B3728C3F /* Color+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Hex.swift"; sourceTree = "<group>"; };
 		4B4957EA42286EFDA023EF41 /* PhaseFrameCaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhaseFrameCaptureView.swift; sourceTree = "<group>"; };
 		4DFEFE336346EB99AA24E40B /* AnalyticsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsService.swift; sourceTree = "<group>"; };
+		4F70DADCFF7ED6C5900294AC /* Pods-TennisIQ.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TennisIQ.release.xcconfig"; path = "Target Support Files/Pods-TennisIQ/Pods-TennisIQ.release.xcconfig"; sourceTree = "<group>"; };
 		509263CA2F409EC043774E40 /* TennisIQ.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TennisIQ.entitlements; sourceTree = "<group>"; };
 		517F0AD0E8823B360FD5DF24 /* BookmarkedInsight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarkedInsight.swift; sourceTree = "<group>"; };
 		527389EFF23211D098DE73C7 /* AnalysisResultsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisResultsView.swift; sourceTree = "<group>"; };
@@ -127,7 +153,13 @@
 		772C60F5C6B6149DFF3E8A54 /* DemoSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoSession.swift; sourceTree = "<group>"; };
 		7AAACC588C2F7A879D0CED36 /* KeyFixesCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyFixesCard.swift; sourceTree = "<group>"; };
 		80479C1AFA38A45A3C21F520 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
+		8C190C702F99A8EA00FFB2B7 /* PoseEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoseEngine.swift; sourceTree = "<group>"; };
+		8C190C712F99A8EA00FFB2B7 /* VisionPoseEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisionPoseEngine.swift; sourceTree = "<group>"; };
+		8C190C752F99A90300FFB2B7 /* PoseCompareView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoseCompareView.swift; sourceTree = "<group>"; };
+		8C190C802F99A8EA00FFB2B7 /* MediaPipePoseEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaPipePoseEngine.swift; sourceTree = "<group>"; };
+		8C190C842F99AA1100FFB2B7 /* pose_landmarker_full.task */ = {isa = PBXFileReference; lastKnownFileType = file; path = pose_landmarker_full.task; sourceTree = "<group>"; };
 		95355A8EB29B1DEE263C5739 /* ProgressViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressViewModel.swift; sourceTree = "<group>"; };
+		98475FEACA6222D21E2BCD4A /* Pods.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Pods.xcodeproj; path = Pods/Pods.xcodeproj; sourceTree = "<group>"; };
 		99B11594702797DD9CA48A31 /* SavedInsightsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedInsightsView.swift; sourceTree = "<group>"; };
 		9A24F290A8A8FDD57A8E52CF /* FeedbackPromptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackPromptView.swift; sourceTree = "<group>"; };
 		9C137B8A473407E009D205EE /* SessionProgressViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionProgressViews.swift; sourceTree = "<group>"; };
@@ -143,6 +175,7 @@
 		BDC8E5573F387E1B3830415A /* DemoAnalysisView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoAnalysisView.swift; sourceTree = "<group>"; };
 		BEC6740F72DC1CDE05F546C0 /* PhaseTimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhaseTimelineView.swift; sourceTree = "<group>"; };
 		C2A7805BE6A73CD099C3A19A /* CourtVisionTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourtVisionTheme.swift; sourceTree = "<group>"; };
+		C2B4A8D5F3E0192B6D7E5F40 /* LaunchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchView.swift; sourceTree = "<group>"; };
 		C3F6E5A5292C83F9915E16A6 /* SwingPathOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwingPathOverlayView.swift; sourceTree = "<group>"; };
 		C45B5057646AA6C903DBE2AD /* PoseData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoseData.swift; sourceTree = "<group>"; };
 		C65D919DC64EC70453787CCF /* ProgressSnapshotModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressSnapshotModel.swift; sourceTree = "<group>"; };
@@ -161,7 +194,6 @@
 		F69C954894BA2C837EF0C9BC /* ZoneIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoneIndicator.swift; sourceTree = "<group>"; };
 		F7811A06F978478D32276993 /* FeedbackService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackService.swift; sourceTree = "<group>"; };
 		FAFA957376E7CF08C013154F /* NetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitor.swift; sourceTree = "<group>"; };
-		C2B4A8D5F3E0192B6D7E5F40 /* LaunchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -170,6 +202,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				6673EC13350D70F5F1B066B7 /* Supabase in Frameworks */,
+				8A4EB89AC8944912F62A41D3 /* Pods_TennisIQ.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -186,6 +219,7 @@
 				E4E8C4AF0A8E42144F03FC73 /* PrivacyInfo.xcprivacy */,
 				509263CA2F409EC043774E40 /* TennisIQ.entitlements */,
 				5610F855E169537F79B3D956 /* TennisIQ.storekit */,
+				8C190C842F99AA1100FFB2B7 /* pose_landmarker_full.task */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -230,6 +264,16 @@
 				427270281189534436833457 /* StrokeAggregator.swift */,
 			);
 			path = Utilities;
+			sourceTree = "<group>";
+		};
+		5CE10B57D478A057CDC7FED5 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				1DC720806EA2AC6EC13E7435 /* Pods-TennisIQ.debug.xcconfig */,
+				4F70DADCFF7ED6C5900294AC /* Pods-TennisIQ.release.xcconfig */,
+			);
+			name = Pods;
+			path = Pods;
 			sourceTree = "<group>";
 		};
 		5FCDB7D7630F9695D5CF1D37 /* Models */ = {
@@ -325,6 +369,24 @@
 			path = ViewModels;
 			sourceTree = "<group>";
 		};
+		8C190C722F99A8EA00FFB2B7 /* Pose */ = {
+			isa = PBXGroup;
+			children = (
+				8C190C702F99A8EA00FFB2B7 /* PoseEngine.swift */,
+				8C190C712F99A8EA00FFB2B7 /* VisionPoseEngine.swift */,
+				8C190C802F99A8EA00FFB2B7 /* MediaPipePoseEngine.swift */,
+			);
+			path = Pose;
+			sourceTree = "<group>";
+		};
+		8C190C762F99A90300FFB2B7 /* DevTools */ = {
+			isa = PBXGroup;
+			children = (
+				8C190C752F99A90300FFB2B7 /* PoseCompareView.swift */,
+			);
+			path = DevTools;
+			sourceTree = "<group>";
+		};
 		8C955B024EA6925D9BC3272A /* Profile */ = {
 			isa = PBXGroup;
 			children = (
@@ -370,11 +432,24 @@
 			path = Design;
 			sourceTree = "<group>";
 		};
+		BF1AEF83F816C707E22BBB52 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				0BC13223B533A78945F34BD4 /* Pods_TennisIQ.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		C6224823D41BD441B95D0C56 = {
 			isa = PBXGroup;
 			children = (
+				8C190C762F99A90300FFB2B7 /* DevTools */,
+				8C190C722F99A8EA00FFB2B7 /* Pose */,
 				7BE0FC53A7AE0943D48B4CAC /* TennisIQ */,
 				F5686B9EF51002F3811BEB17 /* Products */,
+				98475FEACA6222D21E2BCD4A /* Pods.xcodeproj */,
+				5CE10B57D478A057CDC7FED5 /* Pods */,
+				BF1AEF83F816C707E22BBB52 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -382,6 +457,7 @@
 			isa = PBXGroup;
 			children = (
 				DEF9AFAE8D6C8A12B5120558 /* TennisIQ.app */,
+				AAC8336B75923F197191EA50 /* Pods_TennisIQ.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -402,6 +478,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 7EEB6AA65049AD2642135C22 /* Build configuration list for PBXNativeTarget "TennisIQ" */;
 			buildPhases = (
+				2E9DBD5A9697BC6A48FE5E9F /* [CP] Check Pods Manifest.lock */,
 				C2359F4A36EB131F08AAD92F /* Sources */,
 				4D9095C01AC4EBA863221632 /* Resources */,
 				3435E842A8329C379D8EF2AB /* Frameworks */,
@@ -409,6 +486,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				D8FABC77B634DAB207B3709B /* PBXTargetDependency */,
 			);
 			name = TennisIQ;
 			packageProductDependencies = (
@@ -447,12 +525,28 @@
 			preferredProjectObjectVersion = 77;
 			productRefGroup = F5686B9EF51002F3811BEB17 /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = F5686B9EF51002F3811BEB17 /* Products */;
+					ProjectRef = 98475FEACA6222D21E2BCD4A /* Pods.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				9EDCC11EC0740DDFEAFC9643 /* TennisIQ */,
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		AAC8336B75923F197191EA50 /* Pods_TennisIQ.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = Pods_TennisIQ.framework;
+			remoteRef = A5AFD666899E0165D049395A /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		4D9095C01AC4EBA863221632 /* Resources */ = {
@@ -466,10 +560,36 @@
 				CBB3110C02B4C4B30E9C581C /* djokovic_backhand.json in Resources */,
 				9F7E7724A98EF260BEFF106A /* federer_forehand.json in Resources */,
 				10D27F43FFD2E1A3BBF04260 /* serena_serve.json in Resources */,
+				8C190C852F99AA1100FFB2B7 /* pose_landmarker_full.task in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		2E9DBD5A9697BC6A48FE5E9F /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-TennisIQ-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		C2359F4A36EB131F08AAD92F /* Sources */ = {
@@ -491,6 +611,7 @@
 				996C2F6A172881C75A258A5D /* DemoAnalysisView.swift in Sources */,
 				D7F44CBE93DF8085257B103B /* DemoSession.swift in Sources */,
 				4FFE162779A31A539C8B403E /* DesignSystem.swift in Sources */,
+				8C190C772F99A90300FFB2B7 /* PoseCompareView.swift in Sources */,
 				07A8CEFE4DC505D3F41ECC9F /* DrillPlanView.swift in Sources */,
 				0E559D5CA8718ADA1EBE5E1F /* DrillVideoMatcher.swift in Sources */,
 				359723393214313343135154 /* StrokeAggregator.swift in Sources */,
@@ -518,6 +639,9 @@
 				8BFAAA30384215AEC731C636 /* ProgressDashboardView.swift in Sources */,
 				1CC1428AE07C196360ECDE45 /* ProgressSnapshotModel.swift in Sources */,
 				C04EDB7B621A393557FFABCF /* ProgressViewModel.swift in Sources */,
+				8C190C732F99A8EA00FFB2B7 /* VisionPoseEngine.swift in Sources */,
+				8C190C742F99A8EA00FFB2B7 /* PoseEngine.swift in Sources */,
+				8C190C812F99A8EA00FFB2B7 /* MediaPipePoseEngine.swift in Sources */,
 				E1DA14221EDD0E75FA664FD8 /* RallyTheme.swift in Sources */,
 				94826E26136907D16B3FAE7A /* RecordView.swift in Sources */,
 				A887551E11FF55145E4A960B /* RecordViewModel.swift in Sources */,
@@ -547,6 +671,14 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		D8FABC77B634DAB207B3709B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "Pods-TennisIQ";
+			targetProxy = DFC50CC3FA672E06C52FC310 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		019C1D58E7C7C958A1D03FD9 /* Release */ = {
@@ -678,6 +810,7 @@
 		};
 		D3343DEE494590754AE2E9CD /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4F70DADCFF7ED6C5900294AC /* Pods-TennisIQ.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = TennisIQ/Resources/TennisIQ.entitlements;
@@ -699,6 +832,7 @@
 		};
 		F5750042F61EDE56E6A31389 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 1DC720806EA2AC6EC13E7435 /* Pods-TennisIQ.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = TennisIQ/Resources/TennisIQ.entitlements;
