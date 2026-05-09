@@ -886,7 +886,7 @@ fileprivate struct HeroFixCarousel: View {
                 }
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
-            .frame(height: 420)
+            .frame(height: 360)
 
             // Page dots
             HStack(spacing: 6) {
@@ -3412,14 +3412,14 @@ struct WireframeOverlayView: View {
 
                         let isHighlighted = highlightedJoints.contains(a) || highlightedJoints.contains(b)
                         let lineColor = isHighlighted ? theme.skeletonWarning : theme.trajectoryLine
-                        let lineWidth: CGFloat = isHighlighted ? 5 : 3.5
+                        let lineWidth: CGFloat = isHighlighted ? 2.5 : 1.8
 
                         var p = Path()
                         p.move(to: ptA)
                         p.addLine(to: ptB)
                         context.stroke(
                             p,
-                            with: .color(lineColor.opacity(0.9)),
+                            with: .color(lineColor.opacity(0.85)),
                             style: StrokeStyle(lineWidth: lineWidth, lineCap: .round, lineJoin: .round)
                         )
                     }
@@ -3431,30 +3431,28 @@ struct WireframeOverlayView: View {
 
                     if isHighlighted {
                         Circle()
-                            .stroke(theme.skeletonWarning, lineWidth: 2)
-                            .frame(width: 22, height: 22)
+                            .stroke(theme.skeletonWarning.opacity(0.8), lineWidth: 1)
+                            .frame(width: 12, height: 12)
                             .scaleEffect(pulseScale)
-                            .opacity(Double(2.0 - pulseScale))
+                            .opacity(Double(1.6 - pulseScale))
                             .position(pos)
 
                         Circle()
                             .fill(theme.skeletonWarning)
-                            .frame(width: 12, height: 12)
-                            .shadow(color: theme.skeletonWarning.opacity(0.5), radius: 6)
+                            .frame(width: 5, height: 5)
                             .position(pos)
                     } else {
                         Circle()
                             .fill(theme.skeletonStroke)
-                            .frame(width: 10, height: 10)
-                            .shadow(color: .black.opacity(0.3), radius: 3)
+                            .frame(width: 4, height: 4)
                             .position(pos)
                     }
                 }
 
             }
             .onAppear {
-                withAnimation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true)) {
-                    pulseScale = 1.5
+                withAnimation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true)) {
+                    pulseScale = 1.25
                 }
             }
         }

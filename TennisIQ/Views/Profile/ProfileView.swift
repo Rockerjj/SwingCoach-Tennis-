@@ -19,6 +19,9 @@ struct ProfileView: View {
                     settingsSection
                     handednessSection
                     themeSection
+                    if AppConstants.FeatureFlags.devToolsEnabled {
+                        devToolsSection
+                    }
                     legalSection
                     signOutButton
                 }
@@ -259,6 +262,34 @@ struct ProfileView: View {
             .padding(Spacing.md)
         }
         .buttonStyle(.plain)
+    }
+
+    // MARK: - Developer (DEBUG only)
+
+    private var devToolsSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            Text("DEVELOPER")
+                .font(AppFont.body(size: 12, weight: .semibold))
+                .foregroundStyle(theme.textTertiary)
+                .padding(.leading, Spacing.xs)
+
+            NavigationLink(destination: PoseCompareView()) {
+                HStack {
+                    Image(systemName: "figure.walk.motion")
+                        .foregroundStyle(theme.accent)
+                    Text("Pose Compare Lab")
+                        .font(AppFont.body(size: 15, weight: .medium))
+                        .foregroundStyle(theme.textPrimary)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .foregroundStyle(theme.textTertiary)
+                        .font(.system(size: 12))
+                }
+                .padding(Spacing.md)
+                .background(theme.surfacePrimary)
+                .cornerRadius(8)
+            }
+        }
     }
 
     // MARK: - Legal

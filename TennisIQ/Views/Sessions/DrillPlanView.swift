@@ -11,7 +11,7 @@ struct DrillPlanView: View {
 
     // Build drill items from all strokes in this session
     private var drillGroups: [DrillGroup] {
-        let strokes = (session.strokeAnalyses ?? [])
+        let strokes = session.strokeAnalyses
             .filter { $0.strokeType != .unknown }
             .sorted { $0.timestamp < $1.timestamp }
 

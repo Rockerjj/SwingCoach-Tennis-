@@ -124,8 +124,8 @@ struct PhaseFrameCaptureView: View {
             await extractFrame()
         }
         .onAppear {
-            withAnimation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true)) {
-                pulseScale = 1.5
+            withAnimation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true)) {
+                pulseScale = 1.25
             }
         }
     }
@@ -144,12 +144,12 @@ struct PhaseFrameCaptureView: View {
 
                     let isHighlighted = highlightedJointNames.contains(a) || highlightedJointNames.contains(b)
                     let lineColor = isHighlighted ? theme.skeletonWarning : theme.trajectoryLine
-                    let lineWidth: CGFloat = isHighlighted ? 4 : 2.5
+                    let lineWidth: CGFloat = isHighlighted ? 2 : 1.3
 
                     var p = Path()
                     p.move(to: ptA)
                     p.addLine(to: ptB)
-                    context.stroke(p, with: .color(lineColor.opacity(0.9)), style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                    context.stroke(p, with: .color(lineColor.opacity(0.85)), style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
                 }
             }
 
@@ -160,22 +160,20 @@ struct PhaseFrameCaptureView: View {
 
                 if isHighlighted {
                     Circle()
-                        .stroke(theme.skeletonWarning, lineWidth: 2)
-                        .frame(width: 18, height: 18)
+                        .stroke(theme.skeletonWarning.opacity(0.8), lineWidth: 0.8)
+                        .frame(width: 9, height: 9)
                         .scaleEffect(pulseScale)
-                        .opacity(Double(2.0 - pulseScale))
+                        .opacity(Double(1.6 - pulseScale))
                         .position(pos)
 
                     Circle()
                         .fill(theme.skeletonWarning)
-                        .frame(width: 9, height: 9)
-                        .shadow(color: theme.skeletonWarning.opacity(0.5), radius: 4)
+                        .frame(width: 4, height: 4)
                         .position(pos)
                 } else {
                     Circle()
                         .fill(theme.skeletonStroke)
-                        .frame(width: 7, height: 7)
-                        .shadow(color: .black.opacity(0.3), radius: 2)
+                        .frame(width: 3, height: 3)
                         .position(pos)
                 }
             }
