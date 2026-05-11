@@ -1,4 +1,4 @@
-# App Store Connect Metadata -- Tennis IQ
+# App Store Connect Metadata -- Tennique
 
 Copy this into App Store Connect when creating the app listing.
 
@@ -6,8 +6,8 @@ Copy this into App Store Connect when creating the app listing.
 
 ## App Information
 
-- **Bundle ID**: `com.tennisiq.app`
-- **SKU**: `tennisiq`
+- **Bundle ID**: `com.tennique.app`
+- **SKU**: `tennique`
 - **Primary Language**: English (US)
 - **Primary Category**: Health & Fitness
 - **Secondary Category**: Sports
@@ -20,7 +20,7 @@ Copy this into App Store Connect when creating the app listing.
 
 ### Title (30 chars max)
 ```
-Tennis IQ - Improve Fast
+Tennique - Improve Fast
 ```
 
 ### Subtitle (30 chars max)
@@ -40,7 +40,7 @@ Film your strokes. Get instant AI coaching. See your skeleton overlay, grades, a
 
 ### Description (4000 chars max)
 ```
-Stop guessing if your form is right. Tennis IQ uses advanced computer vision and GPT-4o to analyze every stroke you hit -- frame by frame -- and gives you the same level of feedback a private coach would.
+Stop guessing if your form is right. Tennique uses advanced computer vision and GPT-4o to analyze every stroke you hit -- frame by frame -- and gives you the same level of feedback a private coach would.
 
 HOW IT WORKS
 1. Set up your phone courtside and hit Record
@@ -68,12 +68,12 @@ PRICING
 
 Built with Apple Vision pose estimation (on-device, private) and GPT-4o coaching intelligence. Your videos never leave your device unless you choose to share them.
 
-Questions? Reach us at support@tennisiq.com
+Questions? Reach us at support@tennique.com
 ```
 
 ### What's New (for v1.0.0)
 ```
-Welcome to Tennis IQ! This is our first release featuring:
+Welcome to Tennique! This is our first release featuring:
 - AI-powered stroke analysis with skeleton overlay
 - Coaching feedback with letter grades for every stroke
 - Mechanics breakdown (backswing, contact point, follow-through, stance, toss)
@@ -122,16 +122,16 @@ Upload for these device sizes:
 
 Create these in App Store Connect > Subscriptions:
 
-### Subscription Group: "TennisIQ Premium"
+### Subscription Group: "Tennique Premium"
 
 | Product | Product ID | Price | Period | Level |
 |---------|-----------|-------|--------|-------|
-| Monthly Premium | `tennisiq_monthly` | $6.99 | 1 Month | 1 |
-| Annual Premium | `tennisiq_annual` | $49.99 | 1 Year | 1 |
+| Monthly Premium | `tennique_monthly` | $6.99 | 1 Month | 1 |
+| Annual Premium | `tennique_annual` | $49.99 | 1 Year | 1 |
 
 - Family Sharing: No
 - Free Trial: Consider adding 7-day free trial to annual plan
-- Subscription Group Display Name: "TennisIQ Premium"
+- Subscription Group Display Name: "Tennique Premium"
 
 ---
 
@@ -141,7 +141,7 @@ Create these in App Store Connect > Subscriptions:
 - First Name: [Your first name]
 - Last Name: [Your last name]
 - Phone: [Your phone]
-- Email: support@tennisiq.com
+- Email: support@tennique.com
 
 ### Demo Account
 - Not required (app supports guest mode)
