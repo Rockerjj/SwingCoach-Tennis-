@@ -1,4 +1,4 @@
-# TennisIQ
+# Tennique
 
 AI-powered tennis coaching through your iPhone camera. Record your sessions, get professional-level stroke analysis with visual overlays, and track your improvement over time.
 
@@ -40,7 +40,7 @@ AI-powered tennis coaching through your iPhone camera. Record your sessions, get
 ## Project Structure
 
 ```
-TennisIQ/
+TennisIQ/                  # Current source folder name; app brand is Tennique
 ├── App/                    # App entry point, root navigation
 ├── Models/                 # SwiftData models + API types
 ├── Views/
@@ -88,7 +88,7 @@ backend/
 ### iOS App
 ```bash
 # Generate Xcode project
-cd "Tennis IQ"
+cd tennique
 xcodegen generate
 
 # Open in Xcode

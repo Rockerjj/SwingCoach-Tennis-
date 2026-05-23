@@ -57,11 +57,11 @@
 
 ## App Store Connect Setup
 
-- [ ] Create app in App Store Connect with bundle ID `com.tennisiq.app`
+- [ ] Create app in App Store Connect with bundle ID `com.tennique.app`
 - [ ] Configure subscription products (see `app-store-metadata.md`)
 - [ ] Upload screenshots for all required device sizes
 - [ ] Fill in all metadata from `app-store-metadata.md`
-- [ ] Set Privacy Policy URL: `https://tennisiq.com/privacy`
+- [ ] Set Privacy Policy URL: `https://tennique.app/privacy`
 - [ ] Set App Store Contact Info
 - [ ] Add review notes from `app-store-metadata.md`
 - [ ] Submit for review
