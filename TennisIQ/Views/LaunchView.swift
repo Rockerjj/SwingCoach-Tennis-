@@ -5,7 +5,7 @@ struct LaunchView: View {
     @State private var logoScale: CGFloat = 0.85
     @State private var taglineOpacity: Double = 0
 
-    private let brandBackground = Color(red: 10/255, green: 18/255, blue: 12/255)
+    private let brandBackground = Color(red: 124/255, green: 141/255, blue: 108/255)
     private let brandCream = Color(red: 238/255, green: 242/255, blue: 228/255)
 
     var body: some View {

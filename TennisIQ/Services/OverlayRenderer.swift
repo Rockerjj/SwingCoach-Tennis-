@@ -37,7 +37,8 @@ final class OverlayRenderer {
         on image: UIImage,
         poseData: FramePoseData,
         highlightJoints: Set<String> = [],
-        strokeResult: StrokeResult? = nil
+        strokeResult: StrokeResult? = nil,
+        strokeColor: UIColor? = nil
     ) -> UIImage {
         let size = image.size
 
@@ -47,6 +48,7 @@ final class OverlayRenderer {
         image.draw(at: .zero)
 
         let jointMap = Dictionary(uniqueKeysWithValues: poseData.joints.map { ($0.name, $0) })
+        let baseStroke = strokeColor ?? uiColor(theme.skeletonStroke)
 
         // Draw bone connections
         for (startName, endName) in Self.boneConnections {
@@ -56,14 +58,14 @@ final class OverlayRenderer {
             let endPoint = denormalize(x: end.x, y: end.y, in: size)
 
             let isHighlighted = highlightJoints.contains(startName) || highlightJoints.contains(endName)
-            let lineColor = isHighlighted ? uiColor(theme.skeletonWarning) : uiColor(theme.skeletonStroke)
+            let lineColor = isHighlighted ? uiColor(theme.skeletonWarning) : baseStroke
 
             context.setStrokeColor(lineColor.cgColor)
-            context.setLineWidth(isHighlighted ? 4.0 : 2.5)
+            context.setLineWidth(isHighlighted ? 2.5 : 1.5)
             context.setLineCap(.round)
 
-            // Glow effect
-            context.setShadow(offset: .zero, blur: 8, color: lineColor.withAlphaComponent(0.6).cgColor)
+            // Subtle glow
+            context.setShadow(offset: .zero, blur: 4, color: lineColor.withAlphaComponent(0.4).cgColor)
 
             context.move(to: startPoint)
             context.addLine(to: endPoint)
@@ -76,9 +78,9 @@ final class OverlayRenderer {
         for joint in poseData.joints {
             let point = denormalize(x: joint.x, y: joint.y, in: size)
             let isHighlighted = highlightJoints.contains(joint.name)
-            let dotRadius: CGFloat = isHighlighted ? 6 : 4
+            let dotRadius: CGFloat = isHighlighted ? 3.5 : 2.5
             // in-zone highlighted joints → skeletonCorrect (green); warning/flagged → skeletonWarning (clay); default → skeletonStroke (white)
-            let dotColor = isHighlighted ? uiColor(theme.skeletonWarning) : uiColor(theme.skeletonStroke)
+            let dotColor = isHighlighted ? uiColor(theme.skeletonWarning) : baseStroke
 
             context.setFillColor(dotColor.cgColor)
             context.fillEllipse(in: CGRect(

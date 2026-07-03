@@ -17,6 +17,7 @@ private struct IdealZone {
     let issueKey: String
 }
 
+@MainActor
 final class LiveSwingAnalyzer: ObservableObject {
     @Published var latestFeedback: LiveFeedbackEvent?
     @Published var currentPhase: SwingPhase = .readyPosition
@@ -227,7 +228,6 @@ final class LiveSwingAnalyzer: ObservableObject {
               let nose = map["nose"],
               l.confidence >= minConfidence, r.confidence >= minConfidence, nose.confidence >= minConfidence
         else { return nil }
-        let midX = (l.x + r.x) / 2
         let dx = r.x - l.x
         let dy = r.y - l.y
         let angle = atan2(dy, dx) * 180 / .pi
@@ -261,8 +261,6 @@ final class LiveSwingAnalyzer: ObservableObject {
         guard now.timeIntervalSince(lastEmitTime) >= emitCooldown else { return }
         lastEmitTime = now
         let event = LiveFeedbackEvent(phase: phase, issue: issue, severity: severity, cueText: cueText, timestamp: now)
-        DispatchQueue.main.async { [weak self] in
-            self?.latestFeedback = event
-        }
+        latestFeedback = event
     }
 }

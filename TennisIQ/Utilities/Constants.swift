@@ -56,4 +56,43 @@ enum AppConstants {
         static let minSessionsBeforePrompt = 2
         static let minSessionsBeforeRatingPrompt = 3
     }
+
+    enum FeatureFlags {
+        /// Active pose estimator for production sessions. MediaPipe is the
+        /// default — 33 BlazePose keypoints, better wrist tracking under racket
+        /// occlusion. PoseEstimationService falls back to Vision automatically
+        /// if the .task model fails to load (logged as `vision_fallback`).
+        static let poseEngine: PoseEngineKind = .mediapipe
+
+        /// Accuracy-eval mode: send every candidate stroke to the backend before
+        /// any representative sampling. This lets the relabeler diagnose misses
+        /// instead of inheriting the app's first-pass stroke-type mistakes.
+        static let sendAllStrokesForEval: Bool = {
+            #if DEBUG
+            return true
+            #else
+            return false
+            #endif
+        }()
+
+        /// Accuracy-eval mode: upload the original recorded video so backend
+        /// captures can be replayed and inspected when clips are miscentered.
+        static let uploadSourceVideoForEval: Bool = {
+            #if DEBUG
+            return true
+            #else
+            return false
+            #endif
+        }()
+
+        /// Unlocks the Pose Compare dev-tools screen in the app. Gated to Josh's
+        /// account in AuthService; this flag is the master build-level kill switch.
+        static let devToolsEnabled: Bool = {
+            #if DEBUG
+            return true
+            #else
+            return false
+            #endif
+        }()
+    }
 }

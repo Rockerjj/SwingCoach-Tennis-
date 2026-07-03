@@ -75,18 +75,27 @@ async def _run_gemini(
     frames: list[bytes],
     clips: list[tuple[float, bytes]],
 ) -> tuple[AnalysisResponse, dict]:
-    """Gemini's underlying SDK call is synchronous, so off-load it to a
-    worker thread to avoid blocking other providers in the gather."""
+    """Gemini's underlying SDK call is synchronous AND its client constructor
+    requires an event loop in the current thread (to create asyncio.Lock()).
+    Run the whole thing in a worker thread with its own dedicated event loop
+    so it doesn't block the main loop and the genai SDK is happy."""
     settings = get_settings()
     started = time.perf_counter()
 
     container: dict = {}
 
     def _call() -> AnalysisResponse:
-        coaching = GeminiCoachingService()
-        result = asyncio.run(coaching.analyze_session(payload, frames, clips or None))
-        container["usage"] = coaching.last_usage
-        return result
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            coaching = GeminiCoachingService()
+            result = loop.run_until_complete(
+                coaching.analyze_session(payload, frames, clips or None)
+            )
+            container["usage"] = coaching.last_usage
+            return result
+        finally:
+            loop.close()
 
     result = await asyncio.to_thread(_call)
     latency_ms = int((time.perf_counter() - started) * 1000)

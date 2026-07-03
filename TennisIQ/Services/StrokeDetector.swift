@@ -221,7 +221,6 @@ final class StrokeDetector {
         let map = Dictionary(uniqueKeysWithValues: frame.joints.map { ($0.name, $0) })
 
         let wristName = handedness.dominantWrist
-        let elbowName = handedness == .right ? "right_elbow" : "left_elbow"
         guard let wrist = map[wristName],
               let nose = map["nose"],
               wrist.confidence >= minConfidence,
@@ -259,7 +258,6 @@ final class StrokeDetector {
         // Check wrist is at roughly shoulder/chest height (not low like a groundstroke)
         let shoulderY = ((map["left_shoulder"]?.y ?? 0.5) + (map["right_shoulder"]?.y ?? 0.5)) / 2
         let hipY = ((map["left_hip"]?.y ?? 0.3) + (map["right_hip"]?.y ?? 0.3)) / 2
-        let chestY = (shoulderY + hipY) / 2
 
         // Wrist should be between hip and above shoulder for a volley (net height)
         let wristInVolleyZone = wrist.y >= hipY - 0.05 && wrist.y <= shoulderY + 0.10
@@ -301,7 +299,6 @@ final class StrokeDetector {
     func measureAngles(frame: FramePoseData) -> [String: MeasuredAngle] {
         let map = Dictionary(uniqueKeysWithValues: frame.joints.map { ($0.name, $0) })
         let side = handedness == .right ? "right" : "left"
-        let otherSide = handedness == .right ? "left" : "right"
 
         var angles: [String: MeasuredAngle] = [:]
 

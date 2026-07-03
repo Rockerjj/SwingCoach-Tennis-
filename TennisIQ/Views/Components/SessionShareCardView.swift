@@ -11,7 +11,7 @@ struct SessionShareCardView: View {
 
     // Computed once so the card is deterministic
     private var strokes: [StrokeAnalysisModel] {
-        (session.strokeAnalyses ?? [])
+        session.strokeAnalyses
             .filter { $0.strokeType != .unknown }
             .sorted { $0.timestamp < $1.timestamp }
     }

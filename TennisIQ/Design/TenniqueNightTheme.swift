@@ -30,12 +30,12 @@ struct TenniqueNightTheme: AppTheme {
     // Nav / video area — darker than emerald background for contrast
     let navBackground = Color(hex: "0F1411")
 
-    // Overlay
-    let skeletonStroke = Color.white.opacity(0.92)
-    let skeletonCorrect = Color(hex: "22C55E")
-    let skeletonWarning = Color(hex: "EF4444")
+    // Overlay — softer pastel tones, less visually heavy
+    let skeletonStroke = Color.white.opacity(0.75)
+    let skeletonCorrect = Color(hex: "86EFAC")
+    let skeletonWarning = Color(hex: "F87171")
     let angleAnnotation = Color(hex: "E2E8F0")
-    let trajectoryLine = Color(hex: "4ADE80")
+    let trajectoryLine = Color(hex: "A7F3D0")
 
     // Typography — system SF Pro
     let displayFont = ""

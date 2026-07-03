@@ -13,7 +13,7 @@ class Settings(BaseSettings):
 
     # Gemini (primary)
     gemini_api_key: str = ""
-    gemini_model: str = "gemini-2.5-pro-preview-05-06"
+    gemini_model: str = "gemini-3-flash-preview"
     use_gemini: bool = True
 
     # Anthropic (eval candidate)
@@ -21,12 +21,14 @@ class Settings(BaseSettings):
     anthropic_opus_model: str = "claude-opus-4-7"
     anthropic_sonnet_model: str = "claude-sonnet-4-6"
 
-    # Active provider for /sessions/analyze. "auto" preserves the legacy
-    # use_gemini-then-OpenAI fallback so existing prod behavior is unchanged
-    # until we explicitly opt in to a provider.
+    # Active provider for /sessions/analyze. Default is Claude Opus 4.7 based
+    # on the eval-v1 results (see backend/test-data/eval-runs/eval-v1/winner.md):
+    # Opus had the best coaching specificity, source discipline, and was the
+    # only provider that consistently returned complete session-level fields.
+    # "auto" falls back to the legacy Gemini-then-OpenAI behavior.
     coaching_provider: Literal[
         "auto", "gemini", "claude_opus", "claude_sonnet", "openai"
-    ] = "auto"
+    ] = "claude_opus"
 
     # Supabase
     supabase_url: str = ""
@@ -47,6 +49,12 @@ class Settings(BaseSettings):
     # comparison harness. NEVER turn this on in production.
     debug_capture_payloads: bool = False
     payload_capture_dir: str = "test-data/sessions"
+
+    # Stroke relabeler: when true, /sessions/analyze runs MediaPipe + Gemini on
+    # each stroke clip and overwrites the iOS-provided stroke type and phase
+    # timestamps before the coaching LLM runs. Keep this opt-in until the frozen
+    # eval set proves accuracy, coverage, and latency for the current model.
+    relabel_strokes: bool = False
 
     class Config:
         env_file = ".env"
