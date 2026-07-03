@@ -67,12 +67,23 @@ final class AnalysisViewModel: ObservableObject {
                 try? context.save()
             }
 
-            let sampledStrokes = selectRepresentativeStrokes(from: extraction.detectedStrokes)
-            let sampledKeyFrames = filterKeyFrames(extraction.keyFrames, for: sampledStrokes)
+            let strokesForAnalysis = AppConstants.FeatureFlags.sendAllStrokesForEval
+                ? extraction.detectedStrokes
+                : selectRepresentativeStrokes(from: extraction.detectedStrokes)
+            let sampledStrokes = selectRepresentativeStrokes(from: strokesForAnalysis)
+            let keyFrameReferenceStrokes = AppConstants.FeatureFlags.sendAllStrokesForEval
+                ? strokesForAnalysis
+                : sampledStrokes
+            let sampledKeyFrames = filterKeyFrames(
+                extraction.keyFrames,
+                for: keyFrameReferenceStrokes,
+                maxCount: AppConstants.FeatureFlags.sendAllStrokesForEval ? AppConstants.Analysis.maxKeyFrames : 6
+            )
 
-            // Only send frames near sampled strokes to reduce payload size
+            // Only send frames near candidate strokes. In debug eval mode this
+            // includes every detected stroke so the backend can diagnose misses.
             let relevantFrames = extraction.frames.filter { frame in
-                sampledStrokes.contains { abs($0.contactTimestamp - frame.timestamp) < 2.0 }
+                strokesForAnalysis.contains { abs($0.contactTimestamp - frame.timestamp) < 2.0 }
             }
 
             let payload = SessionPosePayload(
@@ -83,7 +94,7 @@ final class AnalysisViewModel: ObservableObject {
                 keyFrameTimestamps: sampledKeyFrames.map(\.timestamp),
                 skillLevel: UserDefaults.standard.string(forKey: "skillLevel") ?? "beginner",
                 handedness: Handedness.current.rawValue,
-                detectedStrokes: sampledStrokes
+                detectedStrokes: strokesForAnalysis
             )
 
             let authToken = AuthService().authToken
@@ -93,7 +104,7 @@ final class AnalysisViewModel: ObservableObject {
             if let url = videoURL {
                 let clips = try await poseService.extractStrokeClips(
                     from: url,
-                    strokes: sampledStrokes
+                    strokes: strokesForAnalysis
                 )
                 strokeClipURLs = clips.map { (timestamp: $0.timestamp, url: $0.url) }
             }
@@ -102,6 +113,7 @@ final class AnalysisViewModel: ObservableObject {
                 posePayload: payload,
                 keyFrameImages: sampledKeyFrames.map { (timestamp: $0.timestamp, image: $0.image) },
                 strokeClips: strokeClipURLs,
+                sourceVideoURL: AppConstants.FeatureFlags.uploadSourceVideoForEval ? videoURL : nil,
                 authToken: authToken
             )
 
@@ -211,14 +223,15 @@ final class AnalysisViewModel: ObservableObject {
     /// Keep only key frames that are near the selected strokes' contact points.
     private func filterKeyFrames(
         _ keyFrames: [(timestamp: Double, image: UIImage)],
-        for strokes: [DetectedStroke]
+        for strokes: [DetectedStroke],
+        maxCount: Int = 6
     ) -> [(timestamp: Double, image: UIImage)] {
         let contactTimes = strokes.map(\.contactTimestamp)
         let relevant = keyFrames.filter { kf in
             contactTimes.contains { abs($0 - kf.timestamp) < 1.5 }
         }
-        if relevant.count >= 2 { return Array(relevant.prefix(6)) }
-        return Array(keyFrames.prefix(6))
+        if relevant.count >= 2 { return Array(relevant.prefix(maxCount)) }
+        return Array(keyFrames.prefix(maxCount))
     }
 
     enum AnalysisError: LocalizedError {

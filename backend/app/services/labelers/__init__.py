@@ -35,6 +35,8 @@ class LabelerInput:
     clip_timestamp: float  # seconds into the full session where this clip starts
     ios_stroke_type: str   # what the on-device heuristic said (for baseline + context)
     ios_phases: dict[str, float]  # iOS-labeled phase timestamps (absolute session time)
+    clip_duration: float = 0.0
+    handedness: str = "right"
 
 
 @dataclass

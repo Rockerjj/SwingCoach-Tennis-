@@ -28,6 +28,7 @@ import csv
 import json
 import logging
 import statistics
+import subprocess
 import sys
 import time
 import uuid
@@ -76,8 +77,27 @@ def _load_ground_truth(path: Path) -> dict[tuple[str, int], dict]:
                 "stroke_type": stype,
                 "phases": phase_times,
                 "clip_file": row.get("clip_file", "").strip(),
+                "camera_angle": row.get("camera_angle", "").strip(),
+                "visibility_quality": row.get("visibility_quality", "").strip(),
+                "failure_notes": row.get("failure_notes", "").strip(),
             }
     return truth
+
+
+def _clip_duration_seconds(path: Path) -> float:
+    try:
+        out = subprocess.check_output(
+            [
+                "ffprobe", "-v", "error",
+                "-show_entries", "format=duration",
+                "-of", "default=noprint_wrappers=1:nokey=1",
+                str(path),
+            ],
+            stderr=subprocess.DEVNULL,
+        )
+        return max(float(out.decode().strip()), 0.1)
+    except Exception:
+        return 0.0
 
 
 def _score(result: LabelerResult, truth: dict) -> dict:
@@ -110,6 +130,49 @@ def _score(result: LabelerResult, truth: dict) -> dict:
         "per_phase_abs_error": per_phase_err,
         "ordering_valid": result.ordering_valid(),
     }
+
+
+def _clip_diagnostics(stroke_input: LabelerInput, truth: dict) -> dict:
+    gt_contact = truth["phases"].get("contact_point")
+    clip_start = stroke_input.clip_timestamp
+    clip_duration = stroke_input.clip_duration
+    clip_center = clip_start + (clip_duration / 2.0) if clip_duration else None
+    clip_end = clip_start + clip_duration if clip_duration else None
+    return {
+        "clip_start": clip_start,
+        "clip_duration": clip_duration,
+        "clip_end": clip_end,
+        "clip_center_timestamp": clip_center,
+        "clip_contact_offset_seconds": (
+            abs(clip_center - gt_contact)
+            if clip_center is not None and gt_contact is not None
+            else None
+        ),
+        "clip_contains_true_contact": (
+            clip_start <= gt_contact <= clip_end
+            if gt_contact is not None and clip_end is not None
+            else None
+        ),
+    }
+
+
+def _failure_mode(row: dict) -> str:
+    if row.get("error") is not None:
+        return "labeler_error"
+    if row.get("clip_contains_true_contact") is False:
+        return "clip_missed_contact"
+    if (row.get("pred_stroke_type") or "").lower() == "unknown":
+        return "unknown_output"
+    if row.get("stroke_type_correct") is False:
+        return "type_misclassified_with_contact"
+    if not row.get("ordering_valid"):
+        return "phase_order_invalid"
+    if row.get("contact_point_abs_error") is not None and row["contact_point_abs_error"] > 0.25:
+        return "contact_timing_error"
+    scored = int(row.get("phase_mae_phases_scored") or 0)
+    if scored < len(SCORED_PHASES):
+        return "phase_coverage_gap"
+    return "correct"
 
 
 def _percentile(values: list[float | int], pct: float) -> float | None:
@@ -180,8 +243,22 @@ def _summarize_rows(rows: list[dict], names: list[str]) -> dict:
             for r in rows_for_labeler
             if r.get("cost_cents_estimate") is not None
         ]
+        clip_offsets = [
+            r["clip_contact_offset_seconds"]
+            for r in rows_for_labeler
+            if r.get("clip_contact_offset_seconds") is not None
+        ]
+        clip_contains_rows = [
+            r for r in rows_for_labeler
+            if r.get("clip_contains_true_contact") is not None
+        ]
+        clips_with_contact = [
+            r for r in clip_contains_rows
+            if bool(r.get("clip_contains_true_contact"))
+        ]
 
         confusion: dict[str, dict[str, int]] = {}
+        failure_modes: dict[str, int] = {}
         for r in rows_for_labeler:
             truth = (r.get("truth_stroke_type") or "unknown").lower()
             pred = (
@@ -191,6 +268,8 @@ def _summarize_rows(rows: list[dict], names: list[str]) -> dict:
             )
             confusion.setdefault(truth, {})
             confusion[truth][pred] = confusion[truth].get(pred, 0) + 1
+            mode = r.get("failure_mode") or "unknown"
+            failure_modes[mode] = failure_modes.get(mode, 0) + 1
 
         summary[name] = {
             "attempted": attempted,
@@ -211,7 +290,16 @@ def _summarize_rows(rows: list[dict], names: list[str]) -> dict:
             "latency_ms_median": int(statistics.median(lats)) if lats else None,
             "latency_ms_p95": int(_percentile(lats, 0.95)) if lats else None,
             "cost_cents_mean": round(statistics.mean(costs), 4) if costs else None,
+            "clip_contains_true_contact_rate": (
+                round(len(clips_with_contact) / len(clip_contains_rows), 3)
+                if clip_contains_rows else None
+            ),
+            "clip_contact_offset_seconds_mean": (
+                round(statistics.mean(clip_offsets), 3)
+                if clip_offsets else None
+            ),
             "confusion_matrix": confusion,
+            "failure_modes": failure_modes,
         }
 
     return summary
@@ -223,6 +311,7 @@ def _build_input(session_dir: Path, stroke_idx: int, clip_file: str) -> LabelerI
     if not pose_path.exists():
         return None
     data = json.loads(pose_path.read_text())
+    handedness = data.get("handedness", "right")
     strokes = data.get("detected_strokes", [])
     if stroke_idx >= len(strokes):
         return None
@@ -251,6 +340,7 @@ def _build_input(session_dir: Path, stroke_idx: int, clip_file: str) -> LabelerI
 
     # Clip timestamp: contact_point if we have it, else first ios phase time
     clip_ts = ios_phases.get("contact_point") or min(ios_phases.values(), default=0.0)
+    clip_duration = _clip_duration_seconds(clip_path)
 
     return LabelerInput(
         session_id=session_dir.name,
@@ -259,6 +349,8 @@ def _build_input(session_dir: Path, stroke_idx: int, clip_file: str) -> LabelerI
         clip_timestamp=float(clip_ts) - 1.5,  # clip is ~±1.5s around contact
         ios_stroke_type=ios_type,
         ios_phases=ios_phases,
+        clip_duration=clip_duration,
+        handedness=handedness,
     )
 
 
@@ -268,35 +360,44 @@ async def _run_one(
     truth: dict,
     out_dir: Path,
 ) -> dict:
+    clip_diag = _clip_diagnostics(stroke_input, truth)
     try:
         labeler = get(labeler_name)
     except Exception as e:
-        return {
+        row = {
             "labeler": labeler_name,
             "session_id": stroke_input.session_id,
             "stroke_idx": stroke_input.stroke_idx,
             "error": f"labeler unavailable: {e}",
+            **clip_diag,
         }
+        row["failure_mode"] = _failure_mode(row)
+        return row
 
     try:
         result = await labeler.label(stroke_input)
     except Exception as e:
         logger.exception(f"{labeler_name} crashed on {stroke_input.session_id}#{stroke_input.stroke_idx}")
-        return {
+        row = {
             "labeler": labeler_name,
             "session_id": stroke_input.session_id,
             "stroke_idx": stroke_input.stroke_idx,
             "error": f"{type(e).__name__}: {e}",
+            **clip_diag,
         }
+        row["failure_mode"] = _failure_mode(row)
+        return row
 
     # Cost estimate for hosted labelers
     from app.config import get_settings
     settings = get_settings()
     model = None
-    if labeler_name == "gemini":
+    if labeler_name in ("gemini", "mediapipe_gemini"):
         model = settings.gemini_model
-    elif labeler_name == "claude":
+    elif labeler_name in ("claude", "mediapipe_claude"):
         model = settings.anthropic_opus_model
+    elif labeler_name == "mediapipe_sonnet":
+        model = settings.anthropic_sonnet_model
     cost = None
     if model and result.input_tokens is not None and result.output_tokens is not None:
         try:
@@ -326,13 +427,17 @@ async def _run_one(
         "score": scored,
     }, indent=2))
 
-    return {
+    row = {
         "labeler": labeler_name,
         "session_id": stroke_input.session_id,
         "stroke_idx": stroke_input.stroke_idx,
         "truth_stroke_type": truth["stroke_type"],
+        "camera_angle": truth.get("camera_angle", ""),
+        "visibility_quality": truth.get("visibility_quality", ""),
+        "failure_notes": truth.get("failure_notes", ""),
         "pred_stroke_type": result.stroke_type,
         **scored,
+        **clip_diag,
         "latency_ms": result.latency_ms,
         "input_tokens": result.input_tokens,
         "output_tokens": result.output_tokens,
@@ -340,6 +445,8 @@ async def _run_one(
         "confidence": result.confidence,
         "error": result.error,
     }
+    row["failure_mode"] = _failure_mode(row)
+    return row
 
 
 async def _amain() -> None:
@@ -377,11 +484,14 @@ async def _amain() -> None:
         if stroke_input is None:
             logger.warning(f"Skipping {sid}#{idx}: missing clip or pose_data")
             for name in names:
-                setup_rows.append({
+                row = {
                     "labeler": name,
                     "session_id": sid,
                     "stroke_idx": idx,
                     "truth_stroke_type": truth["stroke_type"],
+                    "camera_angle": truth.get("camera_angle", ""),
+                    "visibility_quality": truth.get("visibility_quality", ""),
+                    "failure_notes": truth.get("failure_notes", ""),
                     "pred_stroke_type": None,
                     "stroke_type_correct": False,
                     "phase_mae_seconds": None,
@@ -394,7 +504,9 @@ async def _amain() -> None:
                     "cost_cents_estimate": None,
                     "confidence": None,
                     "error": "missing clip or pose_data",
-                })
+                }
+                row["failure_mode"] = _failure_mode(row)
+                setup_rows.append(row)
             continue
         for name in names:
             tasks.append(_run_one(name, stroke_input, truth, out_dir))

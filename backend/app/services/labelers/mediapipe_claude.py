@@ -36,9 +36,13 @@ def _build_user_message_with_trajectory(
     clip_duration: float,
     frame_count: int,
     trajectory: list[dict],
+    handedness: str,
 ) -> str:
+    dominant_side = "right" if handedness != "left" else "left"
+    non_dominant_side = "left" if dominant_side == "right" else "right"
     return f"""## Clip context
-- iOS on-device heuristic guessed this was a `{ios_type or 'unknown'}` stroke. You may disagree.
+- iOS on-device heuristic guessed this was a `{ios_type or 'unknown'}` stroke. Treat it only as weak context.
+- Player handedness is `{handedness or 'right'}`. Dominant side is `{dominant_side}`; non-dominant side is `{non_dominant_side}`.
 - You are seeing {frame_count} evenly spaced frames covering a {clip_duration:.2f}s clip.
 - Frame 0 is at t=0.00s; frame {frame_count - 1} is at t={clip_duration:.2f}s.
 
@@ -57,6 +61,12 @@ Identify the stroke type and the 7 swing phases.
 
 ## Stroke types
 - `forehand`, `backhand`, `serve`, `volley`, `unknown`
+
+Disambiguation:
+- Forehand is dominant-side groundstroke contact.
+- Backhand is non-dominant-side groundstroke contact, one- or two-handed.
+- Serve is overhead with wrist above head/shoulder line and toss/loading motion.
+- Volley is compact punch/block with minimal backswing and short wrist path.
 
 ## Seven phases (in temporal order)
 ready_position → unit_turn → backswing → forward_swing → contact_point → follow_through → recovery
@@ -202,7 +212,7 @@ class MediaPipeClaudeLabeler:
         user_content.append({
             "type": "text",
             "text": _build_user_message_with_trajectory(
-                stroke.ios_stroke_type, duration, len(frames), trajectory,
+                stroke.ios_stroke_type, duration, len(frames), trajectory, stroke.handedness,
             ),
         })
 

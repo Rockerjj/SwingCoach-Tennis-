@@ -39,6 +39,7 @@ final class AnalysisAPIService {
         posePayload: SessionPosePayload,
         keyFrameImages: [(timestamp: Double, image: UIImage)],
         strokeClips: [(timestamp: Double, url: URL)] = [],
+        sourceVideoURL: URL? = nil,
         authToken: String
     ) async throws -> AnalysisResponse {
         guard let url = URL(string: "\(baseURL)/sessions/analyze") else {
@@ -84,6 +85,17 @@ final class AnalysisAPIService {
                     data: clipData
                 )
             }
+        }
+
+        if let sourceVideoURL,
+           let sourceData = try? Data(contentsOf: sourceVideoURL) {
+            body.appendMultipart(
+                boundary: boundary,
+                name: "source_video",
+                filename: sourceVideoURL.lastPathComponent,
+                mimeType: "video/mp4",
+                data: sourceData
+            )
         }
 
         body.append("--\(boundary)--\r\n".data(using: .utf8)!)

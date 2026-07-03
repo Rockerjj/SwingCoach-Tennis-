@@ -60,9 +60,17 @@ def _clip_duration_seconds(clip_bytes: bytes) -> float:
         return 3.0
 
 
-def _build_user_prompt(ios_type: str, clip_duration: float, trajectory: list[dict]) -> str:
+def _build_user_prompt(
+    ios_type: str,
+    clip_duration: float,
+    trajectory: list[dict],
+    handedness: str,
+) -> str:
+    dominant_side = "right" if handedness != "left" else "left"
+    non_dominant_side = "left" if dominant_side == "right" else "right"
     return f"""## Clip context
-- iOS on-device heuristic guessed this was a `{ios_type or 'unknown'}` stroke. This may be wrong. Re-decide from the video and joint trajectory.
+- iOS on-device heuristic guessed this was a `{ios_type or 'unknown'}` stroke. This may be wrong. Treat it only as weak context.
+- Player handedness is `{handedness or 'right'}`. Dominant side is `{dominant_side}`; non-dominant side is `{non_dominant_side}`.
 - The clip is {clip_duration:.2f}s long. Contact appears near the middle.
 
 ## Joint trajectory (MediaPipe Pose, all 33 keypoints, sub-sampled)
@@ -75,11 +83,20 @@ together with the visual frames to determine stroke type and phase boundaries.
 ```
 
 ## Stroke types
-- `forehand`: dominant-side swing, racket comes from behind body and crosses forward.
-- `backhand`: non-dominant side. One- or two-handed.
-- `serve`: overhead motion, player tosses with non-dominant arm.
-- `volley`: short compact punch, minimal backswing, near service line.
+- `forehand`: dominant-side groundstroke. Dominant wrist moves from the player's dominant side into/through contact. For a right-handed player, this is usually contact on the player's right side; for a left-handed player, on the player's left side.
+- `backhand`: non-dominant-side groundstroke. One- or two-handed. Dominant wrist crosses the body before/at contact. For a right-handed player, this is usually contact on the player's left side; for a left-handed player, on the player's right side.
+- `serve`: overhead motion with upward toss/loading. Dominant wrist is above head/shoulder line around contact; non-dominant arm often rises before contact.
+- `volley`: compact punch/block with little backswing. Wrist path is short, contact is in front of body, and there is minimal full groundstroke unit turn.
 - `unknown`: ambiguous, occluded, or not actually a stroke.
+
+## Evidence checklist
+Before choosing `stroke_type`, compare:
+- Dominant wrist side relative to shoulder/hip midpoint at contact.
+- Dominant wrist height relative to nose/shoulders.
+- Wrist path length and swing duration.
+- Shoulder/hip rotation size.
+- Whether the motion is overhead, compact volley, or full groundstroke.
+Return only the JSON object, but base the one-sentence reasoning on this evidence.
 
 ## Seven phases (return clip-relative seconds)
 1. `ready_position` — balanced, facing net, waiting.
@@ -160,7 +177,12 @@ class MediaPipeGeminiLabeler:
 
         duration = joints_per_frame[-1]["timestamp"] if joints_per_frame else _clip_duration_seconds(stroke.clip_bytes)
         trajectory = _subsample_trajectory(joints_per_frame, TRAJECTORY_SAMPLE_COUNT)
-        user_prompt = _build_user_prompt(stroke.ios_stroke_type, duration, trajectory)
+        user_prompt = _build_user_prompt(
+            stroke.ios_stroke_type,
+            duration,
+            trajectory,
+            stroke.handedness,
+        )
 
         contents: list = []
         try:

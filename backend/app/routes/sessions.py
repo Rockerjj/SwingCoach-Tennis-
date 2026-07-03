@@ -22,13 +22,47 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/sessions", tags=["sessions"])
 
 
+def _visible_angle_count(stroke) -> int:
+    count = 0
+    for phase in stroke.phases.values():
+        for angle in phase.angles.values():
+            if angle.visible:
+                count += 1
+    return count
+
+
+def _select_representative_strokes(payload: SessionPosePayload, max_per_type: int = 2) -> SessionPosePayload:
+    """Sample after relabeling so coaching sees corrected stroke types.
+
+    The relabeler needs every candidate stroke; final coaching does not. This
+    keeps detection eval comprehensive while avoiding long, repetitive coaching
+    requests for sessions with many swings.
+    """
+    strokes = payload.detected_strokes
+    if len(strokes) <= 4:
+        return payload
+
+    grouped = {}
+    for stroke in strokes:
+        grouped.setdefault(stroke.type, []).append(stroke)
+
+    selected = []
+    for group in grouped.values():
+        ranked = sorted(group, key=_visible_angle_count, reverse=True)
+        selected.extend(ranked[:max_per_type])
+
+    selected.sort(key=lambda stroke: stroke.contact_timestamp)
+    return payload.model_copy(update={"detected_strokes": selected})
+
+
 def _capture_payload(
     capture_dir: str,
     session_id: str,
     user_id: str,
     pose_bytes: bytes,
     key_frame_images: list[bytes],
-    video_clips: list[tuple[float, bytes]],
+    video_clips: list[tuple[float, str, bytes]],
+    source_video: tuple[str, bytes] | None = None,
 ) -> None:
     """Write the incoming analyze payload to disk for the eval harness.
 
@@ -38,6 +72,7 @@ def _capture_payload(
         pose_data.json
         key_frames/key_frame_000.jpg ...
         stroke_clips/stroke_clip_000_<ts>.mp4 ...
+        source_video/<original filename> ...
     """
     try:
         base = Path(capture_dir) / session_id
@@ -49,8 +84,44 @@ def _capture_payload(
         for idx, img in enumerate(key_frame_images):
             (base / "key_frames" / f"key_frame_{idx:03d}.jpg").write_bytes(img)
 
-        for idx, (ts, clip) in enumerate(video_clips):
-            (base / "stroke_clips" / f"stroke_clip_{idx:03d}_{ts:.2f}.mp4").write_bytes(clip)
+        clip_files = []
+        for idx, (ts, filename, clip) in enumerate(video_clips):
+            safe_name = Path(filename).name or f"stroke_clip_{idx:03d}_{ts:.2f}.mp4"
+            out_name = f"stroke_clip_{idx:03d}_{ts:.2f}.mp4"
+            (base / "stroke_clips" / out_name).write_bytes(clip)
+            clip_files.append({
+                "index": idx,
+                "timestamp": ts,
+                "filename": out_name,
+                "original_filename": safe_name,
+                "bytes": len(clip),
+            })
+
+        source_video_meta = None
+        if source_video is not None:
+            source_name, source_bytes = source_video
+            source_dir = base / "source_video"
+            source_dir.mkdir(parents=True, exist_ok=True)
+            safe_source_name = Path(source_name).name or "source_video.mp4"
+            (source_dir / safe_source_name).write_bytes(source_bytes)
+            source_video_meta = {
+                "filename": safe_source_name,
+                "bytes": len(source_bytes),
+            }
+
+        try:
+            pose_summary = json.loads(pose_bytes)
+            original_strokes = [
+                {
+                    "index": idx,
+                    "type": stroke.get("type"),
+                    "contact_timestamp": stroke.get("contactTimestamp") or stroke.get("contact_timestamp"),
+                    "phase_names": sorted((stroke.get("phases") or {}).keys()),
+                }
+                for idx, stroke in enumerate(pose_summary.get("detected_strokes", []))
+            ]
+        except Exception:
+            original_strokes = []
 
         meta = {
             "session_id": session_id,
@@ -58,7 +129,9 @@ def _capture_payload(
             "received_at": datetime.utcnow().isoformat() + "Z",
             "key_frame_count": len(key_frame_images),
             "stroke_clip_count": len(video_clips),
-            "stroke_clip_timestamps": [ts for ts, _ in video_clips],
+            "stroke_clips": clip_files,
+            "source_video": source_video_meta,
+            "original_strokes": original_strokes,
         }
         (base / "metadata.json").write_text(json.dumps(meta, indent=2))
         logger.info(
@@ -68,6 +141,43 @@ def _capture_payload(
     except Exception as e:
         # Never let capture errors break the actual analyze request.
         logger.warning(f"Failed to capture payload for session {session_id}: {e}")
+
+
+def _capture_relabel_debug(capture_dir: str, session_id: str, relabel_debug: list[dict]) -> None:
+    try:
+        base = Path(capture_dir) / session_id
+        base.mkdir(parents=True, exist_ok=True)
+        (base / "relabel_debug.json").write_text(json.dumps(relabel_debug, indent=2))
+
+        summary = {}
+        for event in relabel_debug:
+            idx = str(event.get("stroke_idx", "unknown"))
+            item = summary.setdefault(idx, {
+                "stroke_idx": event.get("stroke_idx"),
+                "original_type": event.get("original_type"),
+                "contact_timestamp": event.get("contact_timestamp"),
+                "matched_clip_timestamp": event.get("matched_clip_timestamp"),
+                "clip_filename": event.get("clip_filename"),
+                "attempts": [],
+                "final_type": event.get("original_type"),
+                "overwritten": False,
+            })
+            item["attempts"].append({
+                "labeler": event.get("labeler"),
+                "predicted_type": event.get("predicted_type"),
+                "confidence": event.get("confidence"),
+                "validation_passed": event.get("validation_passed"),
+                "error": event.get("error"),
+            })
+            if event.get("overwritten"):
+                item["final_type"] = event.get("predicted_type")
+                item["overwritten"] = True
+
+        (base / "relabel_summary.json").write_text(
+            json.dumps(list(summary.values()), indent=2)
+        )
+    except Exception as e:
+        logger.warning(f"Failed to capture relabel debug for session {session_id}: {e}")
 
 
 @router.post("/analyze", response_model=AnalysisResponse)
@@ -102,7 +212,7 @@ async def analyze_session(
                 logger.warning(f"Failed to read {key}: {e}")
 
     # Read video clip files from multipart (stroke_clip_0, stroke_clip_1, ...)
-    video_clips: list[tuple[float, bytes]] = []
+    video_clips: list[tuple[float, str, bytes]] = []
     for key in sorted(form.keys()):
         if key.startswith("stroke_clip_"):
             try:
@@ -118,11 +228,25 @@ async def analyze_session(
                     except ValueError:
                         pass
                 if clip_bytes:
-                    video_clips.append((ts, clip_bytes))
+                    video_clips.append((ts, filename, clip_bytes))
             except Exception as e:
                 logger.warning(f"Failed to read {key}: {e}")
 
-    logger.info(f"Received {len(key_frame_images)} key frame images and {len(video_clips)} video clips for analysis")
+    source_video: tuple[str, bytes] | None = None
+    source_video_file = form.get("source_video")
+    if source_video_file is not None:
+        try:
+            filename = getattr(source_video_file, "filename", "") or "source_video.mp4"
+            source_bytes = await source_video_file.read()
+            if source_bytes:
+                source_video = (filename, source_bytes)
+        except Exception as e:
+            logger.warning(f"Failed to read source_video: {e}")
+
+    logger.info(
+        f"Received {len(key_frame_images)} key frame images, "
+        f"{len(video_clips)} video clips, source_video={source_video is not None} for analysis"
+    )
     session_id = pose_payload.session_id or str(uuid4())
 
     settings = get_settings()
@@ -135,6 +259,7 @@ async def analyze_session(
             pose_bytes,
             key_frame_images,
             video_clips,
+            source_video,
         )
 
     if supabase is not None:
@@ -154,10 +279,20 @@ async def analyze_session(
     # Overwrite iOS stroke labels with MediaPipe + Gemini before the coaching LLM runs.
     # iOS heuristic is 62% accurate on stroke type; the relabeler hits 100% on confident
     # calls per the v5 bake-off. No-op when settings.relabel_strokes is False.
+    relabel_debug: list[dict] = []
     try:
-        pose_payload = await relabel_session(pose_payload, video_clips)
+        pose_payload, relabel_debug = await relabel_session(
+            pose_payload,
+            video_clips,
+            debug_events=relabel_debug,
+        )
+        if settings.debug_capture_payloads:
+            _capture_relabel_debug(settings.payload_capture_dir, session_id, relabel_debug)
     except Exception as e:
         logger.warning(f"Relabel failed; falling back to iOS labels: {e}")
+        if settings.debug_capture_payloads:
+            relabel_debug.append({"error": str(e), "overwritten": False})
+            _capture_relabel_debug(settings.payload_capture_dir, session_id, relabel_debug)
 
     try:
         provider = settings.coaching_provider
@@ -167,26 +302,28 @@ async def analyze_session(
         if provider == "auto":
             provider = "gemini" if (settings.use_gemini and settings.gemini_api_key) else "openai"
 
+        coaching_payload = _select_representative_strokes(pose_payload)
+
         if provider == "gemini":
             coaching = GeminiCoachingService()
             result = await coaching.analyze_session(
-                pose_payload, key_frame_images, video_clips or None
+                coaching_payload, key_frame_images, [(ts, data) for ts, _, data in video_clips] or None
             )
             provider_used, model_used = "gemini", settings.gemini_model
             logger.info(f"Analysis completed via Gemini ({model_used})")
         elif provider == "claude_opus":
             coaching = ClaudeCoachingService(model=settings.anthropic_opus_model)
-            result = await coaching.analyze_session(pose_payload, key_frame_images)
+            result = await coaching.analyze_session(coaching_payload, key_frame_images)
             provider_used, model_used = "claude_opus", settings.anthropic_opus_model
             logger.info(f"Analysis completed via Claude Opus ({model_used})")
         elif provider == "claude_sonnet":
             coaching = ClaudeCoachingService(model=settings.anthropic_sonnet_model)
-            result = await coaching.analyze_session(pose_payload, key_frame_images)
+            result = await coaching.analyze_session(coaching_payload, key_frame_images)
             provider_used, model_used = "claude_sonnet", settings.anthropic_sonnet_model
             logger.info(f"Analysis completed via Claude Sonnet ({model_used})")
         elif provider == "openai":
             coaching = LLMCoachingService()
-            result = await coaching.analyze_session(pose_payload, key_frame_images)
+            result = await coaching.analyze_session(coaching_payload, key_frame_images)
             provider_used, model_used = "openai", settings.openai_model
             logger.info(f"Analysis completed via OpenAI ({model_used})")
         else:
